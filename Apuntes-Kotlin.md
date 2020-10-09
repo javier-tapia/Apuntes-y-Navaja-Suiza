@@ -437,7 +437,7 @@ fun main() {
 
        - 2.1.1. Una propiedad ***top-level*** (dentro del paquete) deber ser inicializada.
 
-       - 2.1.2. Una propiedad ***miembro*** (dentro de la clase) debe ser inicializada **o** ser abstracta. También puede inicializarse más tarde con el modificador ***``lateinit``*** (sólo en *var properties*; *lateinit* retrasa la inicialización de la variable sin peligro de devolver una referencia nula) o con la **función** ***``lazy()``*** (ver *Propiedades delegadas*).
+       - 2.1.2. Una propiedad ***miembro*** (dentro de la clase) debe ser inicializada **o** ser abstracta. También puede inicializarse más tarde con el modificador ***``lateinit``*** (sólo en *var properties* y para tipos no primitivos; *lateinit* retrasa la inicialización de la variable sin peligro de devolver una referencia nula) o con la **función** ***``lazy()``*** (ver *Propiedades delegadas*).
 
        - 2.1.3. Una variable ***local*** (dentro de una función) debe tener anotado el tipo **o** ser inicializada, y no pueden ser sobreescritas.
 
