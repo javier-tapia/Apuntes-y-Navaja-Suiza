@@ -86,7 +86,25 @@ fun main() {
 
        - 1.1.1. Los ***dos puntos*** indican que hereda de otra clase (solo una) o *interfaces* (pueden ser más de una), separadas por comas.
 
-       - 1.1.2. Entre paréntesis, se pueden requerir los parámetros o las propiedades del ***constructor primario***.
+       - 1.1.2. Entre paréntesis, se pueden requerir los parámetros o las propiedades del ***constructor primario***. Además del constructor primario, también puede tener un **bloques** ***``init``*** (utilizado para poner código de inicialización; **se ejectuta inmediatamente después del constructor primario**) y uno o más ***constructores secundarios*** (deben llevar la **palabra reservada** ***``constructor``***; **se ejecutan después del constructor primario y el bloque** ***init*** si lo hubiera; pueden delegar parámetros al constructor primario con ***``this``***). Los constructores secundarios suelen usarse cuando se necesita extender una clase que proporcione múltiples constructores que inicialicen la clase de diferentes maneras.
+       
+         ```kotlin
+         class Sample(private var s : String) {
+             constructor(t: String, u: String) : this(t) {
+                 this.s += u
+
+                 println(s)  // Imprime: TBU
+             }
+
+             init {
+                 s += "B"
+             }
+         }
+
+         fun main() {
+             val sample = Sample("T","U")
+         }
+         ```
 
        - 1.1.3. Para crear una instancia de una clase (un ***objeto***), no se utiliza la palabra reservada *new* utilizada en Java:
 
@@ -435,13 +453,15 @@ fun main() {
      val ejemplo: String = “Hola mundo”
      ```
 
+     Las variables pueden ser de tipo ***``var``*** (mutables), ***``val``*** (inmutables) o ***``const``*** (constante en tiempo de compilación, es decir, **no se puede asignar un valor a la variable en tiempo de ejecución** como en las *``val``*). Las propiedades *``const``* deben estar declaradas en *top-level* (ver siguiente apartado) o ser miembro de un *object* o de un *companion object* (ver apartado 1.9), deben ser inicializadas con un *String* o con un tipo primitivo, y no pueden tener *custom getters* (ver apartado 2.3).
+
        - 2.1.1. Una propiedad ***top-level*** (dentro del paquete) deber ser inicializada.
 
        - 2.1.2. Una propiedad ***miembro*** (dentro de la clase) debe ser inicializada **o** ser abstracta. También puede inicializarse más tarde con el modificador ***``lateinit``*** (sólo en *var properties* y para tipos no primitivos; *lateinit* retrasa la inicialización de la variable sin peligro de devolver una referencia nula) o con la **función** ***``lazy()``*** (ver *Propiedades delegadas*).
 
        - 2.1.3. Una variable ***local*** (dentro de una función) debe tener anotado el tipo **o** ser inicializada, y no pueden ser sobreescritas.
 
-       - 2.1.4. Un ***parámetro*** debe tener anotado el tipo. Dentro del *header* de una clase, si se agrega *var* o *val* al nombre del parámetro, se vuelve una *property* del **constructor primario** de la clase. Por otro lado, los ***parámetros*** **de las funciones siempre son** ***val*** (de sólo lectura).
+       - 2.1.4. Un ***parámetro*** debe tener anotado el tipo. Dentro del *header* de una clase, si se agrega *var* o *val* al nombre del parámetro, se vuelve una *property* de la clase (**se declaran e inicializan** en el **constructor primario**). Por otro lado, los ***parámetros*** **de las funciones siempre son** ***val*** (de sólo lectura).
 
    - 2.2. ***Default arguments*** **y** ***Named arguments***: a los **parámetros de una función**, pueden asignárseles **valores por defecto**, que se usan cuando el argumento correspondiente **se omite** al invocar la función. O también se les puede **cambiar el valor** por defecto **al nombrarlos** y darles **otro valor** al momento de invocar la función. Esto evita *overloads* (definir múltiples métodos con el mismo nombre pero diferentes parámetros) y permite llamadas más claras, para evitar errores por un orden incorrecto de los argumentos (no es lo mismo *``"nombre@mail.com"``* que *``"mail.com@nombre"``*).  
    
