@@ -1,21 +1,21 @@
 # Apuntes de Kotlin  
 
 ### Contenido general:  
-#### 0. Modificadores de visibilidad
-#### 1. Clases y Objetos
-#### 2. Propiedades y *fields*
-#### 3. Funciones
-#### 4. Corrutinas (*Coroutines*)
-#### 5. Colecciones
-#### 6. Otros constructos del lenguaje
-#### Referencias
+#### [0. Modificadores de visibilidad](#0-modificadores-de-visibilidad-private-protected-internal-y-public-por-defecto)
+#### [1. Clases y Objetos](#1-clases-y-objetos)
+#### [2. Propiedades y *fields*](#2-propiedades-y-fields)
+#### [3. Funciones](#3-funciones)
+#### [4. Corrutinas (*Coroutines*)](#4-corrutinas-coroutines)
+#### [5. Colecciones](#5-colecciones)
+#### [6. Otros constructos del lenguaje](#6-otros)
+#### [Referencias](#referencias)
 
 ---
 ---
 
 
 
-### 0. Modificadores de visibilidad: *private* , *protected* , *internal* y *public* (por defecto)
+### 0. Modificadores de visibilidad: *private*, *protected*, *internal* y *public* (por defecto)
 
 Las funciones, las propiedades, las clases, los *objects* y las *interfaces* se pueden declarar en “***top-level***” (directamente dentro del paquete). Aún así, para usar una declaración en *top-level* **de otro paquete, se debe importar**.
 -	***public*** (por defecto): la declaración será **visible desde cualquier lugar**.
