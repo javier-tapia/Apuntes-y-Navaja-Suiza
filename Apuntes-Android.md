@@ -1430,7 +1430,7 @@ La inyección de dependencias nació para reducir el acoplamiento entre los comp
 #### ***Dagger***
 Es un *framework* de inyección de dependencias, que **se divide sobre todo en Componentes y Módulos**. Los **Módulos** son las **clases que se encargan de proveer las dependencias**. Los **Componentes** son **interfaces** a las que están ligados uno o varios módulos; estas interfaces, que serán usadas por Dagger para generar el código, **actúan como puente entre las dependencias que proveen los módulos y las clases donde serán inyectadas**.
 
-<img src="Dagger.png" width="500">
+<img src="Dagger.png" width="700">
 
 El esquema anterior representa una forma de estructurar componentes y módulos para proveer las dependencias. En él destaca un componente, ***AppComponent***, el componente principal al que están ligados los siguientes módulos:  
 - ***AppModule***: este módulo se encargará de proporcionar las **dependencias únicas** (***Singleton***) que **pervivirán a lo largo del ciclo de vida de la aplicación**.
