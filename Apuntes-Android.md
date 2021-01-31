@@ -739,7 +739,7 @@ Este patrón arquitectónico se usa en conjunto con los patrones descriptos ante
 <img src="Repository.png" width="600">
 
 Hay casos en los que se usa *LiveData* para comunicarse entre un repositorio y un *ViewModel*. Usar *LiveData* en este caso parece correcto. Después de todo, está diseñado para almacenar y pasar datos. Pero no se recomienda. El propósito principal de *LiveData* es contener un conjunto de datos que se puedan observar, distinguiéndose además de otros observables en que tiene en cuenta el ciclo de vida. Sin embargo, algo clave a tener en cuenta, es que **los observadores de ***LiveData*** siempre se llaman en el hilo principal** (***main thread***). Cuando se usa *LiveData* en el repositorio para pasar los datos al *ViewModel*, el *ViewModel* debería actuar como un observador, por lo que se necesita invocar la ejecución en el hilo principal. Y no se recomienda que los *ViewModel*s utilicen operaciones en el hilo principal. A menudo también se usan transformaciones en los datos obtenidos de los servidores. Y al usar *LiveData*, hay que hacerlo en el hilo principal, lo cual tampoco se recomienda.  
-Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Coroutines Flow*** (ver apartado *Manejo de Asíncronos*). Como *Flow* está diseñado explícitamente para manejar operaciones asincrónicas complejas de manera efectiva y emitir varias veces según se requiera, es una excelente alternativa a *LiveData*. *Flow* ofrece una funcionalidad similar: *builders*, *cold streams* y auxiliares útiles (por ejemplo, transformación de datos). Y a diferencia de *LiveData*, no están vinculados al ciclo de vida y brindan más control sobre el contexto de ejecución.
+Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Coroutines Flow*** (ver apartado *Manejo de Asíncronos*).
 
 
 
@@ -749,7 +749,288 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 ### ***Navigation component***
 
+El **componente** ***Navigation*** consta de tres partes clave que se describen a continuación:
+- **Gráfico de navegación** (***Navigation graph***): Es un recurso XML que contiene **toda la información relacionada con la navegación** en una ubicación centralizada. Esto incluye todas las áreas de contenido individuales dentro de la *app*, llamadas **destinos** (***destinations***), así como las posibles rutas que un usuario puede tomar a través de la *app*, llamadas **acciones** (***actions***).
+- ***NavHost***: Es un **contenedor vacío que muestra los destinos del gráfico de navegación**. El componente *Navigation* contiene una implementación *NavHost* predeterminada, ***NavHostFragment***, que muestra destinos de *fragments*.
+- ***NavController***: Es un **objeto que administra la navegación de la** ***app*** dentro de un *NavHost*. *NavController* orquesta el intercambio de contenido de destino en el objeto *NavHost* a medida que los usuarios se mueven a través de la *app*.  
+A su vez, como principios de navegación generales (no se aplican solo al usar el componente *Navigation*), cabe destacar lo siguiente: toda *app* debe tener un **destino de inicio fijo**; los botones de **Atrás** (***Back***) y **Arriba** (***Up***), funcionan de la misma manera dentro de la *app*, con la diferencia de que **el botón ***Up*** nunca sale de la aplicación**; en caso de utilizar **vínculos directos** (***deep linking***) para navegar a una pantalla de la *app*, se debe crear una **pila** (***back stack***) **artificial**, como si se hubiera llegado a esa pantalla de forma normal.  
+Para usar el componente *Navigation* con Kotlin, se agregan las dependencias en el *build.gradle*:
 
+```kotlin
+implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+```
+
+Para agrear un nuevo gráfico de navegación, se crea un nuevo ***resource file*** de tipo *Navigation*. Para agregar un *NavHostFragment*, se agrega en el *xml* de esta forma:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        .../>
+    
+    <!-- Se agrega un NavHostFragment -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        .../>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+Para establecer un destino como el **destino de inicio**, se hace clic derecho sobre el destino y luego ***Set as Start Destination***. En el editor de navegación, **las acciones se representan con flechas**, aunque para navegar realmente entre los destinos **hace falta escribir el código** correspondiente. Estas acciones, en la vista *xml* del gráfico, se representan con elementos ***``<action>``***. Como mínimo, una acción contiene su propio ID y el ID del destino (*fragment* o *activity*) al que se debería dirigir a un usuario.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    app:startDestination="@id/blankFragment">
+    <fragment
+        android:id="@+id/blankFragment"
+        android:name="com.example.cashdog.cashdog.BlankFragment"
+        android:label="fragment_blank"
+        tools:layout="@layout/fragment_blank" >
+        <action
+            android:id="@+id/action_blankFragment_to_blankFragment2"
+            app:destination="@id/blankFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/blankFragment2"
+        android:name="com.example.cashdog.cashdog.BlankFragment2"
+        android:label="fragment_blank_fragment2"
+        tools:layout="@layout/fragment_blank_fragment2" />
+</navigation>
+```
+
+Para recuperar un ***NavController*** (el objeto que administra la navegación de una app dentro de un elemento ***NavHost***), se puede usar uno de los siguientes métodos (en Kotlin):  
+- ***``Fragment.findNavController()``***  
+- ***``View.findNavController()``***  
+- ***``Activity.findNavController(viewId: Int)``***
+
+```kotlin
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var navController: NavController
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+
+            // Otras configuraciones
+    
+            navController = findNavController(R.id.nav_host_fragment)
+    }
+}
+```
+
+#### Navegar entre destinos
+Para navegar entre destinos, Android recomienda utilizar el *plugin* de *Gradle* llamado ***Safe Args***, que permite navegar con **seguridad de tipo** y **pasar argumentos** entre los destinos. Para agregar *Safe Args* al proyecto, se incluye la siguiente *classpath* en el archivo *build.gradle* de nivel superior (a nivel de proyecto):
+
+```kotlin
+buildscript {
+    repositories {
+        google()
+    }
+    dependencies {
+        def nav_version = "2.3.0"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
+    }
+}
+```
+
+También se agrega el complemento correspondiente:
+
+```kotlin
+apply plugin: "androidx.navigation.safeargs.kotlin"
+```
+
+Después de habilitar *Safe Args*, el complemento genera código que contiene clases y métodos para cada acción definida. En cada acción, *Safe Args* también genera una clase **para cada destino de origen**, que es el destino desde el que se origina la acción. El nombre de clase generada es una combinación del nombre de la clase del destino de origen y la palabra ***Directions***. Por ejemplo, si el destino se llama ***SpecifyAmountFragment***, la clase generada se llama ***SpecifyAmountFragmentDirections***. La clase generada contiene **un método estático para cada acción definida** en el destino de origen. Este método toma cualquier parámetro de acción definido como argumento y retorna un objeto ***NavDirections*** que se puede pasar al **método** ***``navigate()``***.
+
+```kotlin
+override fun onClick(view: View) {
+    val action =
+        SpecifyAmountFragmentDirections
+            .actionSpecifyAmountFragmentToConfirmationFragment()
+    view.findNavController().navigate(action)
+}
+```
+
+Si bien *Safe Args* es lo recomendado, también se puede navegar entre destinos **a través de ID’s** o con ***DeepLinkRequest***. En el primer caso, ***``navigate(int)``*** toma el ID ya sea de una acción o directamente de un destino (se recomienda usar acciones siempre que sea posible, ya que se puede remplazar por operaciones con *SafeArgs*, brindan información adicional y también permiten animar las transiciones).
+
+```kotlin
+viewTransactionsButton.setOnClickListener { view ->
+   view.findNavController().navigate(R.id.viewTransactionsAction)
+}
+```
+
+En el segundo caso, se puede usar ***``navigate(NavDeepLinkRequest)``*** para navegar directamente a un destino de vínculo directo implícito. 
+
+```kotlin
+val request = NavDeepLinkRequest.Builder
+    .fromUri("android-app://androidx.navigation.app/profile".toUri())
+    .build()
+findNavController().navigate(request)
+```
+
+Además de Uri, ***NavDeepLinkRequest*** también admite vínculos directos con acciones y tipos de MIME. Para agregar una acción a la solicitud, se usa ***``fromAction()``*** o ***``setAction()``***. Para agregar un tipo de MIME a una solicitud, se usa ***``fromMimeType()``*** o ***``setMimeType()``***. Hay un apartado específico sobre *DeepLinking* (apartado 15).
+
+#### Pasar datos entre destinos
+*Navigation* permite adjuntar datos a una operación de navegación si se definen los argumentos de un destino. Por ejemplo, el destino de un perfil de usuario podría tomar como argumento el ID de un usuario para determinar a quién mostrar el contenido. En general, se debe optar por pasar **sólo la cantidad mínima de datos entre destinos**. Por ejemplo, pasar una clave a fin de recuperar un objeto en lugar de pasar el objeto en sí, ya que el espacio total para los estados guardados en Android es limitado.  
+Si se necesita pasar **grandes cantidades de datos**, es preferible utilizar un ***ViewModel*** **compartido**: dos *fragments* pueden compartir un *ViewModel* usando su ámbito de actividad (*activity scope*) para manejar la comunicación.
+
+```kotlin
+class SharedViewModel : ViewModel() {
+    val selected = MutableLiveData<Item>()
+
+    fun select(item: Item) {
+        selected.value = item
+    }
+}
+
+class MasterFragment : Fragment() {
+
+    private lateinit var itemSelector: Selector
+
+    // Use the 'by activityViewModels()' Kotlin property delegate
+    // from the fragment-ktx artifact
+    private val model: SharedViewModel by activityViewModels()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        itemSelector.setOnClickListener { item ->
+            // Update the UI
+        }
+    }
+}
+
+class DetailFragment : Fragment() {
+
+    // Use the 'by activityViewModels()' Kotlin property delegate
+    // from the fragment-ktx artifact
+    private val model: SharedViewModel by activityViewModels()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        model.selected.observe(viewLifecycleOwner, Observer<Item> { item ->
+            // Update the UI
+        })
+    }
+}
+```
+
+Para pasar datos entre destinos, se define el argumento agregándolo al destino que lo recibe (desde el panel ***Attributes***).
+
+```xml
+ <fragment android:id="@+id/myFragment" >
+     <argument
+         android:name="myArg"
+         app:argType="integer"
+         android:defaultValue="0" />
+ </fragment>
+```
+
+Todas las acciones que navegan al destino usan valores predeterminados y argumentos a nivel de destino. Si es necesario, **se puede sobreescribir el valor predeterminado de un argumento** (o definir uno si todavía no existe). **Para eso, se define un argumento a nivel de la acción**. Este argumento debe tener el mismo nombre y tipo que el declarado en el destino. El código XML que se muestra a continuación declara una acción con un argumento que sobreescribe el argumento a nivel de destino del ejemplo anterior:
+
+```xml
+<action android:id="@+id/startMyFragment"
+    app:destination="@+id/myFragment">
+    <argument
+        android:name="myArg"
+        app:argType="integer"
+        android:defaultValue="1" />
+</action>
+```
+
+Como ya se dijo, lo recomendado para navegar y pasar datos entre destinos es ***Safe Args***, ya que garantiza **seguridad de tipo** (***type-safety***). Así como crea una clase por cada destino donde se origina una acción (el nombre es el destino de origen más la palabra *Directions*), también se crea una clase para el destino de recepción. El nombre de esta clase es el nombre del destino, unido a la palabra ***Args***. Por ejemplo, si el *fragment* de destino se llama ***ConfirmationFragment***, la clase generada se llamará ***ConfirmationFragmentArgs***. Y también se crea una clase interna para cada acción que se usa a fin de pasar el argumento, cuyo nombre se basa en la acción. Por ejemplo, si la acción se llama ***confirmationAction***, la clase se llamará ***ConfirmationAction***. Si la acción contiene argumentos sin un ***defaultValue***, se debe usar la clase de acción asociada para configurar el valor de los argumentos.  
+En el siguiente ejemplo, se muestra cómo utilizar estos métodos para configurar un argumento y pasarlo al **método** ***``navigate()``***:
+
+```kotlin
+override fun onClick(v: View) {
+   val amountTv: EditText = view!!.findViewById(R.id.editTextAmount)
+   val amount = amountTv.text.toString().toInt()
+   val action = SpecifyAmountFragmentDirections.confirmationAction(amount)
+   v.findNavController().navigate(action)
+}
+```
+
+En el código del destino de recepción, se usa el **método** ***``getArguments()``*** a fin de recuperar el *bundle* y usar su contenido. Cuando se usan las **dependencias** ***-ktx***, con Kotlin también se puede usar el **delegado de propiedades** ***``by navArgs()``*** para acceder a los argumentos:
+
+```kotlin
+val args: ConfirmationFragmentArgs by navArgs()
+
+override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    val tv: TextView = view.findViewById(R.id.textViewAmount)
+    val amount = args.amount
+    tv.text = amount.toString()
+}
+```
+
+En algunos casos, por ejemplo, **si no se usa** ***Gradle***, no se puede usar el complemento *Safe Args*. En esas situaciones, se pueden utilizar objetos ***Bundle*** para pasar datos de forma directa. Se crea un objeto *Bundle* y se lo pasa al destino usando ***``navigate()``***.
+
+```kotlin
+val bundle = bundleOf("amount" to amount)
+view.findNavController().navigate(R.id.confirmationAction, bundle)
+```
+
+Y en el código del destino de recepción, se usa el **método** ***``getArguments()``*** para recuperar el *Bundle*:
+
+```kotlin
+val tv = view.findViewById<TextView>(R.id.textViewAmount)
+tv.text = arguments?.getString("amount")
+```
+
+#### ***NavigationUI***
+El componente *Navigation* incluye una **clase** ***NavigationUI***. Esta clase contiene métodos estáticos que administran la navegación con la barra superior de la *app* (***top bar***), el panel lateral de navegación (***navigation drawer***) y la navegación inferior (***bottom navigation***). *NavigationUI* también proporciona asistentes para **vincular destinos a componentes de UI controlados por el menú**: contiene un método asistente, ***``onNavDestinationSelected()``***, que toma un elemento ***MenuItem*** junto con el elemento ***NavController*** que aloja el destino asociado. Si el elemento ***``id``*** de *MenuItem* **coincide** con el elemento ***``id``*** del destino, *NavController* puede entonces navegar a ese destino.  
+- ***Top bar***: *NavigationUI* contiene métodos que actualizan automáticamente el contenido de la barra superior a medida que los usuarios navegan por la *app*. Por ejemplo, **se pueden usar las etiquetas (***labels***) del destino del gráfico de navegación para mantener actualizado el título de la barra superior** de la *app*, usando el **método** ***``setupWithNavController``***. Cuando se usa *NavigationUI* con alguna de las implementaciones de la barra superior (***Toolbar***, ***CollapsingToolbarLayout*** o ***ActionBar***), la etiqueta que se adjunta a los destinos puede ser automáticamente populada a partir de los argumentos proporcionados al destino, usando la sintaxis ***``{argName}``*** en la etiqueta. *NavigationUI* usa un objeto ***AppBarConfiguration*** para **administrar el comportamiento del botón** ***Navigation*** en la esquina superior izquierda del área de visualización de la *app*. El comportamiento del botón *Navigation* cambia si el usuario se encuentra en un **destino de nivel superior** (la raíz, o el destino de nivel más alto, en un conjunto de destinos relacionados de manera jerárquica). Los destinos de nivel superior no muestran un botón ***Arriba*** en la barra superior de la *app*, ya que no existe un destino superior a este. De forma predeterminada, el destino de inicio de la *app* es el único destino de nivel superior.  
+- ***Navigation drawer***: El ícono del panel lateral (***drawer icon***) se muestra en todos los destinos de nivel superior que usan un ***DrawerLayout***. Para agregar un panel lateral de navegación, primero se declara un *DrawerLayout* como vista raíz. Dentro del *DrawerLayout*, se agrega un diseño para el contenido principal de la UI y otra vista que tenga el contenido del panel lateral de navegación (***NavigationView***). Luego, se conecta el *DrawerLayout* al gráfico de navegación pasándoselo a ***AppBarConfiguration***. Y por último, en el método *``onCreate()``* de la *activity* se llama a ***``setupWithNavController()``***.  
+- ***Bottom Navigation***: *NavigationUI* también puede controlar la navegación inferior. Cuando un usuario selecciona un elemento de menú, *NavController* llama a ***``onNavDestinationSelected()``*** y actualiza automáticamente el elemento seleccionado en la barra de navegación inferior. Para crear una barra de navegación inferior, primero se define en el XML de la *activity* principal; luego, se llama a ***``setupWithNavController()``*** desde el método *``onCreate()``* de la *activity* principal.  
+La interacción con *NavController* es el método principal para navegar entre destinos. El *NavController* es responsable de reemplazar el contenido del *NavHost* con el destino nuevo. En muchos casos, los elementos de la UI (por ejemplo, una barra superior u otros controles de navegación persistentes como *BottomNavigationBar*) permanecen fuera del *NavHost* y se deben actualizar a medida que se navega entre destinos. *NavController* ofrece la **interface** ***OnDestinationChangedListener*** que se llama cuando **el destino actual o los argumentos de ***NavController*** cambian**. Es posible registrar un nuevo objeto de escucha mediante el **método** ***``addOnDestinationChangedListener()``***.  
+*NavigationUI* usa *OnDestinationChangedListener* para hacer que estos componentes comunes de la UI reconozcan la navegación. Sin embargo, hay que tener en cuenta que **también se puede usar el elemento ***OnDestinationChangedListener*** por sí solo, con el fin de que cualquier UI personalizada o lógica de negocios esté al tanto de los eventos de navegación**. Por ejemplo, tal vez se tengan elementos de UI comunes que se quieran mostrar en algunas áreas de la *app* y ocultar en otras. Con un *OnDestinationChangedListener* propio, se pueden ocultar o mostrar selectivamente estos elementos de la UI en función del destino objetivo, como se muestra en el siguiente ejemplo:
+
+```kotlin
+navController.addOnDestinationChangedListener { _, destination, _ ->
+   if(destination.id == R.id.full_screen_destination) {
+       toolbar.visibility = View.GONE
+       bottomNavigationView.visibility = View.GONE
+   } else {
+       toolbar.visibility = View.VISIBLE
+       bottomNavigationView.visibility = View.VISIBLE
+   }
+}
+```
+
+#### ***Nested graphs***
+Por lo general, los flujos de acceso, los asistentes (*wizards*) y otros subflujos de la *app* se representan mejor como **gráficos de navegación anidados** (***nested graphs***). Si se anidan flujos de subnavegación autónomos de esta manera, el flujo principal de la UI de la *app* será más fácil de comprender y administrar. Además, los gráficos anidados son reutilizables. También proporcionan un nivel de encapsulación, es decir, que los destinos fuera del gráfico anidado no tienen acceso directo a ninguno de los destinos dentro del gráfico anidado. En su lugar, deberían tener un elemento *``navigate()``* que los dirija al propio gráfico anidado, donde la lógica interna puede cambiar sin afectar el resto del gráfico. Esto es útil, por ejemplo, para verificar si hay un usuario registrado. Si el usuario no está registrado, se lo puede dirigir a la pantalla de registro dentro del gráfico anidado. Esto es lo que se conoce como **navegación condicional**.  
+Para agrupar destinos en un gráfico anidado, se mantiene presionada la **tecla** ***Shift*** y se hace clic en los destinos que se desean incluir en el gráfico anidado. Luego, se hace clic derecho para abrir el menú contextual y se selecciona ***Move to Nested Graph > New Graph***.  
+Además, dentro de un gráfico de navegación se puede hacer referencia a otros gráficos mediante ***``include``***. Si bien esto es funcionalmente lo mismo que usar un gráfico anidado, *``include``* permite usar gráficos de otros módulos del proyecto o de proyectos de biblioteca.
+
+#### Acciones globales
+Se puede usar una **acción general o global** (***global action***) para crear una acción común que varios destinos puedan utilizar. Por ejemplo, quizás se desee agregar botones en distintos destinos para navegar a la misma pantalla principal de la *app*. En el Editor de *Navigation*, una acción general se representa mediante **una flecha pequeña que apunta al destino asociado**. A fin de usar una acción general en el código, se pasa el ID de recurso de la acción general al **método** ***``navigate()``*** para cada elemento de la UI, como se muestra en el siguiente ejemplo:
+
+```kotlin
+viewTransactionButton.setOnClickListener { view ->
+    view.findNavController().navigate(R.id.action_global_mainFragment)
+}
+```
 
 
 
@@ -759,6 +1040,353 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 ### UI: Interfaz de Usuario
 
+#### ***Styles y Themes***
+La principal **diferencia entre estilos** (***styles***) y **temas** (***themes***), es que **un tema se aplica a toda una jerarquía de vistas, una ***activity*** o una** ***app***, mientras que **un estilo sólo afecta a la vista en la que se aplica**. En otras palabras, **un tema es un estilo que se propaga de padres a hijos**. Los temas contienen atributos o configuraciones que aplican a todos los elementos de la UI. Mientras que los temas tienen unos **atributos genéricos**, cada vista puede tener una serie de estilos **específicos** que hagan que esa vista se muestre de una forma u otra. Por ejemplo, el *style* por defecto de un *TextView*, es ***Widget.AppCompat.TextView***.  
+Además, en caso de definir un nuevo estilo, sólo el elemento al que se le agrega el **atributo** ***``style``*** recibe los atributos del estilo definido; cualquier vista secundaria no aplica los estilos. Si se desea que las vistas secundarias hereden estilos, se aplica el estilo con el **atributo** ***``android:theme``***.  
+Para crear un **tema** ***custom***, éste **debe heredar de un tema de** ***AppCompat***. Además, se agrega en el *Manifest* a la *activity* que corresponda.
+
+###### En ***Styles.xml***:
+
+```xml
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.MyActivityTheme" >
+        <item name="colorPrimary">@color/colorAccent</item>
+    </style>
+</resources>
+```
+
+###### En ***AndroidManifest.xml***:
+
+```xml
+<application
+    android:allowBackup="true"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:supportsRtl="true"
+    android:theme="@style/AppTheme">
+    <activity
+        android:name=".MainActivity"
+        android:theme="@style/AppTheme.MyActivityTheme">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+</application>
+```
+
+#### ***Custom Views***
+Se puede crear una clase para crear vistas personalizadas y luego utilizarla en el *xml*. Por ejemplo, si se quiere crear un *ImageView* que contenga imágenes para *covers* de películas con un *ratio* personalizado, se puede crear una clase que herede de *ImageView* (la variante de *AppCompat*: *AppCompatImageView*) y agregar los constructores usando ***``@JvmOverloads``***. Después, se define el *aspect ratio* a utilizar y se sobreescribe la **función** ***``onMeasure()``*** para que la vista se adecue al tamaño que le corresponde en función de la vista padre, para luego modificarle la altura respecto al *aspect ratio* y el ancho, y también el ancho respecto al *aspect ratio* y el alto. Finalmente, se le indica a la clase padre que se han modificado las medidas llamando al **método** ***``setMeasureDimension()``***. Y en el *xml*, se agrega la vista personalizada. El ejemplo quedaría así:  
+
+###### En la clase ***custom***:
+
+```kotlin
+class ApectRatioImageView @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : AppCompatImageView(context, attrs, defStyleAttr) {
+
+    // Se deja pública para que se pueda modificar desde afuera
+    var ratio = 1f
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+        // Obtener las medidas de la vista
+        var width = measuredWidth
+        var heigth = measuredHeight
+
+        // Si la vista aún no se ha medido, que retorne
+        if (width == 0 && heigth == 0) return
+
+        // Si alguna de las medidas no es 0, comprobar cuál es, para calcular la que falta
+        if (width > 0) {
+            heigth = (width * ratio).toInt()
+        } else if (heigth > 0) {
+            width = (heigth / ratio).toInt()
+        }
+
+        setMeasuredDimension(width, heigth)
+    }
+}
+```
+
+###### En el ***xml***:
+
+```xml
+<com.example.navajasuiza.ApectRatioImageView
+    android:id="@+id/cover"
+    android:layout_height="200dp"
+    android:layout_width="wrap_content">
+</com.example.navajasuiza.ApectRatioImageView>
+```
+
+Si se quiere modificar el *ratio*, se puede hacer desde el código de esta manera:
+
+```kotlin
+binding.cover.ratio = 1.5f
+```
+
+Sin embargo, es recomendable añadir ese atributo directamente en el *xml*. Se crea un nuevo ***resource file*** dentro de ***values.xml*** (al que habitualmente se lo llama ***attrs.xml***), en el cual se pueden añadir atributos que definan el estilo de la vista *custom*. Para eso, se usa la etiqueta ***``<declare-styleable``***, se elige el nombre de la imagen, y dentro del bloque se especifican los atributos deseados (cuando se crea uno nuevo, se agrega el formato):
+
+```xml
+<resources>
+    <declare-styleable name="ApectRatioImageView">
+        <attr name="ratio" format="float" />
+    </declare-styleable>
+</resources>
+```
+
+Una vez hecho esto, se puede agregar el atributo en el *xml*:
+
+```xml
+app:ratio="1.5"
+```
+
+Y además, en la clase *custom* dentro de un bloque *``init``*, se recupera el componente de la siguiente manera:
+
+```kotlin
+init {
+    // Para acceder a los atributos desde el código, se deben obtener los atributos mediante el método obtainStyledAttributes()
+    // Se pasan por parámetro los atributos que vienen por constructor y
+    // el styleable custom creado antes.
+    val a = context.obtainStyledAttributes(attrs, R.styleable.ApectRatioImageView)
+    // Recuperar el atributo ratio
+    ratio = a.getFloat(R.styleable.ApectRatioImageView_ratio, 1f)
+    // Se recicla la variable
+    a.recycle()
+}
+```
+
+También es importante señalar que los atributos pueden tener varios tipos (***format***), y entre ellos cabe destacar a los ***flag attributes*** y a los ***enum attributes***. Los *flags* se usan en los casos en que se quiere **combinar valores múltiples para un mismo atributo** (como puede ser, por ejemplo, aplicar *Bold* e *Italic* a un *custom TextView* en la forma ***``android:textStyle="bold|italic"``***); y hacen uso de **operaciones bit-a-bit** para determinar cómo combinar esos valores (por esta razón, los valores suelen ser **1, 2, 4, 8**, etc.). Por otro lado, los *enum* también pueden definir más de un valor, pero **el atributo sólo puede hacer uso de uno solo**.
+
+###### Por ejemplo, en ***res/values/attr.xml***:
+
+```xml
+<!-- declare myenum attribute -->
+<attr name="myenum">
+    <enum name="zero" value="0" />
+    <enum name="one" value="1" />
+    <enum name="two" value="2" />
+    <enum name="three" value="3" />
+</attr>
+
+<!-- declare myflags attribute -->
+<attr name="myflags">
+    <flag name="one" value="1" />
+    <flag name="two" value="2" />
+    <flag name="four" value="4" />
+    <flag name="eight" value="8" />
+</attr>
+
+<!-- declare our custom widget to be styleable by these attributes -->
+<declare-styleable name="com.example.MyWidget">
+    <attr name="myenum" />
+    <attr name="myflags" />
+</declare-styleable>
+```
+
+###### Y en ***res/layout/mylayout.xml*** ahora se puede hacer:
+
+```xml
+<com.example.MyWidget
+    myenum="two"
+    myflags="one|two"
+    ... />
+```
+
+#### ***RecyclerView***:
+Este *widget* es una versión más avanzada y flexible del *ListView*. Varios componentes diferentes trabajan juntos para mostrar los datos: un **administrador de diseño** (***layout manager***), objetos **contenedores de vistas** (***view holders***) y un **adaptador** (***adapter***). El contenedor general de la UI es un objeto *RecyclerView* que se agrega al diseño. El objeto *RecyclerView* usa un *layout manager* para posicionar los elementos individuales en la pantalla y determinar cuándo volver a usar las vistas de elementos que ya no ve el usuario. Para volver a usar (reciclar) una vista, un *layout manager* puede solicitar al adaptador que reemplace el contenido de la vista por un elemento diferente del conjunto de datos. Android incluye tres administradores de diseño estándar para utilizar (***LinearLayoutManager***, ***GridLayoutManager*** o ***StaggeredGridLayoutManager***), aunque también se puede implementar uno propio extendiendo la clase abstracta ***RecyclerView.LayoutManager***.  
+Las vistas incluidas en la lista, que **representan los elementos en un conjunto de datos**, están representadas por objetos *view holder*. Esos objetos son instancias de una clase que se define **extendiendo** ***RecyclerView.ViewHolder***. Cada objeto *view holder* es responsable de mostrar un elemento individual con una vista. Por ejemplo, si la lista muestra una colección de música, cada objeto *view holder* representa un álbum individual. El objeto *RecyclerView* crea solamente la cantidad de objetos *view holder* que sean necesarios para mostrar la parte en pantalla del contenido dinámico, más algunos adicionales. A medida que el usuario se desplaza por la lista, el objeto *RecyclerView* **toma las vistas fuera de pantalla y vuelve a vincularlas con los datos** que se desplazan en la pantalla.  
+Un adaptador o *adapter*, que se crea **extendiendo** ***RecyclerView.Adapter***, administra los objetos *view holder*, y consta de tres métodos: ***``onCreateViewHolder()``***, ***``onBindViewHolder()``*** y ***``getItemCount()``***. Primero, el *layout manager* llama al método *``onCreateViewHolder()``* para que construya un objeto *RecyclerView.ViewHolder* y configure la vista que usa para mostrar su contenido. Luego, el *layout manager* vincula el *view holder* con sus datos. Para hacerlo, llama al método *``onBindViewHolder()``* del adaptador y pasa la posición del *view holder* en el *RecyclerView*. Es necesario que el método *``onBindViewHolder()``* busque los datos correspondientes y los use para completar el diseño del *view holder*. En resumen, **el adaptador crea ***view holders***, según sea necesario, y los vincula con sus datos**, asignando el *view holder* a una posición y llamando al método *``onBindViewHolder()``*, que usa la posición del *view holder* para determinar cuál debería ser el contenido, en función de su posición en la lista. El método ***``getItemCount()``*** retorna el tamaño del conjunto de datos.
+
+```kotlin
+class MyAdapter(private val myDataset: Array<String>) :
+    RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+
+    // Provide a reference to the views for each data item
+    // Complex data items may need more than one view per item, and
+    // you provide access to all the views for a data item in a view holder.
+    // Each data item is just a string in this case that is shown in a TextView.
+    class MyViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
+
+    // Create new views (invoked by the layout manager)
+    override fun onCreateViewHolder(parent: ViewGroup,
+                                    viewType: Int): MyAdapter.MyViewHolder {
+        // create a new view
+        val textView = LayoutInflater.from(parent.context)
+            .inflate(R.layout.my_text_view, parent, false) as TextView
+        // set the view's size, margins, paddings and layout parameters
+        ...
+        return MyViewHolder(textView)
+    }
+
+    // Replace the contents of a view (invoked by the layout manager)
+    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+        // - get element from your dataset at this position
+        // - replace the contents of the view with that element
+        holder.textView.text = myDataset[position]
+    }
+
+    // Return the size of your dataset (invoked by the layout manager)
+    override fun getItemCount() = myDataset.size
+}
+```
+
+También puede suceder que haya cambios en el conjunto de datos. Hay dos tipos diferentes de eventos de cambio en los datos: cambios en los elementos o ***item changes*** (cuando se actualizan los datos de un solo elemento, pero no se producen cambios de posición) y cambios estructurales o ***structural changes*** (cuando se insertan, eliminan o mueven elementos dentro del conjunto de datos). Para la primera clase de eventos se suelen utilizar métodos de notificación en el objeto *RecyclerView.Adapter*, como por ejemplo ***``notifyItemChanged()``***. El *layout manager* vincula nuevamente cualquier *view holder* afectado, lo que permite la actualización de sus datos. Por otro lado, para los cambios estructurales suele usarse ***``notifyDataSetChanged()``***, aunque este método debería usarse como último recurso ya que este evento no especifica qué ha cambiado en el conjunto de datos, lo que obliga a los observadores a asumir que es posible que todos los elementos y la estructura existente ya no sean válidos, en cuyo caso los *layout managers* se verán obligados a volver a vincular y retransmitir por completo todas las vistas visibles.  
+Sin embargo, también es posible utilizar otras soluciones que provee *RecyclerView*, como ser *DiffUtil*, *SortedList* o *Paging Library*:  
+- ***DiffUtil***: Si el *RecyclerView* muestra una lista que se recupera desde cero para cada actualización (por ejemplo, de la red o de una base de datos), *DiffUtil* puede **calcular la diferencia entre las versiones de la lista**. *DiffUtil* toma ambas listas como entrada y calcula la diferencia, que se puede pasar a *RecyclerView* para activar animaciones y actualizaciones mínimas para mantener el rendimiento de la interfaz de usuario, y las animaciones significativas. Este enfoque requiere que cada lista se represente en la memoria con contenido inmutable y se basa en recibir actualizaciones como nuevas instancias de listas. También es ideal si la capa de interfaz de usuario no implementa un ordenamiento, solo presenta los datos en el orden en que se proporcionan. Hay tres API’s principales para aplicarlo (de mayor a menor nivel de abstracción): ***ListAdapter***, ***AsyncListDiffer*** y ***DiffUtil***. Cada enfoque permite especificar cómo se deben calcular las diferencias en función de los datos.  
+- ***SortedList***: Puede mantener los elementos en orden y también **notificar los cambios en la lista** de modo que pueda vincularse a un *RecyclerView.Adapter*. Mantiene los elementos ordenados mediante el método *callback* ***``compare(Object, Object)``*** y utiliza búsqueda binaria para recuperar elementos. Si los criterios de ordenamiento de los elementos pueden cambiar, hay que asegurarse de llamar a los métodos apropiados mientras se editan para evitar inconsistencias de datos. Se puede controlar el orden de los elementos y cambiar las notificaciones a través del **parámetro** ***Callback***. *SortedList* funciona si solo se necesita manejar eventos de inserción y eliminación, y tiene la ventaja de que **solo se necesita tener una única copia de la lista en memoria**.  
+- ***Paging Library***: La biblioteca de paginación amplía el enfoque basado en diferencias para admitir, adicionalmente, la carga paginada (cargar y mostrar pequeños fragmentos de datos a la vez). Esta carga de datos parciales a pedido reduce el uso del ancho de banda de la red y los recursos del sistema. Proporciona la **clase** ***androidx.paging.PagedList*** que funciona como una lista de carga automática, proporcionada una fuente de datos como una base de datos o una API de red paginada.
+
+#### ***Menus***:
+Para todos los tipos de menús, Android proporciona un formato XML estándar que permite definir los elementos de menú. En lugar de incorporar un menú en el código de la *activity*, se debe definir un menú y todos los elementos en un **recurso de menú** (***menu resource***). Luego, se puede inflar el recurso de menú (cargarlo como un objeto ***Menu***) en la *activity* o el *fragment*. Para definir el menú, se crea un archivo XML dentro del directorio ***res/menu/*** del proyecto y se desarrolla el menú con los siguientes elementos: ***``<menu>``*** (define un ***Menu***, que es un contenedor para items de menú. Un elemento *``<menu>``* debe ser el nodo raíz del archivo y puede tener uno o más elementos *``<item>``* y *``<group>``*); ***``<item>``*** (crea un ***MenuItem***, que representa un único item en un menú. Este elemento puede contener un elemento *``<menu>``* anidado para crear un submenú) y ***``<group>``*** (contenedor **opcional e invisible** para elementos *``<item>``*, que permite categorizar los *items* del menú para que compartan propiedades como el estado activo/inactivo y la visibilidad).  
+Existen tres tipos fundamentales de presentaciones de menús o acciones en todas las versiones de Android:  
+- **Menú de opciones y** ***AppBar***: El menú de opciones es la colección principal de elementos de menú de una *activity*. Es donde se deben colocar las **acciones que tienen un impacto global en la** ***app***, como "Buscar", "Redactar correo electrónico" y "Configuración".
+
+```kotlin
+override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    val inflater: MenuInflater = menuInflater
+    inflater.inflate(R.menu.game_menu, menu)
+    return true
+}
+
+override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    // Handle item selection
+    return when (item.itemId) {
+        R.id.new_game -> {
+            newGame()
+            true
+        }
+        R.id.help -> {
+            showHelp()
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
+    }
+}
+```
+
+- **Menú contextual (***context menu***) y modo de acción contextual (***contextual action bar***)**: Un menú contextual es un **menú flotante** que aparece cuando el usuario hace un **clic largo** en un elemento, proporciona acciones que afectan el contenido seleccionado o el marco contextual y se puede realizar una acción contextual **en un elemento por vez**. Por otro lado, el modo de acción contextual es una implementación (por parte del sistema) de ***ActionMode***, que muestra los elementos de acción que afectan al contenido seleccionado en una **barra en la parte superior** de la pantalla y **permite al usuario seleccionar varios elementos a la vez**.
+
+```kotlin
+private val actionModeCallback = object : ActionMode.Callback {
+    // Called when the action mode is created; startActionMode() was called
+    override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+        // Inflate a menu resource providing context menu items
+        val inflater: MenuInflater = mode.menuInflater
+        inflater.inflate(R.menu.context_menu, menu)
+        return true
+    }
+
+    // Called each time the action mode is shown. Always called after onCreateActionMode, but
+    // may be called multiple times if the mode is invalidated.
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+        return false // Return false if nothing is done
+    }
+
+    // Called when the user selects a contextual menu item
+    override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_share -> {
+                shareCurrentItem()
+                mode.finish() // Action picked, so close the CAB
+                true
+            }
+            else -> false
+        }
+    }
+
+    // Called when the user exits the action mode
+    override fun onDestroyActionMode(mode: ActionMode) {
+        actionMode = null
+    }
+}
+
+someView.setOnLongClickListener { view ->
+    // Called when the user long-clicks on someView
+    when (actionMode) {
+        null -> {
+            // Start the CAB using the ActionMode.Callback defined above
+            actionMode = activity?.startActionMode(actionModeCallback)
+            view.isSelected = true
+            true
+        }
+        else -> false
+    }
+}
+```
+
+- **Menú emergente** (***popup menu***): Un menú emergente muestra una lista de elementos en una lista vertical que está anclada a la vista que invocó el menú. Es adecuado para proporcionar una ampliación de acciones relacionadas con contenido específico o para proporcionar opciones en una segunda parte de un comando. Las acciones en un menú emergente **no deben afectar directamente al contenido correspondiente**, ya que para eso están las acciones contextuales. En cambio, el menú emergente es para **acciones extendidas** relacionadas con partes del contenido de la *activity*. Además, puede ser una interfaz útil para activar y desactivar opciones, usar una casilla de verificación (*checkbox*) para opciones independientes o botones de selección (*radio buttons*) para grupos de opciones mutuamente exclusivas. Para eso se agrega un **atributo** ***``android:checkableBehavior``*** que acepta los valores ***single*** (solo se puede activar un elemento –*radio buttons*–), ***all*** (todos los elementos se pueden activar –*checkboxes*–) o ***none*** (no se puede activar ningún elemento).
+
+```kotlin
+fun showPopup(v: View) {
+    val popup = PopupMenu(this, v)
+    val inflater: MenuInflater = popup.menuInflater
+    inflater.inflate(R.menu.actions, popup.menu)
+    popup.show()
+}
+
+
+fun showMenu(v: View) {
+    PopupMenu(this, v).apply {
+        // MainActivity implements OnMenuItemClickListener
+        setOnMenuItemClickListener(this@MainActivity)
+        inflate(R.menu.actions)
+        show()
+    }
+}
+
+override fun onMenuItemClick(item: MenuItem): Boolean {
+    return when (item.itemId) {
+        R.id.archive -> {
+            archive(item)
+            true
+        }
+        R.id.delete -> {
+            delete(item)
+            true
+        }
+        else -> false
+    }
+}
+```
+
+###### Para usar elementos de menú que se pueden activar, en el ***xml***:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/red"
+              android:title="@string/red" />
+        <item android:id="@+id/blue"
+              android:title="@string/blue" />
+    </group>
+</menu>
+```
+
+###### Y para comprobar y establecer el estado de activación:
+```kotlin
+override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+        R.id.vibrate, R.id.dont_vibrate -> {
+            item.isChecked = !item.isChecked
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
+    }
+}
+```
+
 
 
 ---
@@ -766,6 +1394,11 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 
 ### Manejo de asíncronos: ***Coroutines, Flow, Rx***
+
+Para más información sobre corrutinas, ver el apartado [*Corrutinas (Coroutines) en Kotlin*](https://github.com/Ulises-Jota/Apuntes-y-Navaja-Suiza/blob/master/Apuntes-Kotlin.md#4-corrutinas-coroutines-en-kotlin) en *Apuntes-Kotlin.md*
+Las corrutinas están diseñadas para ejecutar operaciones asíncronas complejas de forma limpia y secuencialmente. Las funciones de suspensión de las corrutinas **retornan asincrónicamente un solo valor**, pero ¿cómo se pueden retornar múltiples valores computados asincrónicamente? Acá es donde Kotlin ***Flows*** reluce.  
+*Flow* está diseñado explícitamente para manejar operaciones asíncronas complejas de forma efectiva y emitir varias veces según se requiera. A diferencia de los canales (*channels*), los flows son *cold streams*, al igual que las secuencias (*sequences*) de Kotlin. El código dentro del constructor de un *flow* (*flow builder*), no se ejecuta hasta que el *flow* es recolectado.  
+Entonces, estas habilidades hacen de *Flow* una excelente alternativa a *LiveData* en los repositorios. *Flow* ofrece una funcionalidad similar: *builders*, *cold streams* y auxiliares útiles (por ejemplo, transformación de datos). Y a diferencia de *LiveData*, **no están vinculados al ciclo de vida y brindan más control sobre el contexto de ejecución**.
 
 
 
@@ -791,6 +1424,141 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 ### Inyección de dependencias: ***Koin*** y ***Dagger***
 
+#### Inyección de dependencias
+La inyección de dependencias nació para reducir el acoplamiento entre los componentes (las clases) de un sistema; básicamente, es un patrón de diseño en el que **se suministran objetos a una clase en lugar de ser la propia clase la que crea dichos objetos**. Este patrón facilita mucho intentar cumplir uno de los principios SOLID, el de **inversión de dependencias**. Según este principio, **las clases deben depender de abstracciones y no de detalles de implementación**, esto las hace más fuertes frente al cambio e independientes de *frameworks*, además de más fáciles de testear (si por ejemplo se crea una instancia dentro de un método, no se podrá testear dicho método de forma aislada, ya que no se tendrá forma de sustituir el comportamiento de la instancia creada, y cualquier error en el test hará dudar de qué clase es la culpable).
+
+#### ***Dagger***
+Es un *framework* de inyección de dependencias, que **se divide sobre todo en Componentes y Módulos**. Los **Módulos** son las **clases que se encargan de proveer las dependencias**. Los **Componentes** son **interfaces** a las que están ligados uno o varios módulos; estas interfaces, que serán usadas por Dagger para generar el código, **actúan como puente entre las dependencias que proveen los módulos y las clases donde serán inyectadas**.
+
+<img src="Dagger.png" width="500">
+
+El esquema anterior representa una forma de estructurar componentes y módulos para proveer las dependencias. En él destaca un componente, ***AppComponent***, el componente principal al que están ligados los siguientes módulos:  
+- ***AppModule***: este módulo se encargará de proporcionar las **dependencias únicas** (***Singleton***) que **pervivirán a lo largo del ciclo de vida de la aplicación**.
+- ***ActivityBuilder***: gracias a la anotación ***``@ContributesAndroidInjector``*** se pueden acoplar fácilmente las *Activities* y/o *Fragments* al grafo de dependencias, sin olvidarse de hacer referencia al módulo concreto que proveerá la instancia del *Presenter*.
+- ***AndroidSupportInjectionModule***: clase interna incluida en *Dagger* 2.10 que ayuda a **enlazar los tipos propios de Android** (*Activity*, *Fragment*, *Service*…).  
+Al entrar en el método *``onCreate()``* de la *app*, se construirá ***AppComponent***, y con él el grafo de dependencias. En tiempo de compilación se habrá puesto en conocimiento de *Dagger* las *Activities* y/o *Fragments* que se desean acoplar al grafo, y se estára listo para acceder a las dependencias a través de la anotación ***``@Inject``*** (ejemplo en Java):
+
+```java
+public class MoviesRepositoryImpl implements MoviesRepository {
+
+  private MoviesLocalDataSource localDataSource;
+  private MoviesRemoteDataSource remoteDataSource;
+  private EntityDataMapper entityDataMapper;
+
+  @Inject
+  public MoviesRepositoryImpl(MoviesLocalDataSource localDataSource, 
+    MoviesRemoteDataSource remoteDataSource,
+    EntityDataMapper entityDataMapper) {
+    this.localDataSource = localDataSource;
+    this.remoteDataSource = remoteDataSource;
+    this.entityDataMapper = entityDataMapper;
+  }
+
+  @Override
+  public void getMovies(final Handler<List<Movie>> handler) {
+    // Code . . .
+  }
+
+  @Override
+  public void getMovie(int movieId, final Handler<Movie> handler) {
+    // Code . . .
+  }
+}
+```
+
+#### ***Koin***
+Es un **framework de inyección de dependencias** que busca el mismo objetivo que *Dagger* pero que además es mucho más **fácil de implementar y se integra perfectamente con el ecosistema Android y los ViewModel**.
+
+```kotlin
+val appModule = module {
+
+  single<SQLiteOpenHelper> { MoviesDatabaseHelper(androidContext()) }
+
+  single<MovieService> {
+    Retrofit.Builder()
+      .baseUrl("https://api.themoviedb.org/3/")
+      .addConverterFactory(GsonConverterFactory.create())
+      .build()
+      .create<MovieService>(MovieService::class.java)
+  }
+
+  single<MoviesLocalDataSource> { MoviesLocalDataSourceImpl(sqLiteOpenHelper = get()) }
+
+  single<MoviesRemoteDataSource> { MoviesRemoteDataSourceImpl(movieService = get()) }
+
+  single<MoviesRepository> {
+    MoviesRepositoryImpl(
+      localDataSource = get(),
+      remoteDataSource = get(),
+      movieMapper = MovieMapper()
+    )
+  }
+
+  single<InteractorExecutor> {
+    AsyncInteractorExecutor(
+      runOnBgThread = BackgroundRunner(),
+      runOnMainThread = MainRunner()
+    )
+  }
+
+  single { Formatter() }
+}
+```
+
+La implementación más común de *Koin* se suele basar en un **módulo principal**, que contiene aquellas dependencias (normalmente ***Singleton***) que se quiere pervivir a lo largo de todo el ciclo de vida de la aplicación, más **un módulo por cada** ***feature***, donde se alojarán las dependencias que afecten de un modo concreto a una determinada funcionalidad.
+
+```kotlin
+val listModule = module {
+  factory { GetMovies(repository = get()) }
+  factory { MovieModelFactory() }
+  viewModel {
+    MovieListViewModel(
+      executor = get(),
+      getMovies = get(),
+      movieModelFactory = get()
+    )
+  }
+}
+```
+
+La declaración de las dependencias queda muy limpia, y además, sus palabras reservadas resultan bastante intuitivas:  
+- ***single*** -> crea una instancia *Singleton*.  
+- ***factory*** -> crea una instancia nueva cada vez que es requerida.  
+- ***viewModel*** -> crea una instancia del *ViewModel*, y abstrae así de la utilización de *ViewModelProvider*.  
+- ***get*** -> infiere una dependencia.  
+Por último, solo quedaría lanzar en el **método** ***``onCreate()``*** de la clase ***Application*** el **método** ***``startKoin()``*** con los módulos que se quieren inyectar.
+
+```kotlin
+class MoviesApp : Application() {
+
+  override fun onCreate() {
+    super.onCreate()
+    startKoin {
+      androidLogger()
+      androidContext(this@MoviesApp)
+      modules(listOf(
+        appModule,
+        listModule,
+        detailModule
+      ))
+    }
+  }
+}
+```
+
+Y ya se podría recibir la dependencia o dependencias en la *Activity* o *Fragment* a través de *``inject()``* o *``viewModel()``*.
+
+```kotlin
+import org.koin.android.viewmodel.ext.android.viewModel
+
+class MovieListActivity : BaseActivity() {
+
+  private val viewModel: MovieListViewModel by viewModel()
+
+  // Code...
+}
+```
+
 
 
 ---
@@ -798,6 +1566,8 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 
 ### Testing: ***Junit*** y ***Mockito***
+
+Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Android, tal como el contexto.
 
 
 
