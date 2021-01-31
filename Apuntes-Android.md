@@ -1,29 +1,29 @@
 # Apuntes de Android  
 
 ### Contenido general:  
-#### [0. ***ViewBinding*** y ***DataBinding***] (#viewbinding-y-databinding)
-#### [1. Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***] (#componentes-de-arquitectura-lifecycle-viewmodel-y-livedata)
-#### [2. Bases de datos: ***Room*** y ***Realm***] (#bases-de-datos-room-y-realm)
-#### [3. Arquitecturas: MVP / MVVM + ***Repository***] (#arquitecturas-mvp-mvvm-repository)
-#### [4. ***Navigation component***] (#navigation-component)
-#### [5. UI: Interfaz de Usuario] (#ui-interfaz-de-usuario)
+#### [0. ***ViewBinding*** y ***DataBinding***](#viewbinding-y-databinding)
+#### [1. Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***](#componentes-de-arquitectura-lifecycle-viewmodel-y-livedata)
+#### [2. Bases de datos: ***Room*** y ***Realm***](#bases-de-datos-room-y-realm)
+#### [3. Arquitecturas: MVP / MVVM + ***Repository***](#arquitecturas-mvp-mvvm-repository)
+#### [4. ***Navigation component***](#navigation-component)
+#### [5. UI: Interfaz de Usuario](#ui-interfaz-de-usuario)
    - ##### 5.1 ***Styles*** y ***Themes***
    - ##### 5.2 ***Custom Views***
    - ##### 5.3 ***RecyclerView***
    - ##### 5.4 ***Menus***
 
-#### [6. Manejo de asíncronos: ***Coroutines / Flow / Rx***] (#manejo-de-asincronos-coroutines-flow-rx)
-#### [7. ***Retrofit***] (#retrofit)
-#### [8. ***SharedPreferences / EncryptedSharedPreferences***] (#sharedpreferences-encryptedsharedpreferences)
-#### [9. Inyección de dependencias: ***Koin*** y ***Dagger***] (#inyeccion-de-dependencias-koin-y-dagger)
-#### [10. Testing: ***Junit*** y ***Mockito***] (#testing-junit-y-mockito)
-#### [11. ***Players: ExoPlayer*** y ***JW Player***] (#players-exoplayer-y-jwplayer)
-#### [12. ***OAuth: Facebook, Twitter, Google+***] (#oauth-facebook-twitter-google)
-#### [13. ***Frameworks / SDK: Firebase, Fabric, Sentry, Segment, Facebook***] (#frameworks-sdk-firebase-fabric-sentry-segment-facebook)
-#### [14. ***Deep linking***] (#deep-linking)
-#### [15. ***Push notifications***] (#push-notifications)
-#### [16. ***Jetpack Compose***] (#jetpack-compose)
-#### [Referencias] (#referencias-y-fuentes)
+#### [6. Manejo de asíncronos: ***Coroutines / Flow / Rx***](#manejo-de-asincronos-coroutines-flow-rx)
+#### [7. ***Retrofit***](#retrofit)
+#### [8. ***SharedPreferences / EncryptedSharedPreferences***](#sharedpreferences-encryptedsharedpreferences)
+#### [9. Inyección de dependencias: ***Koin*** y ***Dagger***](#inyeccion-de-dependencias-koin-y-dagger)
+#### [10. Testing: ***Junit*** y ***Mockito***](#testing-junit-y-mockito)
+#### [11. ***Players: ExoPlayer*** y ***JW Player***](#players-exoplayer-y-jwplayer)
+#### [12. ***OAuth: Facebook, Twitter, Google+***](#oauth-facebook-twitter-google)
+#### [13. ***Frameworks / SDK: Firebase, Fabric, Sentry, Segment, Facebook***](#frameworks-sdk-firebase-fabric-sentry-segment-facebook)
+#### [14. ***Deep linking***](#deep-linking)
+#### [15. ***Push notifications***](#push-notifications)
+#### [16. ***Jetpack Compose***](#jetpack-compose)
+#### [Referencias](#referencias-y-fuentes)
 
 ---
 ---
