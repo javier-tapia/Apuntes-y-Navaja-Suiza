@@ -4,22 +4,22 @@
 #### [0. ***ViewBinding*** y ***DataBinding***](#viewbinding-y-databinding)
 #### [1. Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***](#componentes-de-arquitectura-lifecycle-viewmodel-y-livedata)
 #### [2. Bases de datos: ***Room*** y ***Realm***](#bases-de-datos-room-y-realm)
-#### [3. Arquitecturas: MVP / MVVM + ***Repository***](#arquitecturas-mvp-mvvm-repository)
+#### [3. Arquitecturas: MVP y MVVM con ***Repository***](#arquitecturas-mvp-y-mvvm-con-repository)
 #### [4. ***Navigation component***](#navigation-component)
 #### [5. UI: Interfaz de Usuario](#ui-interfaz-de-usuario)
-   - ##### 5.1 ***Styles*** y ***Themes***
-   - ##### 5.2 ***Custom Views***
-   - ##### 5.3 ***RecyclerView***
-   - ##### 5.4 ***Menus***
+   - ##### [5.1 ***Styles*** y ***Themes***](#styles-y-themes)
+   - ##### [5.2 ***Custom Views***](#custom-views)
+   - ##### [5.3 ***RecyclerView***](#recyclerview)
+   - ##### [5.4 ***Menus***](#menus)
 
-#### [6. Manejo de asíncronos: ***Coroutines / Flow / Rx***](#manejo-de-asincronos-coroutines-flow-rx)
+#### [6. Manejo de asíncronos: ***Coroutines, Flow, Rx***](#manejo-de-asíncronos-coroutines-flow-rx)
 #### [7. ***Retrofit***](#retrofit)
-#### [8. ***SharedPreferences / EncryptedSharedPreferences***](#sharedpreferences-encryptedsharedpreferences)
-#### [9. Inyección de dependencias: ***Koin*** y ***Dagger***](#inyeccion-de-dependencias-koin-y-dagger)
+#### [8. ***SharedPreferences y EncryptedSharedPreferences***](#sharedpreferences-y-encryptedsharedpreferences)
+#### [9. Inyección de dependencias: ***Koin*** y ***Dagger***](#inyección-de-dependencias-koin-y-dagger)
 #### [10. Testing: ***Junit*** y ***Mockito***](#testing-junit-y-mockito)
-#### [11. ***Players: ExoPlayer*** y ***JW Player***](#players-exoplayer-y-jwplayer)
+#### [11. ***Players: ExoPlayer*** y ***JW Player***](#players-exoplayer-y-jw-player)
 #### [12. ***OAuth: Facebook, Twitter, Google+***](#oauth-facebook-twitter-google)
-#### [13. ***Frameworks / SDK: Firebase, Fabric, Sentry, Segment, Facebook***](#frameworks-sdk-firebase-fabric-sentry-segment-facebook)
+#### [13. ***Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook***](#frameworks-y-sdks-firebase-fabric-sentry-segment-facebook)
 #### [14. ***Deep linking***](#deep-linking)
 #### [15. ***Push notifications***](#push-notifications)
 #### [16. ***Jetpack Compose***](#jetpack-compose)
@@ -428,7 +428,7 @@ La *activity* sólo necesita observar el objeto *MediatorLiveData* para recibir 
 
 
 
-### Bases de datos: ***Room - Realm***
+### Bases de datos: ***Room y Realm***
 
 #### ***Room***  
 Android soporta *SQLite* desde el comienzo. Sin embargo, para hacerlo funcionar, siempre fue necesario escribir mucho código *boilerplate*. Además, *SQLIte* no guardaba *POJO’s* (*plain-old Java objects* u objetos planos de Java), y no comprobaba consultas (*queries*) en tiempo de compilación. *Room* viene a solucionar estos problemas. Es una librería de mapeo *SQLite*, capaz de persistir *POJO’s* de Java, convertir consultas directamente a objetos, comprobar errores en tiempo de compilación y **producir observables ***LiveData*** de los resultados de las consultas**. *Room* es una librería ORM (*Object Relational Mapping* o mapeo objeto-relacional) con algunos agregados de Android.  
@@ -533,7 +533,7 @@ Es una base de datos móvil que se ejecuta directamente en teléfonos, *tablets*
 
 
 
-### Arquitecturas: MVP / MVVM + ***Repository***
+### Arquitecturas: MVP y MVVM con ***Repository***
 
 #### ***MVP (Model View Presenter)***  
 Es una derivación del patrón MVC (*Model View Controller*) y es un patrón arquitectónico de interfaz de usuario diseñado principalmente para facilitar las pruebas unitarias automatizadas. En MVP, el presentador asume la funcionalidad del “hombre medio”. Toda **la lógica de presentación se envía al presentador** y toda **la lógica de negocio al modelo**.  
@@ -765,7 +765,7 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 
 
-### Manejo de asíncronos: ***Coroutines / Flow / Rx***
+### Manejo de asíncronos: ***Coroutines, Flow, Rx***
 
 
 
@@ -781,7 +781,7 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 
 
-### ***SharedPreferences / EncryptedSharedPreferences***
+### ***SharedPreferences y EncryptedSharedPreferences***
 
 
 
@@ -821,7 +821,7 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 
 
-### ***Frameworks / SDK: Firebase, Fabric, Sentry, Segment, Facebook***
+### ***Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook***
 
 
 
