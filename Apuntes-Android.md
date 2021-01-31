@@ -1,36 +1,36 @@
 # Apuntes de Android  
 
 ### Contenido general:  
-#### 0. ***ViewBinding*** y ***DataBinding***
-#### 1. Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***
-#### 2. Bases de datos: ***Room*** y ***Realm***
-#### 3. Arquitecturas: MVP / MVVM + ***Repository***
-#### 4. ***Navigation component***
-#### 5. UI: Interfaz de Usuario
+#### [0. ***ViewBinding*** y ***DataBinding***] (#viewbinding-y-databinding)
+#### [1. Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***] (#componentes-de-arquitectura-lifecycle-viewmodel-y-livedata)
+#### [2. Bases de datos: ***Room*** y ***Realm***] (#bases-de-datos-room-y-realm)
+#### [3. Arquitecturas: MVP / MVVM + ***Repository***] (#arquitecturas-mvp-mvvm-repository)
+#### [4. ***Navigation component***] (#navigation-component)
+#### [5. UI: Interfaz de Usuario] (#ui-interfaz-de-usuario)
    - ##### 5.1 ***Styles*** y ***Themes***
    - ##### 5.2 ***Custom Views***
    - ##### 5.3 ***RecyclerView***
    - ##### 5.4 ***Menus***
 
-#### 6. Manejo de asíncronos: ***Coroutines / Flow / Rx***
-#### 7. ***Retrofit***
-#### 8. ***SharedPreferences / EncryptedSharedPreferences***
-#### 9. Inyección de dependencias: ***Koin*** y ***Dagger***
-#### 10. Testing: ***Junit*** y ***Mockito***
-#### 11. ***Players: ExoPlayer*** y ***JW Player***
-#### 12. ***OAuth: Facebook, Twitter, Google+***
-#### 13. ***Frameworks / SDK: Firebase, Fabric, Sentry, Segment, Facebook***
-#### 14. ***Deep linking***
-#### 15. ***Push notifications***
-#### 16. ***Jetpack Compose***
-#### Referencias
+#### [6. Manejo de asíncronos: ***Coroutines / Flow / Rx***] (#manejo-de-asincronos-coroutines-flow-rx)
+#### [7. ***Retrofit***] (#retrofit)
+#### [8. ***SharedPreferences / EncryptedSharedPreferences***] (#sharedpreferences-encryptedsharedpreferences)
+#### [9. Inyección de dependencias: ***Koin*** y ***Dagger***] (#inyeccion-de-dependencias-koin-y-dagger)
+#### [10. Testing: ***Junit*** y ***Mockito***] (#testing-junit-y-mockito)
+#### [11. ***Players: ExoPlayer*** y ***JW Player***] (#players-exoplayer-y-jwplayer)
+#### [12. ***OAuth: Facebook, Twitter, Google+***] (#oauth-facebook-twitter-google)
+#### [13. ***Frameworks / SDK: Firebase, Fabric, Sentry, Segment, Facebook***] (#frameworks-sdk-firebase-fabric-sentry-segment-facebook)
+#### [14. ***Deep linking***] (#deep-linking)
+#### [15. ***Push notifications***] (#push-notifications)
+#### [16. ***Jetpack Compose***] (#jetpack-compose)
+#### [Referencias] (#referencias-y-fuentes)
 
 ---
 ---
 
 
 
-### 0. ***ViewBinding*** y ***DataBinding***
+### ***ViewBinding*** y ***DataBinding***
 
 #### ***ViewBinding***  
 Es una forma de **acceder a las vistas** (*xml*) que equilibra el rendimiento y la potencia, **sin necesidad de recurrir a otras alternativas**, como el método ***``findViewById()``*** (que en sí mismo es bastante costoso), ***Butterknife*** o ***Synthetic***. *ViewBinding* es un ‘subconjunto’ de *DataBinding* que evita la sobrecarga de compilación que produce el utilizar *DataBinding*. Se usa si no se necesita añadir código a las vistas (*xml*) ni realizar esa asignación directa entre una variable del código y una vista del *xml* que permite *DataBinding*. A diferencia de otras formas de enlazar las vistas, como por ejemplo *synthetic* de *kotlin extensions*, *ViewBinding* permite que **el compilador conozca la nulidad de la vista**.
@@ -210,7 +210,7 @@ fun ImageView.loadUrl(url: String) {
 
 
 
-### 1. Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***
+### Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***
 
 #### ***Lifecycle***  
 Los componentes concientes del ciclo de vida (***lifecycle-aware***), **ajustan sus comportamientos** en base al ciclo de vida de *activities* y *fragments*. **Evitan poner acciones** de los componentes y/o librerías dependientes **en los controladores del ciclo de vida** (***``onResume()``***, ***``onPause()``***, ***``onStop()``***, etc.). Este aislamiento de esas acciones, ayuda a crear código liviano, conciso y organizado, lo que se traduce en **mayor facilidad de mantenimiento** de la *app*. Para esto, se utiliza el modelo de observación propuesto en *Android Jetpack* para componentes conscientes de ciclos de vida de la librería ***androix.lifecycle***. Básicamente, se debe:  
@@ -542,7 +542,7 @@ Interacción entre componentes:
 - ***View***: Es una interfaz pasiva que muestra los datos que recibe del presentador y enruta los comandos (eventos) del usuario al presentador. Está separada del modelo.
 - ***Presenter***: Es una interfaz que contiene toda la lógica de presentación de la vista. Envía comandos al modelo y notificaciones a la vista (*activity/fragment*) de los cambios ocurridos en el modelo, **haciendo uso de** ***interfaces***. El presentador es el mediador entre la vista y el modelo.
 
-<img src="MVP.png" width="500">
+<img src="MVP.png" width="600">
 
 Un ejemplo del patrón MVP sería algo así:  
 
@@ -736,7 +736,7 @@ class MainActivityVM : AppCompatActivity() {
 #### ***Repository***:  
 Este patrón arquitectónico se usa en conjunto con los patrones descriptos antes (MVP y MVVM), entre otros, y es responsable de abstraer o **aislar las fuentes de datos del resto de la aplicación**, sea una base de datos o una consulta a una servicio *web*. Para implementar un repositorio, se usa una clase Repositorio que implemente una interfaz previamente creada, para cumplir con el **principio de inversión de dependencias** (depender de abstracciones y no de implementaciones) y que el código quede más desacoplado y fácil de testear. Un módulo de repositorio maneja operaciones de datos y permite usar múltiples *backends*. En una aplicación típica, **el repositorio implementa la lógica para decidir si obtener datos de una red o usar los resultados cacheados en una base de datos local**.
 
-<img src="Repository.png" width="500">
+<img src="Repository.png" width="600">
 
 Hay casos en los que se usa *LiveData* para comunicarse entre un repositorio y un *ViewModel*. Usar *LiveData* en este caso parece correcto. Después de todo, está diseñado para almacenar y pasar datos. Pero no se recomienda. El propósito principal de *LiveData* es contener un conjunto de datos que se puedan observar, distinguiéndose además de otros observables en que tiene en cuenta el ciclo de vida. Sin embargo, algo clave a tener en cuenta, es que **los observadores de ***LiveData*** siempre se llaman en el hilo principal** (***main thread***). Cuando se usa *LiveData* en el repositorio para pasar los datos al *ViewModel*, el *ViewModel* debería actuar como un observador, por lo que se necesita invocar la ejecución en el hilo principal. Y no se recomienda que los *ViewModel*s utilicen operaciones en el hilo principal. A menudo también se usan transformaciones en los datos obtenidos de los servidores. Y al usar *LiveData*, hay que hacerlo en el hilo principal, lo cual tampoco se recomienda.  
 Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Coroutines Flow*** (ver apartado *Manejo de Asíncronos*). Como *Flow* está diseñado explícitamente para manejar operaciones asincrónicas complejas de manera efectiva y emitir varias veces según se requiera, es una excelente alternativa a *LiveData*. *Flow* ofrece una funcionalidad similar: *builders*, *cold streams* y auxiliares útiles (por ejemplo, transformación de datos). Y a diferencia de *LiveData*, no están vinculados al ciclo de vida y brindan más control sobre el contexto de ejecución.
@@ -858,12 +858,6 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 
 
-### Referencias:
+### Referencias y Fuentes:
 
-- [Kotlin Documentation](https://kotlinlang.org/docs/reference/)
-- [Learn Kotlin by Example](https://play.kotlinlang.org/byExample/overview)
-- [Kotlin Koans](https://play.kotlinlang.org/koans/overview)
-- [DevExperto](https://devexperto.com/)
-- [Kotlin From Scratch](https://code.tutsplus.com/series/kotlin-from-scratch--cms-1209)
-- [Kotlin programmer dictionary](https://blog.kotlin-academy.com/kotlin-programmer-dictionary-2cb67fff1fe2)
-- [Kotlin Doc Blogspot - Kotlin y Android](https://kotlindoc.blogspot.com/)
+-
