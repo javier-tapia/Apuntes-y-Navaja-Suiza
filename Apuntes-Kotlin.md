@@ -1,21 +1,21 @@
 # Apuntes de Kotlin  
 
 ### Contenido general:  
-#### 0. Modificadores de visibilidad
-#### 1. Clases y Objetos
-#### 2. Propiedades y *fields*
-#### 3. Funciones
-#### 4. Corrutinas (*Coroutines*)
-#### 5. Colecciones
-#### 6. Otros constructos del lenguaje
-#### Referencias
+#### [0. Modificadores de visibilidad](#0-modificadores-de-visibilidad-private-protected-internal-y-public-por-defecto)
+#### [1. Clases y Objetos](#1-clases-y-objetos-en-kotlin)
+#### [2. Propiedades y *fields*](#2-propiedades-y-fields-en-kotlin)
+#### [3. Funciones](#3-funciones-en-kotlin)
+#### [4. Corrutinas (*Coroutines*)](#4-corrutinas-coroutines-en-kotlin)
+#### [5. Colecciones](#5-colecciones-en-kotlin)
+#### [6. Otros constructos del lenguaje](#6-otros)
+#### [Referencias y Fuentes](#referencias)
 
 ---
 ---
 
 
 
-### 0. Modificadores de visibilidad: *private* , *protected* , *internal* y *public* (por defecto)
+### 0. Modificadores de visibilidad: *private*, *protected*, *internal* y *public* (por defecto)
 
 Las funciones, las propiedades, las clases, los *objects* y las *interfaces* se pueden declarar en “***top-level***” (directamente dentro del paquete). Aún así, para usar una declaración en *top-level* **de otro paquete, se debe importar**.
 -	***public*** (por defecto): la declaración será **visible desde cualquier lugar**.
@@ -77,7 +77,7 @@ fun main() {
 
 
 
-### 1. Clases y Objetos  
+### 1. Clases y Objetos en Kotlin  
    - 1.1. ***Declaración***:
 
      ```kotlin
@@ -445,7 +445,7 @@ fun main() {
 
 
 
-### 2. Propiedades y fields
+### 2. Propiedades y fields en Kotlin
 
    - 2.1. ***Declaración***:
 
@@ -624,7 +624,7 @@ fun main() {
 
 
 
-### 3. Funciones
+### 3. Funciones en Kotlin
 
    - 3.1. ***Declaración***:
 
@@ -951,7 +951,7 @@ fun main() {
 
 
 
-### 4. Corrutinas (*Coroutines*)
+### 4. Corrutinas (*Coroutines*) en Kotlin  
 
    - 4.1. Las corrutinas permiten ejectuar **tareas en segundo plano** de una forma sencilla para, por ejemplo, **no bloquear el hilo principal**. Para eso, se utilizan **funciones de suspensión** (***suspension functions***), que son ***``delay()``***, ***``await()``*** (que se utiliza junto con el *builder async{}*) y ***``withContext()``*** (una práctica recomendada consiste en usar *withContext()* a fin de garantizar que todas las funciones sean seguras para el subproceso principal (*main-safe*), lo cual significa que se puede llamar a la función desde el subproceso principal).
 
@@ -977,7 +977,7 @@ fun main() {
 
 
 
-### 5. Colecciones
+### 5. Colecciones en Kotlin  
 
    - 5.1. Las colecciones son grupos de un **número variable de elementos** (posiblemente cero) que comparten la importancia del problema que se está resolviendo y se operan de forma común. 
      Los siguientes tipos de colección son relevantes para Kotlin: ***List***, ***Set*** y ***Map*** (o ***Dictionary***). Kotlin permite manipular colecciones independientemente del tipo exacto de objetos almacenados en ellas, ya que la biblioteca estándar de Kotlin ofrece *interfaces*, clases y funciones genéricas para crear, completar y administrar colecciones de cualquier tipo. Un par de *interfaces* representan cada tipo de colección: una ***read-only*** y una ***mutable***.
