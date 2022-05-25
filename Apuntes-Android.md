@@ -1425,10 +1425,219 @@ Entonces, estas habilidades hacen de *Flow* una excelente alternativa a *LiveDat
 ### Inyección de dependencias: ***Koin*** y ***Dagger***
 
 #### Inyección de dependencias
-La inyección de dependencias nació para reducir el acoplamiento entre los componentes (las clases) de un sistema; básicamente, es un patrón de diseño en el que **se suministran objetos a una clase en lugar de ser la propia clase la que crea dichos objetos**. Este patrón facilita mucho intentar cumplir uno de los principios SOLID, el de **inversión de dependencias**. Según este principio, **las clases deben depender de abstracciones y no de detalles de implementación**, esto las hace más fuertes frente al cambio e independientes de *frameworks*, además de más fáciles de testear (si por ejemplo se crea una instancia dentro de un método, no se podrá testear dicho método de forma aislada, ya que no se tendrá forma de sustituir el comportamiento de la instancia creada, y cualquier error en el test hará dudar de qué clase es la culpable).
+La inyección de dependencias nació para reducir el acoplamiento entre los componentes (las clases) de un sistema; básicamente, es un patrón de diseño en el que **se suministran objetos a una clase en lugar de ser la propia clase la que crea dichos objetos**. Este patrón facilita mucho intentar cumplir uno de los principios SOLID, el de **inversión de dependencias**. Según este principio, **las clases deben depender de abstracciones y no de detalles de implementación**, esto las hace más fuertes frente al cambio e independientes de *frameworks*, además de más fáciles de testear (si por ejemplo se crea una instancia dentro de un método, no se podrá testear dicho método de forma aislada, ya que no se tendrá forma de sustituir el comportamiento de la instancia creada, y cualquier error en el test hará dudar de qué clase es la culpable).  
+
+##### Dependencia fuerte == Alto acoplamiento  
+Ocurre cuando se instancia el objeto directamente en la clase, produciendo un efecto de acoplamiento. Esto la hace más difícil de reutilizar y además no podrá ser testeada de forma inependiente a la otra clase.
+
+```kotlin
+class Auto {
+    val rueda = RuedaMichelin()
+}
+```
+
+##### Formas básicas para inyectar dependencias  
+- **Mediante el constructor**: se pasa la dependencia que la clase necesita a través de su constructor.
+
+```kotlin
+class Auto(val rueda: Rueda) { }
+```
+
+- **Mediante un método**: suelen ser métodos *setter*.
+
+```kotlin
+class Auto {
+    private var rueda: Rueda? = null
+    fun setRueda(rueda: Rueda) {
+        this.rueda = rueda
+    }
+}
+```
+
+- **Mediante una interfaz**: la clase cliente debe implementar una interfaz (un contrato) mediante la cual se le pueda inyectar la dependencia. Por otro lado, se necesita de la clase dedicada a realizar la inyección de la dependencia, a la que se le pasan los clientes que implementen la interfaz. Esta clase será la responsable de inyectar la dependencia a todos los clientes. Además, puede tener métodos que permitan sustituir una dependencia por otra, que cumpla el mismo contrato.
+
+```kotlin
+interface RuedaSetter {
+    fun setRueda(rueda: Rueda?)
+}
+
+class Auto : RuedaSetter {
+    private var rueda: Rueda? = null
+
+    override fun setRueda(rueda: Rueda?) {
+        this.rueda = rueda
+    }
+}
+```
+
+```kotlin
+class RuedaInjector {
+    var clients: MutableSet<RuedaSetter>? = null
+    
+    fun inject(client: RuedaSetter) {
+        clients!!.add(client)
+        client.setRueda(RuedaMichelin())
+    }
+
+    fun cambiarAGoodYear() {
+        for (client in clients!!) {
+            client.setRueda(RuedaGoodyear())
+        }
+    }
+}
+```
 
 #### ***Dagger***
 Es un *framework* de inyección de dependencias, que **se divide sobre todo en Componentes y Módulos**. Los **Módulos** son las **clases que se encargan de proveer las dependencias**. Los **Componentes** son **interfaces** a las que están ligados uno o varios módulos; estas interfaces, que serán usadas por Dagger para generar el código, **actúan como puente entre las dependencias que proveen los módulos y las clases donde serán inyectadas**.
+
+En el ***build.gradle*** de la *app* (si se utiliza Kotlin):
+
+```kotlin
+apply plugin: 'kotlin-kapt'
+
+implementation 'com.google.dagger:dagger:<VERSION>'
+kapt 'com.google.dagger:dagger-compiler:<VERSION>'
+```
+
+###### ``@Inject``
+Una vez creada la interfaz y la clase que la implementa, se puede utilizar la dependencia creando una instancia de la clase con la implementación concreta, aunque así se hace manualmente.  
+Para hacer uso de la inyección de dependencias con Dagger, primero hay que mostrarle **cómo crear instancias de la clase de la que se depende (la que tiene la implementación concreta)**. Para esto, se coloca el tag *``@Inject``* delante del constructor. Cuando se necesite una instancia de la clase, Dagger obtendrá los parámetros requeridos e invocará el constructor.
+
+```kotlin
+class ConsolaLog @Inject constructor(): Log {
+    override fun log(tag: String, message: String) {
+        android.util.Log.i(tag, message)
+    }
+}
+```
+
+###### ``@Component``
+Para que Dagger sepa de dónde **obtener las dependencias que necesita**, se debe crear un **grafo** con ellas. Esto se hace en una interfaz anotada con el tag *``@Component``*. Con esto, **Dagger creará automáticamente una implementación de la interfaz**, añadiendo el prefijo Dagger. Dentro de la interfaz, se declaran funciones que devuelvan instancias de la clase que se tiene como dependencia.
+
+```kotlin
+@Component
+interface ApplicationGraph {
+    // Por convención, el nombre de la función suele comenzar con 'provides'
+    fun providesConsolaLog(): ConsolaLog
+}
+
+// Y donde se implemente, por ejemplo un fragment
+private const val TAG = "GalleryFragment"
+class GalleryFragment : Fragment() {
+    private lateinit var logger: ConsolaLog
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        logger = DaggerApplicationGraph.create().providesConsolaLog()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        logger.log(TAG, "onResume()")
+    }
+}
+```
+
+Sin embargo, esto se parece más a un proveedor de servicios que a inyección de dependencias.  
+Para inyectar la dependencia, se debe sustuir el método que provee de un objeto de tipo ConsolaLog por otro que permita **pasarle como parámetro el cliente**:
+
+```kotlin
+@Component
+interface ApplicationGraph {
+    fun inject(target: GalleryFragment)
+}
+
+// Y en el fragment
+private const val TAG = "GalleryFragment"
+class GalleryFragment : Fragment() {
+    // Dagger no soporta el modificador 'private'
+    @Inject lateinit var logger: ConsolaLog
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        DaggerApplicationGraph.create().inject(target: this)
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        logger.log(TAG, "onResume()")
+    }
+}
+```
+
+###### ``@Singleton``
+Si no se indica lo contrario, Dagger creará por defecto una nueva instancia cada vez que se quiera asignar una dependencia de un tipo en concreto. También creará una nueva instancia de la implementación de las interfaces *``@Component``*.  
+Sin embargo, en muchos casos, esto no es lo deseado. Para solucionarlo, se utiliza el tag *``@Singleton``*:
+
+```kotlin
+@Singleton
+class ConsolaLog @Inject constructor(): Log {
+    override fun log(tag: String, message: String) {
+        android.util.Log.i(tag, message)
+    }
+}
+
+@Singleton
+@Component
+interface ApplicationGraph {
+    fun inject(target: GalleryFragment)
+}
+```
+
+Para crear una **instancia única a compartir en toda la aplicación**, se crea una propiedad en la que se intancia ``DaggerApplicationGraph``:
+
+```kotlin
+class App: Application() {
+    val component = DaggerApplicationGraph. create()
+}
+
+// Y en el fragment
+private const val TAG = "GalleryFragment"
+class GalleryFragment : Fragment() {
+    // Dagger no soporta el modificador 'private'
+    @Inject lateinit var logger: ConsolaLog
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (requireActivity().application as App).component.inject(target: this)
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        logger.log(TAG, "onResume()")
+    }
+}
+```
+
+###### ``@Module``, ``@Provides`` y ``@Binds``
+La anotación *``@Inject``* es muy útil para inyectar dependencias cuando se puede acceder directamente a la clase de la que se depende. Pero no servirá para interfaces o para clases de terceros.  
+Para que Dagger sepa cuál de las **múltiples implementaciones** que la interfaz pueda llegar a tener debe instanciar, se utiliza una clase con el tag *``@Module``*, donde se declara el método que provea la dependencia. La práctica recomendada respecto a este método, es utilizar el tag *``@Binds``* para indicarle a Dagger qué implementación debe usar de una interfaz. Y usar el tag *``@Provides``* para indicarle cómo proporcionar clases de librerías externas.
+
+```kotlin
+@Module
+// Si se utiliza @Provides
+class ApplicationModule () {
+    @Provides fun providesLog(log: ConsolaLog): Log = log
+}
+// Si se utiliza @Binds, la clase y el método deben ser abstractos
+abstract class ApplicationModule () {
+    @Binds abstract fun providesLog(log: ConsolaLog): Log
+}
+
+@Singleton
+@Component(modules = arrayOf(ApplicationModule::class))
+interface ApplicationGraph {
+    fun inject(target: GalleryFragment)
+    fun inject(target: SlideshowFragment)
+}
+
+// Y en el fragment, el logger pasa a ser del tipo de la interfaz
+private const val TAG = "GalleryFragment"
+class GalleryFragment : Fragment() {
+    @Inject lateinit var logger: Log
+    // El resto...
+}
+```
 
 <img src="Dagger.png" width="700">
 
@@ -1630,4 +1839,4 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 ### Referencias y Fuentes:
 
--
+- [Desarrollo Android: Arquitectura avanzado](https://www.linkedin.com/learning/desarrollo-android-arquitectura-avanzado)
