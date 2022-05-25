@@ -23,7 +23,7 @@
 #### [14. ***Deep linking***](#deep-linking)
 #### [15. ***Push notifications***](#push-notifications)
 #### [16. ***Jetpack Compose***](#jetpack-compose)
-#### [Referencias](#referencias-y-fuentes)
+#### [Referencias - Fuentes](#referencias-y-fuentes)
 
 ---
 ---
@@ -525,7 +525,7 @@ interface MyDao {
 ```
 
 #### ***Realm***  
-Es una base de datos móvil que se ejecuta directamente en teléfonos, *tablets* o dispositivos portátiles. Los datos se exponen **directamente como objetos** y se pueden c**onsultar mediante código**, lo que elimina la necesidad de usar ORM, que puede traer problemas de rendimiento y mantenimiento.
+Es una base de datos móvil que se ejecuta directamente en teléfonos, *tablets* o dispositivos portátiles. Los datos se exponen **directamente como objetos** y se pueden **consultar mediante código**, lo que elimina la necesidad de usar ORM, que puede traer problemas de rendimiento y mantenimiento.
 
 
 
@@ -1539,7 +1539,7 @@ class GalleryFragment : Fragment() {
 ```
 
 Sin embargo, esto se parece más a un proveedor de servicios que a inyección de dependencias.  
-Para inyectar la dependencia, se debe sustuir el método que provee de un objeto de tipo ConsolaLog por otro que permita **pasarle como parámetro el cliente**:
+Para inyectar la dependencia, se debe sustuir el método que provee de un objeto de tipo ``ConsolaLog`` por otro que permita **pasarle como parámetro el cliente**:
 
 ```kotlin
 @Component
@@ -1839,4 +1839,20 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 ### Referencias y Fuentes:
 
+- [Android Docs](https://developer.android.com/guide?hl=es_419)
+- [DevExperto](https://devexperto.com/)
 - [Desarrollo Android: Arquitectura avanzado](https://www.linkedin.com/learning/desarrollo-android-arquitectura-avanzado)
+- [Android From Scratch](https://code.tutsplus.com/series/android-from-scratch--cms-996)
+- [SGOliver.net](https://www.sgoliver.net/blog/curso-de-programacion-android/indice-de-contenidos/)
+- [Sociedad Androide](https://www.youtube.com/c/SociedadAndroide/videos)
+- [Suneet Agrawal](https://agrawalsuneet.github.io/publications/)
+- [MVVM on Android with the Architecture Components + Koin](https://medium.com/swlh/mvvm-on-android-with-the-architecture-components-koin-f53c3c200363)
+- [View Model Creation in Android — Android Architecture Components & Kotlin](https://proandroiddev.com/view-model-creation-in-android-android-architecture-components-kotlin-ce9f6b93a46b)
+- [Android Basics — MVVM](https://medium.com/@brandonwever/android-mvvm-basics-5c48556e3ecc)
+- [Android by example : MVVM +Data Binding](https://medium.com/@husayn.hakeem/android-by-example-mvvm-data-binding-introduction-part-1-6a7a5f388bf7)
+- [No More LiveData in Repositories in Kotlin](https://betterprogramming.pub/no-more-livedata-in-repositories-in-kotlin-85f5a234a8fe)
+- [MVVM (Model View ViewModel) + Kotlin + Google Jetpack](https://medium.com/@er.ankitbisht/mvvm-model-view-viewmodel-kotlin-google-jetpack-f02ec7754854)
+- [Patrones Arquitectónicos en Android](https://medium.com/@vespasoft/patrones-arquitect%C3%B3nicos-en-android-ded39f7a2c10)
+- [Optimizing Android ViewModel with Lifecycle 2.2.0](https://proandroiddev.com/optimizing-viewmodel-with-lifecycle-2-2-0-a2895b5c01fd)
+- [Como usar el Android Navigation Component](https://dev.to/gvetri/como-usar-el-android-navigation-component-4hhg)
+- [Android Navigation Component](https://proandroiddev.com/android-navigation-component-fc783c03bb8d)
