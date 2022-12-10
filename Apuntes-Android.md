@@ -1774,9 +1774,108 @@ class MovieListActivity : BaseActivity() {
 
 
 
-### Testing: ***Junit*** y ***Mockito***
+### ***Testing***
 
-Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Android, tal como el contexto.
+##### Algunas consideraciones/notas sobre los *tests*:
+  - Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Android, tal como el contexto.
+  - ***Mocks***: **sirven para testear "comportamiento"**. Es decir, si una clase se llamó, cuántas veces se llamó, qué argumentos se pasaron, etc.
+  - ***Fakes***: **sirven para testear el "estado"**. Es decir, se hace sobre los componentes, sobre esos ***test doubles***, y después se comprueba en qué estado quedó ese *fake*. Suelen ser simplificaciones de las dependencias sobre las que se está trabajando.
+
+
+##### Fundamentos de *JUnit*:
+Se puede crear una **clase de reglas** (clases extra que se pueden incluir en las clases de prueba) heredando de la clase `TestRule`, y luego aplicar esa regla en las clases de *test*:
+
+```kotlin
+@get:Rule val <NAME> = <RULE CLASS>()
+```
+
+Para pruebas unitarias a las que se les debe pasar muchos datos, se puede utilizar el *runner* `Parameterized`. De la documentación oficial: "Cuando se ejecuta una clase de prueba parametrizada, se crean instancias para el producto cruzado de los métodos de prueba y los elementos de datos de prueba."
+
+```kotlin
+@RunWith(value = Parameterized::class)
+class ParameterizedTest(var currentValue: Boolean, var currentUser: User) { }
+```
+
+
+##### *JUnit* + TDD + *Hamcrest*:
+Dentro de las pruebas unitarias, hay múltiples formas de captar y analizar una excepción para que pueda ser procesada correctamente.  
+
+  - Se le puede indicar al *test* que se espera una excepción determinada:
+
+```kotlin
+@Test(expected = NullPointerException::class)
+fun loginUser_nullEmail_returnsException() { }
+```
+
+  - Se le puede indicar al *test* que se espera una excepción personalizada:
+
+```kotlin
+@Test(expected = CustomException::class)
+fun loginUser_nullEmail_returnsCustomException() { }
+```
+
+  - También se puede utilizar el método `assertThrows()`:  
+
+```kotlin
+@Test
+fun loginUser_nullPassword_returnsCustomException(){
+    assertThrows(CustomException::class.java) { }
+}
+```
+
+  - Se puede utilizar bloques ***try-catch***:  
+
+```kotlin
+@Test
+fun loginUser_nullEmailAndPassword_returnsCustomException(){
+    try {
+        val result = userAuthentication(null, null)
+        assertEquals(AuthEvent.NULL_FORM, result)
+    } catch (e: Exception) {
+        (e as? CustomException)?.let {
+            assertEquals(AuthEvent.NULL_FORM, it.authEvent)
+        }
+    }
+}
+```
+
+##### *Mockito*
+  - Se puede correr los *tests* con el *runner* de *Mockito* anotando la clase con lo siguiente:  
+
+```kotlin
+@RunWith(MockitoJUnitRunner::class)
+```
+
+  - Hay diferentes anotaciones para *mockear* dependencias del **SUT** (***Subject Under Test***):  
+
+```kotlin
+@Mock
+@Spy
+```
+
+  - Uso de la función `verify()` y `verifyNoInteractions()` para validar que se ha producido tal o cual comportamiento:  
+
+```kotlin
+verify(mockedObject).realMethod()
+verifyNoInteractions(mockedObject)
+```
+
+  - Uso del complemento ***Mockito Inline*** para los casos que se quiere *mockear* un ***Object*** (***final class*** **en Java**):  
+
+```kotlin
+testImplementation("org.mockito:mockito-inline:<VERSION")
+```
+
+  - Uso de `when`-`thenReturn` para realizar ***stubs*** (comportamiento de retornar algo *hardcodeado*):  
+
+```kotlin
+`when`(<MOCKED OBJECT FUNCTION>).thenReturn(<SIMULATED RESULT>)
+```
+
+  - Uso de ***spy*** (permite que una clase, en vez de estar *mockeada*, funcione totalmente y se pueda monitorear el comportamiento):  
+    Ref.: https://stackoverflow.com/questions/28295625/mockito-spy-vs-mock
+
+
 
 
 
@@ -1841,6 +1940,7 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 - [Android Docs](https://developer.android.com/guide?hl=es_419)
 - [DevExperto](https://devexperto.com/)
+- [Curso Testing para Android con JUnit, Mockito, Espresso, TDD](https://www.udemy.com/course/curso-testing-para-android-con-junit-mockito-espresso-tdd/)
 - [Desarrollo Android: Arquitectura avanzado](https://www.linkedin.com/learning/desarrollo-android-arquitectura-avanzado)
 - [Android From Scratch](https://code.tutsplus.com/series/android-from-scratch--cms-996)
 - [SGOliver.net](https://www.sgoliver.net/blog/curso-de-programacion-android/indice-de-contenidos/)
