@@ -2004,6 +2004,36 @@ fun checkTextField_startQuantity(){
 ###### *Record Espresso Test*
 ***Run*** > ***Record Espresso Test*** > Interactuar con la *app* y/o agregar aserciones con el botón ***Add Assertion***
 
+###### Acceder a un `RecyclerView`
+Para esto, se utiliza la siguiente dependencia:  
+
+```kotlin
+androidTestImplementation 'androidx.test.espresso:espresso-contrib:<VERSION>'
+```
+
+Luego, se puede crear una clase que retorne un ***`ViewAction`*** personalizado para pasarle como argumento a las funciones que lo requieren, por ejemplo, `actionOnItemAtPosition()`, que accede a los hijos de un `RecyclerView`.  
+También existe una función de *Espresso* que permite abrir el menú de opciones (menú *overflow*):  
+
+```kotlin
+openActionBarOverflowOrOptionsMenu(ApplicationProvider.getApplicationContext())
+```
+
+###### Recursos dinámicos
+Para los casos en que los recursos pueden cambiar (por ejemplo, por cambios de idioma del dispositivo), es preferible utilizar `ActivityScenario` para hacer que el texto bucado sea dinámico:  
+
+```kotlin
+var snackbarMsg = ""
+activityScenarioRule.scenario.onActivity { activity ->
+    snackbarMsg = activity.resources.getString(R.string.main_msg_go_history)
+}
+ 
+onView(withId(com.google.android.material.R.id.snackbar_text))
+    .check(matches(withText(snackbarMsg)))
+```
+
+###### Aserción `fail()`
+Esta función de *JUnit* lanza una excepción. Se utiliza por ejemplo dentro de un *try-catch* **para definir que el *test* no debería haber llegado hasta esa línea**.
+
 ##### *Retrofit* + Corrutinas
 
 ###### Uso de `runBlocking{}`
