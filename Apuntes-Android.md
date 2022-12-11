@@ -16,7 +16,7 @@
 #### [7. ***Retrofit***](#retrofit)
 #### [8. ***SharedPreferences y EncryptedSharedPreferences***](#sharedpreferences-y-encryptedsharedpreferences)
 #### [9. Inyección de dependencias: ***Koin*** y ***Dagger***](#inyección-de-dependencias-koin-y-dagger)
-#### [10. Testing: ***Junit*** y ***Mockito***](#testing-junit-y-mockito)
+#### [10. Testing](#testing)
 #### [11. ***Players: ExoPlayer*** y ***JW Player***](#players-exoplayer-y-jw-player)
 #### [12. ***OAuth: Facebook, Twitter, Google+***](#oauth-facebook-twitter-google)
 #### [13. ***Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook***](#frameworks-y-sdks-firebase-fabric-sentry-segment-facebook)
@@ -1875,7 +1875,180 @@ testImplementation("org.mockito:mockito-inline:<VERSION")
   - Uso de ***spy*** (permite que una clase, en vez de estar *mockeada*, funcione totalmente y se pueda monitorear el comportamiento):  
     Ref.: https://stackoverflow.com/questions/28295625/mockito-spy-vs-mock
 
+```kotlin
+@Spy
+lateinit var mockedSomething: Something
+```
 
+##### *Robolectric*
+Es recomendable utilizar el conjunto de librerías de *Jetpack* ***AndroidX Test***. De la documentación oficial: "*AndroidX Test* proporciona reglas *JUnit4* para iniciar actividades e interactuar con ellas en las pruebas *JUnit4*. También contiene marcos de prueba de UI como *Espresso*, *UI Automator* y el simulador *Robolectric*."  
+Las dependencias se agregan con ***testImplementation*** en vez de ***androidTestImplementation*** para poder acceder a la clase en la anotación `@RunWith: @RunWith(AndroidJUnit4::class)`:
+
+```kotlin
+testImplementation 'androidx.test:core-ktx:<VERSION>'
+testImplementation 'androidx.test.ext:junit-ktx:<VERSION>'
+```
+
+Para resolver cuestiones referentes a ***LiveData*** (Componente de Arquitectura), se debe agregar una dependencia que permite incluir una regla para lograrlo:  
+
+```kotlin
+testImplementation 'androidx.arch.core:core-testing:<VERSION>'
+ 
+----------------------------------------------------------
+ 
+@RunWith(AndroidJUnit4::class)
+class AddViewModelTest{
+    @get:Rule
+    var instantExcecutorRule = InstantTaskExecutorRule()
+```
+
+Si surge el *warning* sobre que no se encuentra el ***Manifest***, se debe agregar lo siguiente el ***build.gradle(:app)***:  
+
+```kotlin
+testOptions{
+    unitTests.includeAndroidResources = true
+}
+```
+
+Los ***ViewModel*** que heredan de ***AndroidViewModel***, requieren de una instancia de ***`Application`*** por constructor. Para eso, en un *test* se puede hacer de la siguiente manera, pasando el ***`Context`*** de la aplicación:  
+
+```kotlin
+val mainViewModel = MainViewModel(ApplicationProvider.getApplicationContext())
+```
+
+###### Versiones Robolectric y nivel de API
+Cuando sale una nueva versión de Android, puede que *Robolectric* no la soporte de inmediato. Para eso, hay dos formas de solucionarlo, con la anotación ***`@Config`***:  
+
+  1. `@Config(sdk = [21, 22, 30])` -> Corre los *tests* para las versiones configuradas.
+  2. `@Config(maxSdk = 30)` -> Corre los *tests* para todas las versiones hasta la configurada inclusive.
+
+###### *Tests* para clases que heredan de ***`FragmentDialog`***
+Antes que nada, se debe tener agregada la dependencia para testear *fragments* en el ***build.gradle(:app)***:  
+
+```kotlin
+debugImplementation 'androidx.fragment:fragment-testing:1.4.0'
+```
+
+Posteriormente, en el *test*, se puede usar un concepto llamado ***`Scenario`***, en donde primero se crea el *fragment*, luego se configura el estado del ciclo de vida al cual se moverá, y por último se accede a él.  
+Por ejemplo:  
+
+```kotlin
+val scenario = launchFragment<AddProductFragment>(themeResId = R.style.Theme_Example)
+scenario.moveToState(Lifecycle.State.RESUMED)
+scenario.onFragment{ fragment ->
+    (fragment.dialog as? AlertDialog)?.let {
+        it.getButton(DialogInterface.BUTTON_NEGATIVE).performClick()
+        assertThat(fragment.dialog, `is`(nullValue()))
+    }
+}
+```
+
+##### *Espresso*
+**Nota**: las animaciones se pueden desactivar desde **Opciones del desarrollador** del dispositivo para que no interfieran con el resultado de los *tests* con *Espresso*.  
+
+Los *tests* con *Espresso* se van a guardar en `src/androidTest/`, en vez de `src/test/`, ya que son pruebas instrumentadas (o de instrumentación).  
+
+###### Anotación `@LargeTest`
+Sirve para indicar que las pruebas podrían demorar, que el acceso a la UI puede requerir más tiempo y que es necesario configurar un entorno seguro.
+
+```kotlin
+@RunWith(AndroidJUnit4::class)
+@LargeTest
+class MainActivityTest { }
+```
+
+###### Uso de `ActivityScenarioRule`
+Permite tener acceso a la *activity* en caso de requerir una **modificación interna**.  
+
+```kotlin
+@get:Rule
+val activityRule = ActivityScenarioRule(ExampleActivity::class.java)
+```
+
+Por ejemplo, serviría para **limitar un valor** a ingresar dentro de la *activity*:  
+
+```kotlin
+val scenario = activityRule.scenario
+scenario.moveToState(Lifecycle.State.RESUMED)
+scenario.onActivity { activity ->
+    activity.selectedProduct.quantity = 1
+}
+```
+
+###### Pruebas básicas (ver https://developer.android.com/training/testing/espresso/basics#components)
+Existen varios componentes para realizar pruebas con *Espresso*, como por ejemplo `onView`, `withId`, `check`, `matches`, `withText`, `perform`, `click`.  
+
+###### Modificar contenido de componentes visuales
+
+```kotlin
+onView(withId(R.id.editTextExample)).perform(ViewActions.replaceText("12"))
+```
+
+###### ID's repetidos en las vistas + *Hamcrest*
+Para los casos en donde una jerarquía de vistas tiene identificadores repetidos, como por ejemplo cuando tiene un *layout* incluido (usando el *tag* `<include/>`) que contiene recursos con el mismo identificador, se utilizan las funciones ***`allOf`*** (*matcher* que permite abarcar todas las coincidencias posibles) y ***`not`*** (sería la negación de `allOf`), pertenecientes a *Hamcrest*.  
+
+```kotlin
+@Test
+fun checkTextField_startQuantity(){
+    onView(allOf(withId(R.id.etNewQuantity), withContentDescription("cantidad")))
+        .check(matches(withText("1")))
+ 
+    onView(allOf(withId(R.id.etNewQuantity), not(withContentDescription("cantidad alterna"))))
+        .check(matches(withText("1")))
+ 
+    onView(allOf(withId(R.id.etNewQuantity), withContentDescription("cantidad alterna")))
+        .check(matches(withText("5")))
+}
+```
+
+###### *Record Espresso Test*
+***Run*** > ***Record Espresso Test*** > Interactuar con la *app* y/o agregar aserciones con el botón ***Add Assertion***
+
+##### *Retrofit* + Corrutinas
+
+###### Uso de `runBlocking{}`
+Se usa para ***testear funciones `suspend`***.  
+Esta función fue ***remplazada por `runTest{}`*** (ver https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-test/MIGRATION.md#replace-runblocking-with-runtest)  
+
+###### Dependencia para *Testing* con Corrutinas
+
+```kotlin
+org.jetbrains.kotlinx:kotlinx-coroutines-test:<VERSION>
+```
+
+###### Uso de la clase `MainCoroutineRule`
+Esta regla se usa para facilitar el *testing* con corrutinas. Ver como ejemplo este [*codelab* de Google](https://github.com/googlecodelabs/kotlin-coroutines/blob/master/coroutines-codelab/finished_code/src/test/java/com/example/android/kotlincoroutines/main/utils/MainCoroutineScopeRule.kt):  
+
+```kotlin
+@ExperimentalCoroutinesApi
+class MainCoroutineScopeRule(val dispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()) :
+        TestWatcher(),
+        TestCoroutineScope by TestCoroutineScope(dispatcher) {
+    override fun starting(description: Description?) {
+        super.starting(description)
+        // If your codebase allows the injection of other dispatchers like
+        // Dispatchers.Default and Dispatchers.IO, consider injecting all of them here
+        // and renaming this class to `CoroutineScopeRule`
+        //
+        // All injected dispatchers in a test should point to a single instance of
+        // TestCoroutineDispatcher.
+        Dispatchers.setMain(dispatcher)
+    }
+
+    override fun finished(description: Description?) {
+        super.finished(description)
+        cleanupTestCoroutines()
+        Dispatchers.resetMain()
+    }
+}
+```
+
+###### Uso de `LiveDataTestUtil`
+Este archivo provisto por Google, **provee de una función de extensión para poder testear objetos `LievData`**. Ver [ejemplo de Google](https://github.com/google/iosched/blob/main/androidTest-shared/src/main/java/com/google/samples/apps/iosched/androidtest/util/LiveDataTestUtil.kt).  
+
+##### Complementos de *testing*
+Perteneciente a ***Square*** (*Retrofit*, *OkHttp*), ***`MockWebServer`*** es usada para pruebas realacionadas con la respuesta del servidor.  
+A su vez, `MockWebServer` tiene una herramienta llamada ***`MockResponse`***, que sirve para *mockear* la respuesta en formato JSON que provendría del servidor, pero de forma local.
 
 
 
