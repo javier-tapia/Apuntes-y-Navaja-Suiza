@@ -301,9 +301,10 @@ fun main() {
      }
      ```
 
-     El uso de genéricos conlleva una serie de ventajas, como son la **seguridad de tipo** (la comprobación se realiza en tiempo de compilación para evitar problemas durante la ejecución) y que **no requiere la conversión entre tipos** ni encasillar el objeto en un tipo determinado.
+     El uso de genéricos conlleva una serie de ventajas, como son la **seguridad de tipo** (la comprobación se realiza en tiempo de compilación para evitar problemas durante la ejecución) y que **no requiere la conversión entre tipos** ni encasillar el objeto en un tipo determinado.  
+     Al trabajar con genéricos, los tipos no mantienen la herencia de sus clases. Y en función de si esas clases actúan como **consumidores o productores**, tendremos que usar **covarianza o contravarianza**.
 
-       - 1.6.1. ***``invariant``***: cuando el parámetro de tipo no tiene modificadores de varianza (***``out``*** o ***`in`***), por defecto es invariante. Significa que **no hay relación entre dos tipos** generados por una clase genérica. Por ejemplo, no hay relación entre *``Cup<Int>``* y *``Cup<Number>``*, *``Cup<Any>``* o *``Cup<Nothing>``*.
+       - 1.6.1. ***``invariant``***: cuando el parámetro de tipo no tiene modificadores de varianza (***``out``*** o ***`in`***), por defecto es invariante con respecto a su tipo genérico (no se pueden ni consumir ni producir valores con un tipo más genérico). Significa que **no hay relación entre dos tipos** generados por una clase genérica. Por ejemplo, no hay relación entre *``Cup<Int>``* y *``Cup<Number>``*, *``Cup<Any>``* o *``Cup<Nothing>``*.
 
          ```kotlin
          class Cup<T>
@@ -314,7 +315,7 @@ fun main() {
          }
          ```
 
-       - 1.6.2. ***``covariant``***: para hacer que el parámetro de tipo sea covariante, se utiliza el **modificador** ***``out``***. Significa que **cuando** ***A*** **es subtipo de** ***B*** y ***Cup*** **es covariante**, el tipo ***``Cup<A>``*** **es subtipo de** ***``Cup<B>``***.
+       - 1.6.2. ***``covariant``***: para hacer que el parámetro de tipo sea covariante con respecto a su tipo genérico (se pueden consumir sus valores con un tipo más genérico), se utiliza el **modificador** ***``out``***. Significa que **cuando** ***A*** **es subtipo de** ***B*** y ***Cup*** **es covariante**, el tipo ***``Cup<A>``*** **es subtipo de** ***``Cup<B>``***.
 
          ```kotlin
          class Cup<out T>
@@ -375,6 +376,17 @@ fun main() {
              val y: Comparable<Double> = x // OK!
          }
          ```
+
+     A modo de resumen:
+     
+     - **Consumir** implica tener **funciones que devuelven un valor del tipo genérico**.
+     - **Producir** implica tener **funciones que reciben por argumento un objeto del tipo genérico**.
+     
+     Por tanto:
+
+     - Para **devolver valores de un tipo más genérico que el tipo original**, se necesita usar **covarianza** (se usa ***``out``*** en el tipo).
+     - Para **pasar valores de un tipo más genérico que el original**, se necesita usar **contravarianza** (se usa ***``in``*** en el tipo).
+     - Para **trabajar con el tipo original**, el tipo será **invariante** (no se usa ``in`` ni ``out``).
 
    - 1.7. **Clases anidadas e internas** (***inner class***): Una clase anidada marcada como *``inner``* puede acceder a los miembros de su clase externa (*outer class*). **Las clases internas llevan una referencia a un objeto de una clase externa**.
 
