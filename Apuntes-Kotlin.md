@@ -812,20 +812,23 @@ fun main() {
 
      ```kotlin
      fun Int.square() = this * this // Extension function
-     println(2.square())   // Imprime: 4. En la función square(), this refiere al receiver object (el 2)
-     println(square(2))    // Error: Unresolved reference
 
      val squareFunType: Int.()->Int = Int::square // Function type with receiver, usando function reference
-     println(squareFunType(2))      // Imprime: 4
-     println(2.squareFunType())     // Imprime: 4
+    
+     fun main() {
+         println(2.square())	           // Imprime: 4. En la función square(), this refiere al receiver object (el 2)
+         //println(square(2))    	   // Error: Unresolved reference. No se puede invocar una función de extensión pasando el receptor como primer argumento
+    	 println(squareFunType(2))      // Imprime: 4. Se puede invocar una función de extensión pasando el receptor como primer argumento
+    	 println(2.squareFunType())     // Imprime: 4
+     }
      ```
 
      Se ha utilizado ***``Int.() -> Int``*** que es un **tipo función con receptor** (***function type with receiver***). En lugar de usar la referencia, se puede definir la función usando una de las ***function literals with receiver***. Dentro del cuerpo de la *function literal*, el objeto receptor pasado a una llamada se convierte en un ***this*** **implícito**, de modo que se puede acceder a los miembros de ese objeto receptor **sin ningún calificador adicional**, **o** acceder al objeto receptor **utilizando una expresión** ***this***. Este comportamiento es **similar a las funciones de extensión**, que también permiten acceder a los miembros del objeto receptor dentro del cuerpo de la función. A continuación, se muestra un ejemplo de una ***function literal with receiver*** junto con su tipo, donde se llama a la **función** ***``plus``*** en el objeto receptor:
 
      ```kotlin
-     val suma: Int.(Int)->Int = { other -> plus(other) } // plus() se llama en el receiver object (el 2)
-     println(suma(2, 2))   // Imprime: 4
-     println(2.suma(2))  // Imprime: 4
+     val suma: Int.(Int)->Int = { other -> plus(other) } // plus() se llama en el receiver object (el 4). Es decir, this.plus(other)
+     println(suma(4, 2))   // Imprime: 6
+     println(4.suma(2))  // Imprime: 6
      ```
 
      La **sintaxis de función anónima** permite especificar el tipo de receptor de una *function literal* directamente. Esto puede ser útil si se necesita declarar una variable de un *function type with receiver* y usarla más tarde.
