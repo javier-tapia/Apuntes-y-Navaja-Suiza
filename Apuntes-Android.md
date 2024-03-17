@@ -2221,7 +2221,7 @@ Ver los apuntes tomados en los siguientes repositorios:
 - [Android Docs](https://developer.android.com/guide?hl=es_419)
 - [DevExperto](https://devexperto.com/)
 - [Curso Testing para Android con JUnit, Mockito, Espresso, TDD](https://www.udemy.com/course/curso-testing-para-android-con-junit-mockito-espresso-tdd/)
-- [Jetpack Compose: Curso definitivo desde 0 [2023]](https://www.udemy.com/course/jetpack-com:pose-desde-0-a-profesional/?kw=jetpack+compose+curso+definitivo+desde&src=sac)
+- [Jetpack Compose: Curso definitivo desde 0 [2023]](https://www.udemy.com/course/jetpack-compose-desde-0-a-profesional/?kw=jetpack+compose+curso+definitivo+desde&src=sac)
 - [Desarrollo Android: Arquitectura avanzado](https://www.linkedin.com/learning/desarrollo-android-arquitectura-avanzado)
 - [Android From Scratch](https://code.tutsplus.com/series/android-from-scratch--cms-996)
 - [SGOliver.net](https://www.sgoliver.net/blog/curso-de-programacion-android/indice-de-contenidos/)
