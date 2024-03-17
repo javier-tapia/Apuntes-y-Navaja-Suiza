@@ -1,38 +1,38 @@
 # Apuntes de Android  
 
-### Contenido general:  
-#### [0. ***ViewBinding*** y ***DataBinding***](#viewbinding-y-databinding)
-#### [1. Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***](#componentes-de-arquitectura-lifecycle-viewmodel-y-livedata)
-#### [2. Bases de datos: ***Room*** y ***Realm***](#bases-de-datos-room-y-realm)
-#### [3. Arquitecturas: MVP y MVVM con ***Repository***](#arquitecturas-mvp-y-mvvm-con-repository)
-#### [4. ***Navigation component***](#navigation-component)
-#### [5. UI: Interfaz de Usuario](#ui-interfaz-de-usuario)
-   - ##### [5.1 ***Styles*** y ***Themes***](#styles-y-themes)
-   - ##### [5.2 ***Custom Views***](#custom-views)
-   - ##### [5.3 ***RecyclerView***](#recyclerview)
-   - ##### [5.4 ***Menus***](#menus)
+## Contenido general:  
+### [0. ***ViewBinding*** y ***DataBinding***](#viewbinding-y-databinding)
+### [1. Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***](#componentes-de-arquitectura-lifecycle-viewmodel-y-livedata)
+### [2. Bases de datos: ***Room*** y ***Realm***](#bases-de-datos-room-y-realm)
+### [3. Arquitecturas: MVP y MVVM con ***Repository***](#arquitecturas-mvp-y-mvvm-con-repository)
+### [4. ***Navigation component***](#navigation-component)
+### [5. UI: Interfaz de Usuario](#ui-interfaz-de-usuario)
+   - #### [5.1 ***Styles*** y ***Themes***](#styles-y-themes)
+   - #### [5.2 ***Custom Views***](#custom-views)
+   - #### [5.3 ***RecyclerView***](#recyclerview)
+   - #### [5.4 ***Menus***](#menus)
 
-#### [6. Manejo de asíncronos: ***Coroutines, Flow, Rx***](#manejo-de-asíncronos-coroutines-flow-rx)
-#### [7. ***Retrofit***](#retrofit)
-#### [8. ***SharedPreferences y EncryptedSharedPreferences***](#sharedpreferences-y-encryptedsharedpreferences)
-#### [9. Inyección de dependencias: ***Koin*** y ***Dagger***](#inyección-de-dependencias-koin-y-dagger)
-#### [10. Testing: ***Junit*** y ***Mockito***](#testing-junit-y-mockito)
-#### [11. ***Players: ExoPlayer*** y ***JW Player***](#players-exoplayer-y-jw-player)
-#### [12. ***OAuth: Facebook, Twitter, Google+***](#oauth-facebook-twitter-google)
-#### [13. ***Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook***](#frameworks-y-sdks-firebase-fabric-sentry-segment-facebook)
-#### [14. ***Deep linking***](#deep-linking)
-#### [15. ***Push notifications***](#push-notifications)
-#### [16. ***Jetpack Compose***](#jetpack-compose)
-#### [Referencias - Fuentes](#referencias-y-fuentes)
+### [6. Manejo de asíncronos: ***Coroutines, Flow, Rx***](#manejo-de-asíncronos-coroutines-flow-rx)
+### [7. ***Retrofit***](#retrofit)
+### [8. ***SharedPreferences y EncryptedSharedPreferences***](#sharedpreferences-y-encryptedsharedpreferences)
+### [9. Inyección de dependencias](#inyección-de-dependencias)
+### [10. Testing](#testing)
+### [11. ***Players: ExoPlayer*** y ***JW Player***](#players-exoplayer-y-jw-player)
+### [12. ***OAuth: Facebook, Twitter, Google+***](#oauth-facebook-twitter-google)
+### [13. ***Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook***](#frameworks-y-sdks-firebase-fabric-sentry-segment-facebook)
+### [14. ***Deep linking***](#deep-linking)
+### [15. ***Push notifications***](#push-notifications)
+### [16. ***Jetpack Compose***](#jetpack-compose)
+### [Referencias - Fuentes](#referencias-y-fuentes)
 
 ---
 ---
 
 
 
-### ***ViewBinding*** y ***DataBinding***
+## ***ViewBinding*** y ***DataBinding***
 
-#### ***ViewBinding***  
+### ***ViewBinding***  
 Es una forma de **acceder a las vistas** (*xml*) que equilibra el rendimiento y la potencia, **sin necesidad de recurrir a otras alternativas**, como el método ***``findViewById()``*** (que en sí mismo es bastante costoso), ***Butterknife*** o ***Synthetic***. *ViewBinding* es un ‘subconjunto’ de *DataBinding* que evita la sobrecarga de compilación que produce el utilizar *DataBinding*. Se usa si no se necesita añadir código a las vistas (*xml*) ni realizar esa asignación directa entre una variable del código y una vista del *xml* que permite *DataBinding*. A diferencia de otras formas de enlazar las vistas, como por ejemplo *synthetic* de *kotlin extensions*, *ViewBinding* permite que **el compilador conozca la nulidad de la vista**.
 La forma de configurarlo depende de la versión de Android Studio. Para Android Studio 4.0 y siguientes, en el *build.gradle* poner lo siguiente **dentro de** ***android{}***:  
 
@@ -48,7 +48,7 @@ Si es anterior al 4.0, se usa lo siguiente:
 viewBinding { enabled = true }
 ```
 
-##### Cómo usar *ViewBinding* en una *Activity*  
+### Cómo usar *ViewBinding* en una *Activity*  
 Luego de crear la variable ***``binding``*** a nivel de clase con ***``lateinit``***, lo único que se necesita es modificar la forma en que se infla la vista. En vez de llamar a ***``setContentView``*** con el identificador del ***layout***, se hace pasándole la vista que se ha inflado previamente con *ViewBinding*:
 
 ```kotlin
@@ -76,7 +76,7 @@ binding.button.setOnClickListener {
 }
 ```
 
-##### Cómo usar *ViewBinding* en un *Adapter* de *RecyclerView*  
+### Cómo usar *ViewBinding* en un *Adapter* de *RecyclerView*  
 
 Aquí hay al menos un par de formas de hacerlo:  
    - Usando el **método** ***``inflate``*** en el ***onCreateViewHolder*** y almacenando el objeto ***binding***
@@ -112,7 +112,7 @@ class ViewHolder(view: View, private val listener: MediaListener) :
 
 A partir de ese punto, ya se puede usar exactamente igual que como en la *Activity*.
 
-#### ***DataBinding***  
+### ***DataBinding***  
 Para usar *DataBinding* dentro de una *activity* o un *fragment*, se puede hacer lo mismo que en el caso de *ViewBinding*. Sin embargo, el fuerte de *DataBinding* es que permite **escribir código en el mismo** ***xml*** para **asignarle variables del** ***ViewModel***, así cuando se modifican en el *ViewModel*, **la vista se modifica directamente, sin pasar por la** ***activity*** **o** ***fragment***. Para configurarlo, en el ***build.gradle*** se debe agregar el plugin de ***Kotlin kapt*** para que *DataBinding* pueda generar código a través de *procesamiento de anotaciones* (***``apply plugin: ‘kotlin-kapt’``***) y, además, se agrega **dentro de** ***android{}***:
 
 ```kotlin
@@ -162,10 +162,10 @@ binding.viewModel = viewModel
 binding.lifecycleOwner = this
 ```
 
-#### ***@BindingAdapter***  
+### ***@BindingAdapter***  
 Cuando en el *xml* se coloca el atributo que indica el *BindingAdapter* (en el ejemplo, “visible”), se le indica que debe ejecutar la función escrita en el *BindingAdapter*. Se puede utilizar como una **función de extensión** para proveer un comportamiento *custom* cuando cambian los datos de un tipo determinado. La propia vista (***ProgressBar*** en el ejemplo) accede al valor de la variable del *ViewModel* (***progressVisibility*** en el ejemplo), y ese valor se lo pasa a la función del *BindingAdapter*.
 
-###### En el archivo *.kt*:
+#### En el archivo *.kt*:
 
 ```kotlin
 @BindingAdapter("visible")
@@ -174,7 +174,7 @@ fun View.bindVisible (visible: Boolean?) {
 }
 ```
 
-###### Y en el *xml*:
+#### Y en el *xml*:
 
 ```xml
 <ProgressBar
@@ -186,7 +186,7 @@ app:visible="@ { viewModel.progressVisibility }" />
 
 Otro ejemplo útil sería usar un *BindingAdapter* para cargar una imagen en un ***ImageView*** desde una URL con ***Glide***, por ejemplo:
 
-###### En el archivo *.kt*:
+#### En el archivo *.kt*:
 
 ```kotlin
 @BindingAdapter("url")
@@ -195,7 +195,7 @@ fun ImageView.loadUrl(url: String) {
 }
 ```
 
-###### Y en el *xml*:
+#### Y en el *xml*:
 
 ```xml
 <ImageView
@@ -210,9 +210,9 @@ fun ImageView.loadUrl(url: String) {
 
 
 
-### Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***
+## Componentes de arquitectura: ***Lifecycle***, ***ViewModel*** y ***LiveData***
 
-#### ***Lifecycle***  
+### ***Lifecycle***  
 Los componentes concientes del ciclo de vida (***lifecycle-aware***), **ajustan sus comportamientos** en base al ciclo de vida de *activities* y *fragments*. **Evitan poner acciones** de los componentes y/o librerías dependientes **en los controladores del ciclo de vida** (***``onResume()``***, ***``onPause()``***, ***``onStop()``***, etc.). Este aislamiento de esas acciones, ayuda a crear código liviano, conciso y organizado, lo que se traduce en **mayor facilidad de mantenimiento** de la *app*. Para esto, se utiliza el modelo de observación propuesto en *Android Jetpack* para componentes conscientes de ciclos de vida de la librería ***androix.lifecycle***. Básicamente, se debe:  
 1. Implementar la escucha ***LifecycleOwner*** sobre el componente que tiene el ciclo de vida
 2. Implementar ***LifecycleObserver*** sobre el componente que realizará acciones basado en el propietario del ciclo de vida
@@ -281,7 +281,7 @@ class MyActivity : Activity(), LifecycleOwner {
 }
 ```
 
-#### ***ViewModel***  
+### ***ViewModel***  
 Se diseñó la clase *ViewModel* a fin de **almacenar y administrar datos relacionados con la UI** de manera **optimizada para los ciclos de vida** (se asegura de que sobrevivan a cambios de configuración de la *activity/fragment*, por ej.: rotación del dispositivo o realizar cambios en el idioma del dispositivo). Un *ViewModel* siempre **se crea en asociación con un ámbito** (***scope***), es decir, un *fragment* o una *activity*, y será retenido tanto como el ámbito esté vivo. La *activity*/*fragment* es capaz de observar los cambios en el *ViewModel*, el cual usualmente **expone esta información** vía ***LiveData*** (se observan desde la *activity*/*fragment*) y, dependiendo del caso, también con ***DataBinding*** (el *xml* accede directamente a los *LiveData*), y sólo puede ser accedido después de que la *activity* es adjuntada a la aplicación. La única responsabilidad del *ViewModel* es manejar los datos para la UI. **Nunca debería acceder** a la jerarquía de vistas **ni tener una referencia** de vuelta a la *activity*/*fragment*. Aunque hay una excepción a esta regla, ya que a veces se puede necesitar un ***Application context*** (en contraposición a un ***Activity context***), para usarlo con cosas como servicios del sistema. **Almacenar un contexto de aplicación en un** ***ViewModel*** **está bien**, ya que está sujeto al ciclo de vida de la aplicación. Es diferente al contexto de una *activity*, que está sujeto al ciclo de vida de la *activity*. De hecho, si se necesita un *Application context*, se puede extender ***AndroidViewModel***, que es simplemente **un** ***ViewModel*** **que incluye una referencia a la aplicación**.  
 Como se dijo, la **responsabilidad de conseguir y almacenar los datos** recae en el *ViewModel*, no en la *Activity*. Lo más importante es que con el uso de *ViewModel* se sigue el principio de **separación de responsabilidades** (***separation of concerns***). Esta arquitectura permite separar el código de forma más inteligente, así la *activity* sólo será responsable de pintar los datos. De esta manera, el *ViewModel* es capaz de comunicarse con el ***Repository*** para obtener sus *LiveData* (existe una **mejor alternativa** usando ***Flow***: ver apartado *Repositories* en *Arquitecturas*), y a su vez los deja disponibles para ser observados por la vista.  
 Hay tres pasos para configurar y usar un *ViewModel*:  
@@ -338,7 +338,7 @@ val viewModel by viewModels<MyViewModel>()
 val viewModel by activityViewModels<MyViewModel>()
 ```
 
-#### ***LiveData***  
+### ***LiveData***  
 Es una clase de **almacenamiento de datos** que permite que estos sean **observados**. Se **diferencia de un** ***Observable*** en que es **consciente del ciclo de vida** de la *activity* (o *fragment*) evitando, por ejemplo, mandarle datos cuando dicha *activity* (o *fragment*) no está en primer plano, ya que *LiveData* considera que un observador, que está representado por la clase ***Observer***, está en estado activo si su ciclo de vida está en ***STARTED*** o ***RESUMED***. *LiveData* **solo notifica a los observadores activos** sobre las actualizaciones. Los observadores inactivos registrados para ver objetos *LiveData* no reciben notificaciones sobre los cambios.  
 Se siguen estos pasos para trabajar con objetos *LiveData*:  
 1.  Crear una **instancia de** ***LiveData*** para contener un tipo de datos determinado. Por lo general, esto se hace **dentro de la clase** ***ViewModel***.  
@@ -428,9 +428,9 @@ La *activity* sólo necesita observar el objeto *MediatorLiveData* para recibir 
 
 
 
-### Bases de datos: ***Room y Realm***
+## Bases de datos: ***Room y Realm***
 
-#### ***Room***  
+### ***Room***  
 Android soporta *SQLite* desde el comienzo. Sin embargo, para hacerlo funcionar, siempre fue necesario escribir mucho código *boilerplate*. Además, *SQLIte* no guardaba *POJO’s* (*plain-old Java objects* u objetos planos de Java), y no comprobaba consultas (*queries*) en tiempo de compilación. *Room* viene a solucionar estos problemas. Es una librería de mapeo *SQLite*, capaz de persistir *POJO’s* de Java, convertir consultas directamente a objetos, comprobar errores en tiempo de compilación y **producir observables ***LiveData*** de los resultados de las consultas**. *Room* es una librería ORM (*Object Relational Mapping* o mapeo objeto-relacional) con algunos agregados de Android.  
 Para crear una base de datos con *Room*, se necesita una **Entidad** (***Entity***) para persistir, que puede ser cualquier *POJO* Java (en Kotlin, se utilizan las ***data classes*** para este propósito) y representa una tabla dentro de la base de datos; una ***interface Dao*** (*data acces object* u objeto de acceso a datos) para hacer consultas y operaciones de entrada/salida; y también **una clase abstracta ***Database*** que debe extender a** ***RoomDatabase***.  
 *Room* genera todo el código necesario para actualizar el objeto *LiveData* cuando se actualiza una base de datos. El código generado **ejecuta la consulta de manera asíncrona** en un subproceso en segundo plano cuando es necesario. Este patrón es útil para mostrar los datos en una UI sincronizada con los datos almacenados en una base de datos.  
@@ -524,7 +524,7 @@ interface MyDao {
 }
 ```
 
-#### ***Realm***  
+### ***Realm***  
 Es una base de datos móvil que se ejecuta directamente en teléfonos, *tablets* o dispositivos portátiles. Los datos se exponen **directamente como objetos** y se pueden **consultar mediante código**, lo que elimina la necesidad de usar ORM, que puede traer problemas de rendimiento y mantenimiento.
 
 
@@ -533,9 +533,9 @@ Es una base de datos móvil que se ejecuta directamente en teléfonos, *tablets*
 
 
 
-### Arquitecturas: MVP y MVVM con ***Repository***
+## Arquitecturas: MVP y MVVM con ***Repository***
 
-#### ***MVP (Model View Presenter)***  
+### ***MVP (Model View Presenter)***  
 Es una derivación del patrón MVC (*Model View Controller*) y es un patrón arquitectónico de interfaz de usuario diseñado principalmente para facilitar las pruebas unitarias automatizadas. En MVP, el presentador asume la funcionalidad del “hombre medio”. Toda **la lógica de presentación se envía al presentador** y toda **la lógica de negocio al modelo**.  
 Interacción entre componentes:  
 - ***Model***: Es una interfaz que define la lógica de negocio y los datos que se mostrarán en la interfaz de usuario. Está separado de la vista.
@@ -546,7 +546,7 @@ Interacción entre componentes:
 
 Un ejemplo del patrón MVP sería algo así:  
 
-###### En la *Activity*:
+#### En la *Activity*:
 
 ```kotlin
 class MainActivityPresenter : AppCompatActivity(), MainPresenter.View {
@@ -576,7 +576,7 @@ class MainActivityPresenter : AppCompatActivity(), MainPresenter.View {
 }
 ```
 
-###### En el *Presenter*:
+#### En el *Presenter*:
 
 ```kotlin
 // Recibe por constructor una vista de una interface View y un scope de corrutina
@@ -603,7 +603,7 @@ class MainPresenter(private val view: View, private val scope: CoroutineScope) {
 }
 ```
 
-#### ***MVVM (Model View ViewModel)***  
+### ***MVVM (Model View ViewModel)***  
 Este patrón facilita la separación de la lógica de la interfaz gráfica de usuario y la lógica de negocio o modelo de datos de la aplicación. En MVVM, el *ViewModel* tiene la responsabilidad de convertir los objetos de datos del modelo en un formato que permita manejar y presentar fácilmente. En este sentido, **el ***ViewModel*** contiene toda la lógica de presentación de la vista**.  
 Interacción entre componentes
 - ***Model***: Es una interfaz que **define la lógica de negocio** y los datos que se mostrarán en la interfaz de usuario. Contiene todas las *data classes*, las clases de base de datos (*database*), API y repositorio. Al igual que en el patrón *Model View Controller (MVC)*, una de las estrategias de implementación que se recomienda para desacoplar completamente esta capa del *ViewModel*, es exponer los datos a través de observables, es decir el **patrón** ***Observer***. De esta forma, cualquier *ViewModel* que necesite utilizar el modelo puede subscribir un observador.  
@@ -616,7 +616,7 @@ Interacción entre componentes
 
 El mismo ejemplo, pasado de MVP a MVVM (sin usar *DataBinding*):  
 
-###### En la *Activity*:  
+#### En la *Activity*:  
 
 ```kotlin
 class MainActivityVM : AppCompatActivity() {
@@ -647,7 +647,7 @@ class MainActivityVM : AppCompatActivity() {
 }
 ```
 
-###### En el *ViewModel*:  
+#### En el *ViewModel*:  
 
 ```kotlin
 // No recibe el scope por parámetro porque ViewModel
@@ -680,7 +680,7 @@ class MainViewModel : ViewModel() {
 
 En el caso de que se aplique *DataBinding* al mismo ejemplo con MVVM, quedaría así (el *ViewModel* no se modifica y la *activity* queda mucho más limpia):
 
-###### En la *Activity*:  
+#### En la *Activity*:  
 
 ```kotlin
 class MainActivityVM : AppCompatActivity() {
@@ -701,7 +701,7 @@ class MainActivityVM : AppCompatActivity() {
 }
 ```
 
-###### En el *xml*:  
+#### En el *xml*:  
 
 ```xml
 <data>
@@ -733,7 +733,7 @@ class MainActivityVM : AppCompatActivity() {
     android:visibility="@{ viewModel.progressVisibility ? View.VISIBLE : View.GONE }"/>
 ```
 
-#### ***Repository***:  
+### ***Repository***:  
 Este patrón arquitectónico se usa en conjunto con los patrones descriptos antes (MVP y MVVM), entre otros, y es responsable de abstraer o **aislar las fuentes de datos del resto de la aplicación**, sea una base de datos o una consulta a una servicio *web*. Para implementar un repositorio, se usa una clase Repositorio que implemente una interfaz previamente creada, para cumplir con el **principio de inversión de dependencias** (depender de abstracciones y no de implementaciones) y que el código quede más desacoplado y fácil de testear. Un módulo de repositorio maneja operaciones de datos y permite usar múltiples *backends*. En una aplicación típica, **el repositorio implementa la lógica para decidir si obtener datos de una red o usar los resultados cacheados en una base de datos local**.
 
 <img src="Repository.png" width="600">
@@ -747,7 +747,7 @@ Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Corout
 
 
 
-### ***Navigation component***
+## ***Navigation component***
 
 El **componente** ***Navigation*** consta de tres partes clave que se describen a continuación:
 - **Gráfico de navegación** (***Navigation graph***): Es un recurso XML que contiene **toda la información relacionada con la navegación** en una ubicación centralizada. Esto incluye todas las áreas de contenido individuales dentro de la *app*, llamadas **destinos** (***destinations***), así como las posibles rutas que un usuario puede tomar a través de la *app*, llamadas **acciones** (***actions***).
@@ -842,7 +842,7 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-#### Navegar entre destinos
+### Navegar entre destinos
 Para navegar entre destinos, Android recomienda utilizar el *plugin* de *Gradle* llamado ***Safe Args***, que permite navegar con **seguridad de tipo** y **pasar argumentos** entre los destinos. Para agregar *Safe Args* al proyecto, se incluye la siguiente *classpath* en el archivo *build.gradle* de nivel superior (a nivel de proyecto):
 
 ```kotlin
@@ -893,7 +893,7 @@ findNavController().navigate(request)
 
 Además de Uri, ***NavDeepLinkRequest*** también admite vínculos directos con acciones y tipos de MIME. Para agregar una acción a la solicitud, se usa ***``fromAction()``*** o ***``setAction()``***. Para agregar un tipo de MIME a una solicitud, se usa ***``fromMimeType()``*** o ***``setMimeType()``***. Hay un apartado específico sobre *DeepLinking* (apartado 15).
 
-#### Pasar datos entre destinos
+### Pasar datos entre destinos
 *Navigation* permite adjuntar datos a una operación de navegación si se definen los argumentos de un destino. Por ejemplo, el destino de un perfil de usuario podría tomar como argumento el ID de un usuario para determinar a quién mostrar el contenido. En general, se debe optar por pasar **sólo la cantidad mínima de datos entre destinos**. Por ejemplo, pasar una clave a fin de recuperar un objeto en lugar de pasar el objeto en sí, ya que el espacio total para los estados guardados en Android es limitado.  
 Si se necesita pasar **grandes cantidades de datos**, es preferible utilizar un ***ViewModel*** **compartido**: dos *fragments* pueden compartir un *ViewModel* usando su ámbito de actividad (*activity scope*) para manejar la comunicación.
 
@@ -998,7 +998,7 @@ val tv = view.findViewById<TextView>(R.id.textViewAmount)
 tv.text = arguments?.getString("amount")
 ```
 
-#### ***NavigationUI***
+### ***NavigationUI***
 El componente *Navigation* incluye una **clase** ***NavigationUI***. Esta clase contiene métodos estáticos que administran la navegación con la barra superior de la *app* (***top bar***), el panel lateral de navegación (***navigation drawer***) y la navegación inferior (***bottom navigation***). *NavigationUI* también proporciona asistentes para **vincular destinos a componentes de UI controlados por el menú**: contiene un método asistente, ***``onNavDestinationSelected()``***, que toma un elemento ***MenuItem*** junto con el elemento ***NavController*** que aloja el destino asociado. Si el elemento ***``id``*** de *MenuItem* **coincide** con el elemento ***``id``*** del destino, *NavController* puede entonces navegar a ese destino.  
 - ***Top bar***: *NavigationUI* contiene métodos que actualizan automáticamente el contenido de la barra superior a medida que los usuarios navegan por la *app*. Por ejemplo, **se pueden usar las etiquetas (***labels***) del destino del gráfico de navegación para mantener actualizado el título de la barra superior** de la *app*, usando el **método** ***``setupWithNavController``***. Cuando se usa *NavigationUI* con alguna de las implementaciones de la barra superior (***Toolbar***, ***CollapsingToolbarLayout*** o ***ActionBar***), la etiqueta que se adjunta a los destinos puede ser automáticamente populada a partir de los argumentos proporcionados al destino, usando la sintaxis ***``{argName}``*** en la etiqueta. *NavigationUI* usa un objeto ***AppBarConfiguration*** para **administrar el comportamiento del botón** ***Navigation*** en la esquina superior izquierda del área de visualización de la *app*. El comportamiento del botón *Navigation* cambia si el usuario se encuentra en un **destino de nivel superior** (la raíz, o el destino de nivel más alto, en un conjunto de destinos relacionados de manera jerárquica). Los destinos de nivel superior no muestran un botón ***Arriba*** en la barra superior de la *app*, ya que no existe un destino superior a este. De forma predeterminada, el destino de inicio de la *app* es el único destino de nivel superior.  
 - ***Navigation drawer***: El ícono del panel lateral (***drawer icon***) se muestra en todos los destinos de nivel superior que usan un ***DrawerLayout***. Para agregar un panel lateral de navegación, primero se declara un *DrawerLayout* como vista raíz. Dentro del *DrawerLayout*, se agrega un diseño para el contenido principal de la UI y otra vista que tenga el contenido del panel lateral de navegación (***NavigationView***). Luego, se conecta el *DrawerLayout* al gráfico de navegación pasándoselo a ***AppBarConfiguration***. Y por último, en el método *``onCreate()``* de la *activity* se llama a ***``setupWithNavController()``***.  
@@ -1018,12 +1018,12 @@ navController.addOnDestinationChangedListener { _, destination, _ ->
 }
 ```
 
-#### ***Nested graphs***
+### ***Nested graphs***
 Por lo general, los flujos de acceso, los asistentes (*wizards*) y otros subflujos de la *app* se representan mejor como **gráficos de navegación anidados** (***nested graphs***). Si se anidan flujos de subnavegación autónomos de esta manera, el flujo principal de la UI de la *app* será más fácil de comprender y administrar. Además, los gráficos anidados son reutilizables. También proporcionan un nivel de encapsulación, es decir, que los destinos fuera del gráfico anidado no tienen acceso directo a ninguno de los destinos dentro del gráfico anidado. En su lugar, deberían tener un elemento *``navigate()``* que los dirija al propio gráfico anidado, donde la lógica interna puede cambiar sin afectar el resto del gráfico. Esto es útil, por ejemplo, para verificar si hay un usuario registrado. Si el usuario no está registrado, se lo puede dirigir a la pantalla de registro dentro del gráfico anidado. Esto es lo que se conoce como **navegación condicional**.  
 Para agrupar destinos en un gráfico anidado, se mantiene presionada la **tecla** ***Shift*** y se hace clic en los destinos que se desean incluir en el gráfico anidado. Luego, se hace clic derecho para abrir el menú contextual y se selecciona ***Move to Nested Graph > New Graph***.  
 Además, dentro de un gráfico de navegación se puede hacer referencia a otros gráficos mediante ***``include``***. Si bien esto es funcionalmente lo mismo que usar un gráfico anidado, *``include``* permite usar gráficos de otros módulos del proyecto o de proyectos de biblioteca.
 
-#### Acciones globales
+### Acciones globales
 Se puede usar una **acción general o global** (***global action***) para crear una acción común que varios destinos puedan utilizar. Por ejemplo, quizás se desee agregar botones en distintos destinos para navegar a la misma pantalla principal de la *app*. En el Editor de *Navigation*, una acción general se representa mediante **una flecha pequeña que apunta al destino asociado**. A fin de usar una acción general en el código, se pasa el ID de recurso de la acción general al **método** ***``navigate()``*** para cada elemento de la UI, como se muestra en el siguiente ejemplo:
 
 ```kotlin
@@ -1038,14 +1038,14 @@ viewTransactionButton.setOnClickListener { view ->
 
 
 
-### UI: Interfaz de Usuario
+## UI: Interfaz de Usuario
 
-#### ***Styles y Themes***
+### ***Styles y Themes***
 La principal **diferencia entre estilos** (***styles***) y **temas** (***themes***), es que **un tema se aplica a toda una jerarquía de vistas, una ***activity*** o una** ***app***, mientras que **un estilo sólo afecta a la vista en la que se aplica**. En otras palabras, **un tema es un estilo que se propaga de padres a hijos**. Los temas contienen atributos o configuraciones que aplican a todos los elementos de la UI. Mientras que los temas tienen unos **atributos genéricos**, cada vista puede tener una serie de estilos **específicos** que hagan que esa vista se muestre de una forma u otra. Por ejemplo, el *style* por defecto de un *TextView*, es ***Widget.AppCompat.TextView***.  
 Además, en caso de definir un nuevo estilo, sólo el elemento al que se le agrega el **atributo** ***``style``*** recibe los atributos del estilo definido; cualquier vista secundaria no aplica los estilos. Si se desea que las vistas secundarias hereden estilos, se aplica el estilo con el **atributo** ***``android:theme``***.  
 Para crear un **tema** ***custom***, éste **debe heredar de un tema de** ***AppCompat***. Además, se agrega en el *Manifest* a la *activity* que corresponda.
 
-###### En ***Styles.xml***:
+#### En ***Styles.xml***:
 
 ```xml
 <resources>
@@ -1063,7 +1063,7 @@ Para crear un **tema** ***custom***, éste **debe heredar de un tema de** ***App
 </resources>
 ```
 
-###### En ***AndroidManifest.xml***:
+#### En ***AndroidManifest.xml***:
 
 ```xml
 <application
@@ -1085,10 +1085,10 @@ Para crear un **tema** ***custom***, éste **debe heredar de un tema de** ***App
 </application>
 ```
 
-#### ***Custom Views***
+### ***Custom Views***
 Se puede crear una clase para crear vistas personalizadas y luego utilizarla en el *xml*. Por ejemplo, si se quiere crear un *ImageView* que contenga imágenes para *covers* de películas con un *ratio* personalizado, se puede crear una clase que herede de *ImageView* (la variante de *AppCompat*: *AppCompatImageView*) y agregar los constructores usando ***``@JvmOverloads``***. Después, se define el *aspect ratio* a utilizar y se sobreescribe la **función** ***``onMeasure()``*** para que la vista se adecue al tamaño que le corresponde en función de la vista padre, para luego modificarle la altura respecto al *aspect ratio* y el ancho, y también el ancho respecto al *aspect ratio* y el alto. Finalmente, se le indica a la clase padre que se han modificado las medidas llamando al **método** ***``setMeasureDimension()``***. Y en el *xml*, se agrega la vista personalizada. El ejemplo quedaría así:  
 
-###### En la clase ***custom***:
+#### En la clase ***custom***:
 
 ```kotlin
 class ApectRatioImageView @JvmOverloads constructor(
@@ -1120,7 +1120,7 @@ class ApectRatioImageView @JvmOverloads constructor(
 }
 ```
 
-###### En el ***xml***:
+#### En el ***xml***:
 
 ```xml
 <com.example.navajasuiza.ApectRatioImageView
@@ -1169,7 +1169,7 @@ init {
 
 También es importante señalar que los atributos pueden tener varios tipos (***format***), y entre ellos cabe destacar a los ***flag attributes*** y a los ***enum attributes***. Los *flags* se usan en los casos en que se quiere **combinar valores múltiples para un mismo atributo** (como puede ser, por ejemplo, aplicar *Bold* e *Italic* a un *custom TextView* en la forma ***``android:textStyle="bold|italic"``***); y hacen uso de **operaciones bit-a-bit** para determinar cómo combinar esos valores (por esta razón, los valores suelen ser **1, 2, 4, 8**, etc.). Por otro lado, los *enum* también pueden definir más de un valor, pero **el atributo sólo puede hacer uso de uno solo**.
 
-###### Por ejemplo, en ***res/values/attr.xml***:
+#### Por ejemplo, en ***res/values/attr.xml***:
 
 ```xml
 <!-- declare myenum attribute -->
@@ -1195,7 +1195,7 @@ También es importante señalar que los atributos pueden tener varios tipos (***
 </declare-styleable>
 ```
 
-###### Y en ***res/layout/mylayout.xml*** ahora se puede hacer:
+#### Y en ***res/layout/mylayout.xml*** ahora se puede hacer:
 
 ```xml
 <com.example.MyWidget
@@ -1204,7 +1204,7 @@ También es importante señalar que los atributos pueden tener varios tipos (***
     ... />
 ```
 
-#### ***RecyclerView***:
+### ***RecyclerView***:
 Este *widget* es una versión más avanzada y flexible del *ListView*. Varios componentes diferentes trabajan juntos para mostrar los datos: un **administrador de diseño** (***layout manager***), objetos **contenedores de vistas** (***view holders***) y un **adaptador** (***adapter***). El contenedor general de la UI es un objeto *RecyclerView* que se agrega al diseño. El objeto *RecyclerView* usa un *layout manager* para posicionar los elementos individuales en la pantalla y determinar cuándo volver a usar las vistas de elementos que ya no ve el usuario. Para volver a usar (reciclar) una vista, un *layout manager* puede solicitar al adaptador que reemplace el contenido de la vista por un elemento diferente del conjunto de datos. Android incluye tres administradores de diseño estándar para utilizar (***LinearLayoutManager***, ***GridLayoutManager*** o ***StaggeredGridLayoutManager***), aunque también se puede implementar uno propio extendiendo la clase abstracta ***RecyclerView.LayoutManager***.  
 Las vistas incluidas en la lista, que **representan los elementos en un conjunto de datos**, están representadas por objetos *view holder*. Esos objetos son instancias de una clase que se define **extendiendo** ***RecyclerView.ViewHolder***. Cada objeto *view holder* es responsable de mostrar un elemento individual con una vista. Por ejemplo, si la lista muestra una colección de música, cada objeto *view holder* representa un álbum individual. El objeto *RecyclerView* crea solamente la cantidad de objetos *view holder* que sean necesarios para mostrar la parte en pantalla del contenido dinámico, más algunos adicionales. A medida que el usuario se desplaza por la lista, el objeto *RecyclerView* **toma las vistas fuera de pantalla y vuelve a vincularlas con los datos** que se desplazan en la pantalla.  
 Un adaptador o *adapter*, que se crea **extendiendo** ***RecyclerView.Adapter***, administra los objetos *view holder*, y consta de tres métodos: ***``onCreateViewHolder()``***, ***``onBindViewHolder()``*** y ***``getItemCount()``***. Primero, el *layout manager* llama al método *``onCreateViewHolder()``* para que construya un objeto *RecyclerView.ViewHolder* y configure la vista que usa para mostrar su contenido. Luego, el *layout manager* vincula el *view holder* con sus datos. Para hacerlo, llama al método *``onBindViewHolder()``* del adaptador y pasa la posición del *view holder* en el *RecyclerView*. Es necesario que el método *``onBindViewHolder()``* busque los datos correspondientes y los use para completar el diseño del *view holder*. En resumen, **el adaptador crea ***view holders***, según sea necesario, y los vincula con sus datos**, asignando el *view holder* a una posición y llamando al método *``onBindViewHolder()``*, que usa la posición del *view holder* para determinar cuál debería ser el contenido, en función de su posición en la lista. El método ***``getItemCount()``*** retorna el tamaño del conjunto de datos.
@@ -1248,7 +1248,7 @@ Sin embargo, también es posible utilizar otras soluciones que provee *RecyclerV
 - ***SortedList***: Puede mantener los elementos en orden y también **notificar los cambios en la lista** de modo que pueda vincularse a un *RecyclerView.Adapter*. Mantiene los elementos ordenados mediante el método *callback* ***``compare(Object, Object)``*** y utiliza búsqueda binaria para recuperar elementos. Si los criterios de ordenamiento de los elementos pueden cambiar, hay que asegurarse de llamar a los métodos apropiados mientras se editan para evitar inconsistencias de datos. Se puede controlar el orden de los elementos y cambiar las notificaciones a través del **parámetro** ***Callback***. *SortedList* funciona si solo se necesita manejar eventos de inserción y eliminación, y tiene la ventaja de que **solo se necesita tener una única copia de la lista en memoria**.  
 - ***Paging Library***: La biblioteca de paginación amplía el enfoque basado en diferencias para admitir, adicionalmente, la carga paginada (cargar y mostrar pequeños fragmentos de datos a la vez). Esta carga de datos parciales a pedido reduce el uso del ancho de banda de la red y los recursos del sistema. Proporciona la **clase** ***androidx.paging.PagedList*** que funciona como una lista de carga automática, proporcionada una fuente de datos como una base de datos o una API de red paginada.
 
-#### ***Menus***:
+### ***Menus***:
 Para todos los tipos de menús, Android proporciona un formato XML estándar que permite definir los elementos de menú. En lugar de incorporar un menú en el código de la *activity*, se debe definir un menú y todos los elementos en un **recurso de menú** (***menu resource***). Luego, se puede inflar el recurso de menú (cargarlo como un objeto ***Menu***) en la *activity* o el *fragment*. Para definir el menú, se crea un archivo XML dentro del directorio ***res/menu/*** del proyecto y se desarrolla el menú con los siguientes elementos: ***``<menu>``*** (define un ***Menu***, que es un contenedor para items de menú. Un elemento *``<menu>``* debe ser el nodo raíz del archivo y puede tener uno o más elementos *``<item>``* y *``<group>``*); ***``<item>``*** (crea un ***MenuItem***, que representa un único item en un menú. Este elemento puede contener un elemento *``<menu>``* anidado para crear un submenú) y ***``<group>``*** (contenedor **opcional e invisible** para elementos *``<item>``*, que permite categorizar los *items* del menú para que compartan propiedades como el estado activo/inactivo y la visibilidad).  
 Existen tres tipos fundamentales de presentaciones de menús o acciones en todas las versiones de Android:  
 - **Menú de opciones y** ***AppBar***: El menú de opciones es la colección principal de elementos de menú de una *activity*. Es donde se deben colocar las **acciones que tienen un impacto global en la** ***app***, como "Buscar", "Redactar correo electrónico" y "Configuración".
@@ -1361,7 +1361,7 @@ override fun onMenuItemClick(item: MenuItem): Boolean {
 }
 ```
 
-###### Para usar elementos de menú que se pueden activar, en el ***xml***:
+#### Para usar elementos de menú que se pueden activar, en el ***xml***:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
@@ -1374,7 +1374,7 @@ override fun onMenuItemClick(item: MenuItem): Boolean {
 </menu>
 ```
 
-###### Y para comprobar y establecer el estado de activación:
+#### Y para comprobar y establecer el estado de activación:
 ```kotlin
 override fun onOptionsItemSelected(item: MenuItem): Boolean {
     return when (item.itemId) {
@@ -1393,7 +1393,7 @@ override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
 
 
-### Manejo de asíncronos: ***Coroutines, Flow, Rx***
+## Manejo de asíncronos: ***Coroutines, Flow, Rx***
 
 Para más información sobre corrutinas, ver el apartado [*Corrutinas (Coroutines) en Kotlin*](https://github.com/Ulises-Jota/Apuntes-y-Navaja-Suiza/blob/master/Apuntes-Kotlin.md#4-corrutinas-coroutines-en-kotlin) en *Apuntes-Kotlin.md*
 Las corrutinas están diseñadas para ejecutar operaciones asíncronas complejas de forma limpia y secuencialmente. Las funciones de suspensión de las corrutinas **retornan asincrónicamente un solo valor**, pero ¿cómo se pueden retornar múltiples valores computados asincrónicamente? Acá es donde Kotlin ***Flows*** reluce.  
@@ -1406,7 +1406,7 @@ Entonces, estas habilidades hacen de *Flow* una excelente alternativa a *LiveDat
 
 
 
-### ***Retrofit***
+## ***Retrofit***
 
 
 
@@ -1414,7 +1414,7 @@ Entonces, estas habilidades hacen de *Flow* una excelente alternativa a *LiveDat
 
 
 
-### ***SharedPreferences y EncryptedSharedPreferences***
+## ***SharedPreferences y EncryptedSharedPreferences***
 
 
 
@@ -1422,12 +1422,12 @@ Entonces, estas habilidades hacen de *Flow* una excelente alternativa a *LiveDat
 
 
 
-### Inyección de dependencias: ***Koin*** y ***Dagger***
+## Inyección de dependencias
 
-#### Inyección de dependencias
+### Inyección de dependencias: ¿qué es?
 La inyección de dependencias nació para reducir el acoplamiento entre los componentes (las clases) de un sistema; básicamente, es un patrón de diseño en el que **se suministran objetos a una clase en lugar de ser la propia clase la que crea dichos objetos**. Este patrón facilita mucho intentar cumplir uno de los principios SOLID, el de **inversión de dependencias**. Según este principio, **las clases deben depender de abstracciones y no de detalles de implementación**, esto las hace más fuertes frente al cambio e independientes de *frameworks*, además de más fáciles de testear (si por ejemplo se crea una instancia dentro de un método, no se podrá testear dicho método de forma aislada, ya que no se tendrá forma de sustituir el comportamiento de la instancia creada, y cualquier error en el test hará dudar de qué clase es la culpable).  
 
-##### Dependencia fuerte == Alto acoplamiento  
+### Dependencia fuerte == Alto acoplamiento
 Ocurre cuando se instancia el objeto directamente en la clase, produciendo un efecto de acoplamiento. Esto la hace más difícil de reutilizar y además no podrá ser testeada de forma inependiente a la otra clase.
 
 ```kotlin
@@ -1436,7 +1436,7 @@ class Auto {
 }
 ```
 
-##### Formas básicas para inyectar dependencias  
+### Formas básicas para inyectar dependencias  
 - **Mediante el constructor**: se pasa la dependencia que la clase necesita a través de su constructor.
 
 ```kotlin
@@ -1487,7 +1487,7 @@ class RuedaInjector {
 }
 ```
 
-#### ***Dagger***
+### ***Dagger***
 Es un *framework* de inyección de dependencias, que **se divide sobre todo en Componentes y Módulos**. Los **Módulos** son las **clases que se encargan de proveer las dependencias**. Los **Componentes** son **interfaces** a las que están ligados uno o varios módulos; estas interfaces, que serán usadas por Dagger para generar el código, **actúan como puente entre las dependencias que proveen los módulos y las clases donde serán inyectadas**.
 
 En el ***build.gradle*** de la *app* (si se utiliza Kotlin):
@@ -1499,7 +1499,7 @@ implementation 'com.google.dagger:dagger:<VERSION>'
 kapt 'com.google.dagger:dagger-compiler:<VERSION>'
 ```
 
-###### ``@Inject``
+#### ``@Inject``
 Una vez creada la interfaz y la clase que la implementa, se puede utilizar la dependencia creando una instancia de la clase con la implementación concreta, aunque así se hace manualmente.  
 Para hacer uso de la inyección de dependencias con Dagger, primero hay que mostrarle **cómo crear instancias de la clase de la que se depende (la que tiene la implementación concreta)**. Para esto, se coloca el tag *``@Inject``* delante del constructor. Cuando se necesite una instancia de la clase, Dagger obtendrá los parámetros requeridos e invocará el constructor.
 
@@ -1511,7 +1511,7 @@ class ConsolaLog @Inject constructor(): Log {
 }
 ```
 
-###### ``@Component``
+#### ``@Component``
 Para que Dagger sepa de dónde **obtener las dependencias que necesita**, se debe crear un **grafo** con ellas. Esto se hace en una interfaz anotada con el tag *``@Component``*. Con esto, **Dagger creará automáticamente una implementación de la interfaz**, añadiendo el prefijo Dagger. Dentro de la interfaz, se declaran funciones que devuelvan instancias de la clase que se tiene como dependencia.
 
 ```kotlin
@@ -1565,7 +1565,7 @@ class GalleryFragment : Fragment() {
 }
 ```
 
-###### ``@Singleton``
+#### ``@Singleton``
 Si no se indica lo contrario, Dagger creará por defecto una nueva instancia cada vez que se quiera asignar una dependencia de un tipo en concreto. También creará una nueva instancia de la implementación de las interfaces *``@Component``*.  
 Sin embargo, en muchos casos, esto no es lo deseado. Para solucionarlo, se utiliza el tag *``@Singleton``*:
 
@@ -1609,7 +1609,7 @@ class GalleryFragment : Fragment() {
 }
 ```
 
-###### ``@Module``, ``@Provides`` y ``@Binds``
+#### ``@Module``, ``@Provides`` y ``@Binds``
 La anotación *``@Inject``* es muy útil para inyectar dependencias cuando se puede acceder directamente a la clase de la que se depende. Pero no servirá para interfaces o para clases de terceros.  
 Para que Dagger sepa cuál de las **múltiples implementaciones** que la interfaz pueda llegar a tener debe instanciar, se utiliza una clase con el tag *``@Module``*, donde se declara el método que provea la dependencia. La práctica recomendada respecto a este método, es utilizar el tag *``@Binds``* para indicarle a Dagger qué implementación debe usar de una interfaz. Y usar el tag *``@Provides``* para indicarle cómo proporcionar clases de librerías externas.
 
@@ -1675,8 +1675,80 @@ public class MoviesRepositoryImpl implements MoviesRepository {
 }
 ```
 
-#### ***Koin***
-Es un **framework de inyección de dependencias** que busca el mismo objetivo que *Dagger* pero que además es mucho más **fácil de implementar y se integra perfectamente con el ecosistema Android y los ViewModel**.
+### _**Dagger Hilt**_
+Tomando lo que indica la [documentación oficial](https://developer.android.com/training/dependency-injection/hilt-android#hilt-and-dagger):  
+> _Hilt está construido sobre la librería de inyección de dependencias de Dagger, lo que proporciona una forma estándar de incorporar Dagger en una aplicación de Android_.
+> _(...) Hilt reduce el código repetitivo (boilerplate) involucrado en el uso de Dagger en una aplicación de Android._
+
+Para configurarlo, es similar a _Dagger_. En el ***build.gradle*** del proyecto, se agrega:
+
+```kotlin
+id 'com.google.dagger.hilt.android' version '<VERSION>' apply false
+```
+
+Y en el _**build.gradle(:app)**_, se agrega lo siguiente:
+
+````kotlin
+id 'kotlin-kapt'
+id 'dagger.hilt.android.plugin'
+
+// El resto
+
+implementation "com.google.dagger:hilt-android:<VERSION>"
+kapt "com.google.dagger:hilt-android-compiler:<VERSION>"
+````
+
+Luego de agregar las dependencias, se debe configurar el proyecto para utilizar _Hilt_. Esa configuración se realiza casi en su totalidad en base a anotaciones.  
+Para eso, se debe inicializar. Y eso se hace en la clase que hereda de ``Application()``, agregando la anotación ``@HiltAndroidApp``:
+
+````kotlin
+@HiltAndroidApp
+class ExampleApp : Application()
+````
+
+A su vez, dentro del _Manifest_, se indica que esa clase será la que debe instanciar antes de cualquier otra clase cuando el proceso de la aplicación se inicia. Para hacer eso, simplemente se agrega la siguiente línea dentro del tag ``<application/>``:
+
+````xml
+<application
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:supportsRtl="true"
+    android:name=".ExampleApp" >
+</application>
+````
+
+Básicamente, hay cuatro formas de inyectar dependencias en un proyecto, dependiendo del lugar: para las _activities_, para los _view models_, para las clases que no son las dos anteriores y, por último, para las clases que pertenecen al _framework_ de Android o a librerías externas.
+
+#### Para las _activities_
+Simplemente, se usa la anotación ``@AndroidEntryPoint``, el cual genera un componente _Hilt_ individual para cada clase de Android en el proyecto. Estos componentes pueden recibir dependencias de sus respectivas clases padre como se describe en la [Jerarquía de componentes](https://developer.android.com/training/dependency-injection/hilt-android#component-hierarchy).
+
+#### Para los _view models_
+Se usa la anotación ``@HiltViewModel``. El _ViewModel_ anotado con ``@HiltViewModel`` estará disponible para su creación mediante ``dagger.hilt.android.lifecycle.HiltViewModelFactory`` y se puede recuperar de forma predeterminada en una _Activity_ o _Fragment_ anotado con ``@AndroidEntryPoint``.
+
+#### Clases que no son _activites_ ni _view models_
+Se anota el constructor con ``@Inject`` y se agrega la propiedad del tipo requerido:
+````kotlin
+class LoginRepository @Inject constructor(
+    private val api: LoginService
+) { }
+````
+
+#### Clases del _framework_ de Android y _libs_ externas
+Cuando una dependencia no puede inyectarse como tal, se necesita hacer uso de _providers_. Para eso, se crean **clases destinadas a contener dichos _providers_ llamadas "módulos"** y que se anotan, justamente, con ``@Module``.  También se anota con ``@InstallIn``, que recibe por parámetro el _scope_ de la clase. Es decir, define cuánto tiempo vivirán las dependencias creadas.  
+Para crear el _provider_ propiamente dicho, dentro de esa clase se crea una función anotada con ``@Provides``. Y a su vez, también se anota con ``@Singleton`` para indicarle al inyector que sólo debe instanciar una vez lo que retorna dicha función.
+
+````kotlin
+@Singleton
+@Provides
+fun provideRetrofit(): Retrofit {
+    return Retrofit.Builder()
+        .baseUrl("https://something/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+}
+````
+
+### ***Koin***
+Es un **framework de inyección de dependencias** que busca el mismo objetivo que *Dagger* pero que además es mucho más **fácil de implementar y se integra perfectamente con el ecosistema Android y los _ViewModel_**.
 
 ```kotlin
 val appModule = module {
@@ -1774,8 +1846,9 @@ class MovieListActivity : BaseActivity() {
 
 
 
-### Testing: ***Junit*** y ***Mockito***
+## Testing
 
+**_WIP_**  
 Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Android, tal como el contexto.
 
 
@@ -1784,7 +1857,7 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 
 
-### ***Players: ExoPlayer*** y ***JW Player***
+## ***Players: ExoPlayer*** y ***JW Player***
 
 
 
@@ -1792,7 +1865,7 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 
 
-### ***OAuth: Facebook, Twitter, Google+***
+## ***OAuth: Facebook, Twitter, Google+***
 
 
 
@@ -1800,7 +1873,7 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 
 
-### ***Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook***
+## ***Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook***
 
 
 
@@ -1808,7 +1881,7 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 
 
-### ***Deep linking***
+## ***Deep linking***
 
 
 
@@ -1816,7 +1889,7 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 
 
-### ***Push notifications***
+## ***Push notifications***
 
 
 
@@ -1824,9 +1897,14 @@ Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Andr
 
 
 
-### ***Jetpack Compose***
+## ***Jetpack Compose***
 
+Ver los apuntes tomados en los siguientes repositorios:  
 
+- [MyMovies](https://github.com/Ulises-Jota/MyMovies)
+- [InstagramLoginCloneComposeTraining](https://github.com/Ulises-Jota/InstagramLoginCloneComposeTraining)
+- [JetpackComposeCatalog](https://github.com/Ulises-Jota/JetpackComposeCatalog)
+- 
 
 
 
