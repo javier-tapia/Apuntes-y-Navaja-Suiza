@@ -2216,7 +2216,7 @@ Ver los apuntes tomados en los siguientes repositorios:
 
 
 
-### Referencias y Fuentes:
+### Referencias y Fuentes
 
 - [Android Docs](https://developer.android.com/guide?hl=es_419)
 - [DevExperto](https://devexperto.com/)
