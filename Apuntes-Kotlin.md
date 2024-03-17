@@ -301,9 +301,10 @@ fun main() {
      }
      ```
 
-     El uso de genéricos conlleva una serie de ventajas, como son la **seguridad de tipo** (la comprobación se realiza en tiempo de compilación para evitar problemas durante la ejecución) y que **no requiere la conversión entre tipos** ni encasillar el objeto en un tipo determinado.
+     El uso de genéricos conlleva una serie de ventajas, como son la **seguridad de tipo** (la comprobación se realiza en tiempo de compilación para evitar problemas durante la ejecución) y que **no requiere la conversión entre tipos** ni encasillar el objeto en un tipo determinado.  
+     Al trabajar con genéricos, los tipos no mantienen la herencia de sus clases. Y en función de si esas clases actúan como **consumidores o productores**, tendremos que usar **covarianza o contravarianza**.
 
-       - 1.6.1. ***``invariant``***: cuando el parámetro de tipo no tiene modificadores de varianza (***``out``*** o ***`in`***), por defecto es invariante. Significa que **no hay relación entre dos tipos** generados por una clase genérica. Por ejemplo, no hay relación entre *``Cup<Int>``* y *``Cup<Number>``*, *``Cup<Any>``* o *``Cup<Nothing>``*.
+       - 1.6.1. ***``invariant``***: cuando el parámetro de tipo no tiene modificadores de varianza (***``out``*** o ***`in`***), por defecto es invariante con respecto a su tipo genérico (no se pueden ni consumir ni producir valores con un tipo más genérico). Significa que **no hay relación entre dos tipos** generados por una clase genérica. Por ejemplo, no hay relación entre *``Cup<Int>``* y *``Cup<Number>``*, *``Cup<Any>``* o *``Cup<Nothing>``*.
 
          ```kotlin
          class Cup<T>
@@ -314,7 +315,7 @@ fun main() {
          }
          ```
 
-       - 1.6.2. ***``covariant``***: para hacer que el parámetro de tipo sea covariante, se utiliza el **modificador** ***``out``***. Significa que **cuando** ***A*** **es subtipo de** ***B*** y ***Cup*** **es covariante**, el tipo ***``Cup<A>``*** **es subtipo de** ***``Cup<B>``***.
+       - 1.6.2. ***``covariant``***: para hacer que el parámetro de tipo sea covariante con respecto a su tipo genérico (se pueden consumir sus valores con un tipo más genérico), se utiliza el **modificador** ***``out``***. Significa que **cuando** ***A*** **es subtipo de** ***B*** y ***Cup*** **es covariante**, el tipo ***``Cup<A>``*** **es subtipo de** ***``Cup<B>``***.
 
          ```kotlin
          class Cup<out T>
@@ -375,6 +376,17 @@ fun main() {
              val y: Comparable<Double> = x // OK!
          }
          ```
+
+     A modo de resumen:
+     
+     - **Consumir** implica tener **funciones que devuelven un valor del tipo genérico**.
+     - **Producir** implica tener **funciones que reciben por argumento un objeto del tipo genérico**.
+     
+     Por tanto:
+
+     - Para **devolver valores de un tipo más genérico que el tipo original**, se necesita usar **covarianza** (se usa ***``out``*** en el tipo).
+     - Para **pasar valores de un tipo más genérico que el original**, se necesita usar **contravarianza** (se usa ***``in``*** en el tipo).
+     - Para **trabajar con el tipo original**, el tipo será **invariante** (no se usa ``in`` ni ``out``).
 
    - 1.7. **Clases anidadas e internas** (***inner class***): Una clase anidada marcada como *``inner``* puede acceder a los miembros de su clase externa (*outer class*). **Las clases internas llevan una referencia a un objeto de una clase externa**.
 
@@ -800,20 +812,23 @@ fun main() {
 
      ```kotlin
      fun Int.square() = this * this // Extension function
-     println(2.square())   // Imprime: 4. En la función square(), this refiere al receiver object (el 2)
-     println(square(2))    // Error: Unresolved reference
 
      val squareFunType: Int.()->Int = Int::square // Function type with receiver, usando function reference
-     println(squareFunType(2))      // Imprime: 4
-     println(2.squareFunType())     // Imprime: 4
+    
+     fun main() {
+         println(2.square())	           // Imprime: 4. En la función square(), this refiere al receiver object (el 2)
+         //println(square(2))    	   // Error: Unresolved reference. No se puede invocar una función de extensión pasando el receptor como primer argumento
+    	 println(squareFunType(2))      // Imprime: 4. Se puede invocar una función de extensión pasando el receptor como primer argumento
+    	 println(2.squareFunType())     // Imprime: 4
+     }
      ```
 
      Se ha utilizado ***``Int.() -> Int``*** que es un **tipo función con receptor** (***function type with receiver***). En lugar de usar la referencia, se puede definir la función usando una de las ***function literals with receiver***. Dentro del cuerpo de la *function literal*, el objeto receptor pasado a una llamada se convierte en un ***this*** **implícito**, de modo que se puede acceder a los miembros de ese objeto receptor **sin ningún calificador adicional**, **o** acceder al objeto receptor **utilizando una expresión** ***this***. Este comportamiento es **similar a las funciones de extensión**, que también permiten acceder a los miembros del objeto receptor dentro del cuerpo de la función. A continuación, se muestra un ejemplo de una ***function literal with receiver*** junto con su tipo, donde se llama a la **función** ***``plus``*** en el objeto receptor:
 
      ```kotlin
-     val suma: Int.(Int)->Int = { other -> plus(other) } // plus() se llama en el receiver object (el 2)
-     println(suma(2, 2))   // Imprime: 4
-     println(2.suma(2))  // Imprime: 4
+     val suma: Int.(Int)->Int = { other -> plus(other) } // plus() se llama en el receiver object (el 4). Es decir, this.plus(other)
+     println(suma(4, 2))   // Imprime: 6
+     println(4.suma(2))  // Imprime: 6
      ```
 
      La **sintaxis de función anónima** permite especificar el tipo de receptor de una *function literal* directamente. Esto puede ser útil si se necesita declarar una variable de un *function type with receiver* y usarla más tarde.
