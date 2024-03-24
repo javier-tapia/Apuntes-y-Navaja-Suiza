@@ -16,6 +16,16 @@
 ### [7. ***Retrofit***](#retrofit)
 ### [8. ***SharedPreferences y EncryptedSharedPreferences***](#sharedpreferences-y-encryptedsharedpreferences)
 ### [9. Inyección de dependencias](#inyección-de-dependencias)
+   - #### [9.1 Inyección de dependencias: ¿qué es?](#inyección-de-dependencias-qué-es)
+   - #### [9.2 Dependencia fuerte == Alto acoplamiento](#dependencia-fuerte--alto-acoplamiento)
+   - #### [9.3 Formas básicas para inyectar dependencias](#formas-básicas-para-inyectar-dependencias)
+   - #### [9.4 ***Dagger***](#dagger)
+   - #### [9.5 _**Dagger Hilt**_](#dagger-hilt)
+      - ##### [9.5.1 Para las clases Android (``Activity``, ``Fragment``, ``View``, ``Service`` y ``BroadcastReceiver``)](#para-las-clases-android-activity-fragment-view-service-y-broadcastreceiver)
+      - ##### [9.5.2 Para los _view models_](#para-los-view-models)
+      - ##### [9.5.3 Inyección por constructor (_constructor injection_)](#inyección-por-constructor-constructor-injection)
+      - ##### [9.5.4 Inyección a través de módulos](#inyección-a-través-de-módulos)
+   - #### [9.6 ***Koin***](#koin)
 ### [10. Testing](#testing)
 ### [11. ***Players: ExoPlayer*** y ***JW Player***](#players-exoplayer-y-jw-player)
 ### [12. ***OAuth: Facebook, Twitter, Google+***](#oauth-facebook-twitter-google)
@@ -1436,7 +1446,7 @@ class Auto {
 }
 ```
 
-### Formas básicas para inyectar dependencias  
+### Formas básicas para inyectar dependencias
 - **Mediante el constructor**: se pasa la dependencia que la clase necesita a través de su constructor.
 
 ```kotlin
@@ -1680,7 +1690,26 @@ Tomando lo que indica la [documentación oficial](https://developer.android.com/
 > _Hilt está construido sobre la librería de inyección de dependencias de Dagger, lo que proporciona una forma estándar de incorporar Dagger en una aplicación de Android_.
 > _(...) Hilt reduce el código repetitivo (boilerplate) involucrado en el uso de Dagger en una aplicación de Android._
 
-Para configurarlo, es similar a _Dagger_. En el ***build.gradle*** del proyecto, se agrega:
+Para configurarlo usando Kotlin DSL, en el ***build.gradle.kts*** del proyecto, se agrega:
+
+````kotlin
+id("com.google.dagger.hilt.android") version <VERSION> apply false
+id("org.jetbrains.kotlin.kapt") version <VERSION> apply false
+````
+
+Y en el _**build.gradle.kts(:app)**_, se agrega lo siguiente:
+
+````kotlin
+id("com.google.dagger.hilt.android")
+kotlin("kapt")
+
+// El resto
+
+implementation( "com.google.dagger:hilt-android:<VERSION>")
+kapt("com.google.dagger:hilt-android-compiler:<VERSION>")
+````
+
+En caso de utilizar _Groovy_ en vez de Kotlin, en el ***build.gradle*** del proyecto, se agrega:
 
 ```kotlin
 id 'com.google.dagger.hilt.android' version '<VERSION>' apply false
@@ -1716,34 +1745,63 @@ A su vez, dentro del _Manifest_, se indica que esa clase será la que debe insta
 </application>
 ````
 
-Básicamente, hay cuatro formas de inyectar dependencias en un proyecto, dependiendo del lugar: para las _activities_, para los _view models_, para las clases que no son las dos anteriores y, por último, para las clases que pertenecen al _framework_ de Android o a librerías externas.
+Hay varias formas de inyectar dependencias en un proyecto, dependiendo del lugar:
 
-#### Para las _activities_
-Simplemente, se usa la anotación ``@AndroidEntryPoint``, el cual genera un componente _Hilt_ individual para cada clase de Android en el proyecto. Estos componentes pueden recibir dependencias de sus respectivas clases padre como se describe en la [Jerarquía de componentes](https://developer.android.com/training/dependency-injection/hilt-android#component-hierarchy).
+#### Para las clases Android (``Activity``, ``Fragment``, ``View``, ``Service`` y ``BroadcastReceiver``)
+Además de la ya mencionada ``@HiltAndroidApp`` y de ``@HiltViewModel`` (ver apartado [Para los _view models_](#para-los-view-models)), para las demás clases Android se usa la anotación ``@AndroidEntryPoint``, la cual genera un componente _Hilt_ individual para cada clase Android en el proyecto. Estos componentes pueden recibir dependencias de sus respectivas clases padre como se describe en la [Jerarquía de componentes](https://developer.android.com/training/dependency-injection/hilt-android#component-hierarchy). Si se anota una clase de Android con ``@AndroidEntryPoint``, también se deben anotar las clases Android que dependen de ella. Por ejemplo, si se anota un _fragment_, también se debe anotar cualquier _activity_ en la que se utilice ese _fragment_.  
+Para obtener dependencias de un componente, se usa la anotación ``@Inject`` para realizar la inyección del campo (ver apartado [Inyección por constructor (_constructor injection_)](#inyección-por-constructor-constructor-injection)):
+
+````kotlin
+@AndroidEntryPoint
+class ExampleActivity : AppCompatActivity() {
+
+  @Inject lateinit var analytics: AnalyticsAdapter
+  // El resto
+}
+````
 
 #### Para los _view models_
-Se usa la anotación ``@HiltViewModel``. El _ViewModel_ anotado con ``@HiltViewModel`` estará disponible para su creación mediante ``dagger.hilt.android.lifecycle.HiltViewModelFactory`` y se puede recuperar de forma predeterminada en una _Activity_ o _Fragment_ anotado con ``@AndroidEntryPoint``.
+El ``ViewModel`` es una clase Android que usa la anotación ``@HiltViewModel``. Los _view models_ anotados con ``@HiltViewModel`` estarán disponibles para su creación mediante ``dagger.hilt.android.lifecycle.HiltViewModelFactory`` y se pueden recuperar de forma predeterminada en una _Activity_ o _Fragment_ anotado con ``@AndroidEntryPoint``.  
 
-#### Clases que no son _activites_ ni _view models_
-Se anota el constructor con ``@Inject`` y se agrega la propiedad del tipo requerido:
+````kotlin
+@HiltViewModel
+class SomethingViewModel @Inject constructor(
+    val someRepository: SomeRepository
+) : ViewModel() {
+    // ...
+}
+````
+
+#### Inyección por constructor (_constructor injection_)
+Para realizar la inyección de un campo, _Hilt_ necesita saber cómo proporcionar instancias de las dependencias necesarias del componente correspondiente. Un enlace (_binding_) contiene la información necesaria para proporcionar instancias de un tipo como dependencia.  
+Una forma de proporcionar información vinculante (_binding information_) a _Hilt_ es la **inyección por constructor**. Para eso, se usa la anotación ``@Inject`` en el constructor de una clase para indicarle a _Hilt_ cómo proporcionar instancias de esa clase. Los parámetros de un constructor anotado de una clase son las dependencias de esa clase.  
+En el ejemplo, ``LoginRepository`` tiene ``LoginService`` como dependencia. Por lo tanto, _Hilt_ también debe saber cómo proporcionar instancias de ``LoginService``:
+
 ````kotlin
 class LoginRepository @Inject constructor(
     private val api: LoginService
 ) { }
 ````
 
-#### Clases del _framework_ de Android y _libs_ externas
-Cuando una dependencia no puede inyectarse como tal, se necesita hacer uso de _providers_. Para eso, se crean **clases destinadas a contener dichos _providers_ llamadas "módulos"** y que se anotan, justamente, con ``@Module``.  También se anota con ``@InstallIn``, que recibe por parámetro el _scope_ de la clase. Es decir, define cuánto tiempo vivirán las dependencias creadas.  
-Para crear el _provider_ propiamente dicho, dentro de esa clase se crea una función anotada con ``@Provides``. Y a su vez, también se anota con ``@Singleton`` para indicarle al inyector que sólo debe instanciar una vez lo que retorna dicha función.
+#### Inyección a través de módulos
+A veces, un tipo no se puede inyectar mediante el constructor como en el apartado anterior. Esto puede suceder por múltiples razones. Por ejemplo, no se puede inyectar por constructor en una interfaz. Tampoco se puede inyectar por constructor un tipo de una librería externa. En estos casos, se puede proporcionar a _Hilt_ información vinculante mediante el uso de **módulos**.  
+Un módulo _Hilt_ es una clase anotada con ``@Module``. Al igual que un módulo _Dagger_, le informa a _Hilt_ cómo proporcionar instancias de ciertos tipos. A diferencia de los módulos de _Dagger_, se debe anotar los módulos de _Hilt_ con ``@InstallIn`` para indicarle a _Hilt_ en qué clase de Android se utilizará o instalará cada módulo (el _scope_ de la clase, que define cuánto tiempo vivirán las dependencias creadas).  
+Las dependencias que se proporcionan en los módulos de _Hilt_ están disponibles en todos los componentes generados asociados con la clase Android donde se instala el módulo de _Hilt_.  
+Dentro de un módulo, se puede hacer uso de _providers_. Para crear el _provider_ propiamente dicho, dentro de esa clase se crea una función anotada con ``@Provides``. Y a su vez, también se anota con ``@Singleton`` para indicarle al inyector que sólo debe instanciar una vez lo que retorna dicha función.
 
 ````kotlin
-@Singleton
-@Provides
-fun provideRetrofit(): Retrofit {
-    return Retrofit.Builder()
-        .baseUrl("https://something/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+@Module
+@InstallIn(SingletonComponent::class)
+class NetworkModule {
+
+    @Singleton
+    @Provides
+    fun provideRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://something/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
 }
 ````
 
