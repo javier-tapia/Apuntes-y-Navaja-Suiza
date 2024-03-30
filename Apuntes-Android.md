@@ -1709,7 +1709,7 @@ implementation( "com.google.dagger:hilt-android:<VERSION>")
 kapt("com.google.dagger:hilt-android-compiler:<VERSION>")
 ````
 
-En caso de utilizar _Groovy_ en vez de Kotlin, en el ***build.gradle*** del proyecto, se agrega:
+En caso de utilizar _Groovy_ en vez de Kotlin DSL, en el ***build.gradle*** del proyecto, se agrega:
 
 ```kotlin
 id 'com.google.dagger.hilt.android' version '<VERSION>' apply false
