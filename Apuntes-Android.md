@@ -231,7 +231,7 @@ Los componentes concientes del ciclo de vida (***lifecycle-aware***), **ajustan 
 La **Clase** ***Lifecycle*** mantiene la información sobre el estado del ciclo de vida de un componente (como una *activity* o un *fragment*) y permite que otros objetos tengan este estado.
 Sus **enumeraciones** ***Event*** y ***State*** permiten **rastrear los flujos posibles del ciclo de vida** como se ve la siguiente gráfica:
 
-<img src="Lifecycle - Events & States.png" width="500">
+<img src="images/Lifecycle - Events & States.png" width="500">
 
 La **Interfaz** ***LifecycleObserver*** representa al observador encargado de monitorear el estado del ciclo de vida de un componente a través de la anotación ***``@OnLifecycleEvent``***. El método ***``addObserver()``*** se usa para vincular el dueño del ciclo de vida al observador.
 
@@ -552,7 +552,7 @@ Interacción entre componentes:
 - ***View***: Es una interfaz pasiva que muestra los datos que recibe del presentador y enruta los comandos (eventos) del usuario al presentador. Está separada del modelo.
 - ***Presenter***: Es una interfaz que contiene toda la lógica de presentación de la vista. Envía comandos al modelo y notificaciones a la vista (*activity/fragment*) de los cambios ocurridos en el modelo, **haciendo uso de** ***interfaces***. El presentador es el mediador entre la vista y el modelo.
 
-<img src="MVP.png" width="600">
+<img src="images/MVP.png" width="600">
 
 Un ejemplo del patrón MVP sería algo así:  
 
@@ -622,7 +622,7 @@ Interacción entre componentes
 ***\* Binder***: En el *stack* de soluciones de Microsoft (MVVM fue inventado por dos arquitectos de Microsoft), el *binder* es un lenguaje de marcado llamado XAML. El *binder* libera al desarrollador de escribir lógica *boilerplate* para sincronizar el modelo con la vista. Si se desea utilizar este patrón fuera del *stack* de Microsoft, la presencia de una tecnología de enlace de datos declarativo es imprescindible. **Sin un ***binder***, no llega a ser un MVVM real**. Android Jetpack incorpora entre sus componentes la **librería** ***DataBinding***, que permite a los desarrolladores vincular de manera declarativa los datos observables a los elementos de la interfaz de usuario. De esta forma se disminuye considerablemente mucho código *boilerplate* en la lógica de presentación, lo que hace que la interfaz de usuario sea más simple y fácil de mantener.  
 **La principal diferencia** entre el *ViewModel* del MVVM y el *Presenter* del MVP, es que **el ***Presenter*** tiene una referencia a una vista**, mientras que **el ***ViewModel*** no**. En otras palabras, **MVP se basa en un paradigma imperativo** (la vista comunica eventos al presenter, el presenter solicita acciones a la vista) mientras que **MVVM se basa en la observación** (el *ViewModel* expone datos observables, la vista se suscribe y escucha dichos datos).
 
-<img src="MVVM.png" width="500">
+<img src="images/MVVM.png" width="500">
 
 El mismo ejemplo, pasado de MVP a MVVM (sin usar *DataBinding*):  
 
@@ -746,7 +746,7 @@ class MainActivityVM : AppCompatActivity() {
 ### ***Repository***:  
 Este patrón arquitectónico se usa en conjunto con los patrones descriptos antes (MVP y MVVM), entre otros, y es responsable de abstraer o **aislar las fuentes de datos del resto de la aplicación**, sea una base de datos o una consulta a una servicio *web*. Para implementar un repositorio, se usa una clase Repositorio que implemente una interfaz previamente creada, para cumplir con el **principio de inversión de dependencias** (depender de abstracciones y no de implementaciones) y que el código quede más desacoplado y fácil de testear. Un módulo de repositorio maneja operaciones de datos y permite usar múltiples *backends*. En una aplicación típica, **el repositorio implementa la lógica para decidir si obtener datos de una red o usar los resultados cacheados en una base de datos local**.
 
-<img src="Repository.png" width="600">
+<img src="images/Repository.png" width="600">
 
 Hay casos en los que se usa *LiveData* para comunicarse entre un repositorio y un *ViewModel*. Usar *LiveData* en este caso parece correcto. Después de todo, está diseñado para almacenar y pasar datos. Pero no se recomienda. El propósito principal de *LiveData* es contener un conjunto de datos que se puedan observar, distinguiéndose además de otros observables en que tiene en cuenta el ciclo de vida. Sin embargo, algo clave a tener en cuenta, es que **los observadores de ***LiveData*** siempre se llaman en el hilo principal** (***main thread***). Cuando se usa *LiveData* en el repositorio para pasar los datos al *ViewModel*, el *ViewModel* debería actuar como un observador, por lo que se necesita invocar la ejecución en el hilo principal. Y no se recomienda que los *ViewModel*s utilicen operaciones en el hilo principal. A menudo también se usan transformaciones en los datos obtenidos de los servidores. Y al usar *LiveData*, hay que hacerlo en el hilo principal, lo cual tampoco se recomienda.  
 Para solventar esta situación, se puede recurrir al uso de **Kotlin** ***Coroutines Flow*** (ver apartado *Manejo de Asíncronos*).
@@ -1649,7 +1649,7 @@ class GalleryFragment : Fragment() {
 }
 ```
 
-<img src="Dagger.png" width="700">
+<img src="images/Dagger.png" width="700">
 
 El esquema anterior representa una forma de estructurar componentes y módulos para proveer las dependencias. En él destaca un componente, ***AppComponent***, el componente principal al que están ligados los siguientes módulos:  
 - ***AppModule***: este módulo se encargará de proporcionar las **dependencias únicas** (***Singleton***) que **pervivirán a lo largo del ciclo de vida de la aplicación**.
