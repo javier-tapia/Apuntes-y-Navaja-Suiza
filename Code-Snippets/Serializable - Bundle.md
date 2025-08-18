@@ -1,6 +1,6 @@
 # _Serializable_ / _Bundle_
 
-Para reemplazar `~~getSerializableExtra~~` y `~~getParcelableExtra~~` cuando se marcan como **deprecados**, según la versión de Android:
+Para reemplazar `getSerializableExtra` y `getParcelableExtra` cuando se marcan como **deprecados**, según la versión de Android:
 
 ```kotlin
 inline fun <reified T : Serializable> Bundle.serializable(key: String): T? = when {
