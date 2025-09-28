@@ -15,7 +15,7 @@
       * [🧭 Flujos en el patrón MVI](#-flujos-en-el-patrón-mvi)
       * [🧱 Estructura básica de clases (*data classes*)](#-estructura-básica-de-clases-data-classes)
       * [🧠 *ViewModel* (maneja eventos y emite estados/efectos)](#-viewmodel-maneja-eventos-y-emite-estadosefectos)
-      * [🖼️ *Fragment* (observa el estado y envía eventos)](#-fragment-observa-el-estado-y-envía-eventos)
+      * [🎨 *Fragment* (observa el estado y envía eventos)](#-fragment-observa-el-estado-y-envía-eventos)
     * [*Repository*](#repository)
   * [Componentes de Arquitectura](#componentes-de-arquitectura)
     * [*Lifecycle*](#lifecycle)
@@ -365,7 +365,7 @@ Separa claramente:
     }
 ```
 
-#### 🖼️ *Fragment* (observa el estado y envía eventos)
+#### 🎨 *Fragment* (observa el estado y envía eventos)
 
 ```kotlin
     class MyFragment : Fragment() {
