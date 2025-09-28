@@ -1,17 +1,20 @@
-# Comandos útiles - ADB 
+<h1>Comandos útiles - ADB (<i>Android Debug Bridge</i>)</h1>
 
-- [Ver la lista de dispositivos conectados](#ver-la-lista-de-dispositivos-conectados)
-- [Ver la lista de procesos](#ver-la-lista-de-procesos)
-- [Ver qué *activity* está en primer plano](#ver-qué-activity-está-en-primer-plano)
-- [Listar todos los paquetes instalados](#listar-todos-los-paquetes-instalados)
-- [Buscar un paquete en particular](#buscar-un-paquete-en-particular)
-- [Matar un proceso](#matar-un-proceso)
-- [Simular un *shake* en el emulador](#simular-un-shake-en-el-emulador)
-- [Iniciar *activity* con un *deeplink*](#iniciar-activity-con-un-deeplink)
-- [Hacer un *dump* del *stack* de *activities*](#hacer-un-dump-del-stack-de-activities)
-- [Hacer un *dump* de las *windows*](#hacer-un-dump-de-las-windows)
-- [Disparar el *callback* `onTrimMemory()`](#disparar-el-callback-ontrimmemory)
-- [Iniciar *logcat* y guardarlo en un archivo local](#iniciar-logcat-y-guardarlo-en-un-archivo-local)
+***Index***:
+<!-- TOC -->
+  * [Ver la lista de dispositivos conectados](#ver-la-lista-de-dispositivos-conectados)
+  * [Ver la lista de procesos](#ver-la-lista-de-procesos)
+  * [Ver qué *activity* está en primer plano](#ver-qué-activity-está-en-primer-plano)
+  * [Listar todos los paquetes instalados](#listar-todos-los-paquetes-instalados)
+  * [Buscar un paquete en particular](#buscar-un-paquete-en-particular)
+  * [Matar un proceso](#matar-un-proceso)
+  * [Simular un *shake* en el emulador](#simular-un-shake-en-el-emulador)
+  * [Iniciar *activity* con un *deeplink*](#iniciar-activity-con-un-deeplink)
+  * [Hacer un *dump* del *stack* de *activities*](#hacer-un-dump-del-stack-de-activities)
+  * [Hacer un *dump* de las *windows*](#hacer-un-dump-de-las-windows)
+  * [Disparar el *callback* `onTrimMemory()`](#disparar-el-callback-ontrimmemory)
+  * [Iniciar *logcat* y guardarlo en un archivo local](#iniciar-logcat-y-guardarlo-en-un-archivo-local)
+<!-- TOC -->
 
 ---
 

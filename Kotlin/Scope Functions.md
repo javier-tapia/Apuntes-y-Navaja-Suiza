@@ -1,10 +1,4 @@
-## *Scope functions* (``let``, ``run``, ``with``, ``apply`` y ``also``)
-
-- [`let`](#let)
-- [`run`](#run)
-- [`with`](#with)
-- [`apply`](#apply)
-- [`also`](#also)
+<h1><i>Scope functions</i></h1>
 
 Su único propósito es ejecutar un bloque de código **dentro del contexto de un objeto**. Cuando se llama a una de estas funciones en un objeto con una expresión *lambda* proporcionada, forma un **ámbito** (***scope***) **temporal**.  En este ámbito, se puede **acceder al objeto sin su nombre**.
 
@@ -24,6 +18,19 @@ Su único propósito es ejecutar un bloque de código **dentro del contexto de u
     }
 ```
 
+***Index***:
+<!-- TOC -->
+  * [Comparativa](#comparativa)
+  * [`let`](#let)
+  * [`run`](#run)
+  * [`with`](#with)
+  * [`apply`](#apply)
+  * [`also`](#also)
+<!-- TOC -->
+
+---
+
+## Comparativa
 Hay dos diferencias principales entre cada una de ellas: la forma de referirse al **objeto de contexto** y el **valor de retorno**.
 > Sobre el concepto de ***Receiver***, ver [acá](../Glosary%20&%20Core%20Concepts/Software%20in%20general.md#receiver)
 
@@ -37,7 +44,7 @@ Hay dos diferencias principales entre cada una de ellas: la forma de referirse a
 | **`apply`**          | `this` (*receiver*)                                     | Objeto de contexto                    |
 | **`also`**           | `it` (argumento de la *lambda*)                         | Objeto de contexto                    |
 
-### `let`
+## `let`
 | **Situación**                                                                                    | **Usar `let`**                                                                                                                                                                                                                                                                       |
 |--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Chequeo de nulabilidad de variable mutable (`var`)**                                           | ✅ **Sí.** `let` crea una copia inmutable (`it`) del valor de la variable mutable en el momento de la verificación, asegurando que el valor no cambie dentro del bloque `let` incluso si la variable original es modificada por otro hilo.                                            |
@@ -48,14 +55,14 @@ Hay dos diferencias principales entre cada una de ellas: la forma de referirse a
 | **Obtener el resultado final de una cadena de operaciones / transformación**                     | ✅ **Sí.** `let` devuelve el resultado de la expresión lambda. Esto es útil para transformar un objeto y asignar este nuevo resultado a una variable o usarlo directamente, eliminando la necesidad de una variable temporal intermedia.                                              |
 | **Necesidad de encadenar el objeto original después del bloque (ej.: para efectos secundarios)** | ❌ **No (usar `also`).** `let` devuelve el resultado de la lambda. Si necesitas realizar alguna acción con el objeto y luego seguir usando el objeto *original* en una cadena, `also` es más adecuado porque devuelve el objeto de contexto (`this`) original.                        |
 
-### `run`
+## `run`
 TODO...
 
-### `with`
+## `with`
 TODO...
 
-### `apply`
+## `apply`
 TODO...
 
-### `also`
+## `also`
 TODO...

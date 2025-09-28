@@ -1,4 +1,4 @@
-# _Serializable_ / _Bundle_
+<h1><i>Serializable / Bundle</i></h1>
 
 ## Validación métodos deprecados
 Para reemplazar `getSerializableExtra` y `getParcelableExtra` cuando se marcan como **deprecados**, según la versión de Android:

@@ -1,4 +1,5 @@
-## *Aggregate operations*
+<h1><i>Aggregate operations</i></h1>
+
 Las colecciones de Kotlin contienen funciones para operaciones de agrupación (o agregación) de uso común: operaciones que **devuelven un valor único en función del contenido** de la colección, como por ejemplo, los valores mínimo y máximo (***``min()``*** y ***``max()``***), el número de elementos (***``count()``***), la suma de todos los elementos (***``sum()``***) o el valor promedio (***``average()``***).  
 Un ejemplo de operación de agrupamiento es el cálculo del promedio de temperatura a partir de los valores de temperatura diaria durante un mes.
 
@@ -14,12 +15,15 @@ Un ejemplo de operación de agrupamiento es el cálculo del promedio de temperat
     }
 ```
 
-- [`max...`, `min...`, `sum...`](#max-min-sum)
-- [*Fold and reduce*](#fold-and-reduce)
+***Index***:
+<!-- TOC -->
+  * [`max...`, `min...`, `sum...`](#max-min-sum)
+  * [*Fold and reduce*](#fold-and-reduce)
+<!-- TOC -->
 
 ---
 
-### `max...`, `min...`, `sum...`
+## `max...`, `min...`, `sum...`
 Hay varias funciones que sirven para recuperar los elementos más pequeños y más grandes mediante funciones de selección o mediante un comparador personalizado, como son:
 
 + ***``maxBy()``*** y ***``minBy()``***, que mediante una función de selección devuelven el elemento con el valor más grande o más pequeño (o en caso de igualdad, el primero que encuentra)
@@ -69,7 +73,7 @@ También hay funciones de suma avanzada o compleja que toman una función que op
     }
 ```
 
-### *Fold and reduce*
+## *Fold and reduce*
 Para casos más específicos, existen las funciones ***``reduce()``*** y ***``fold()``***, que aplican la operación proporcionada a los elementos de la colección de forma secuencial y devuelven el **resultado acumulado**. La operación toma dos argumentos: el valor acumulado previamente y el elemento de colección, con la diferencia de que *fold()* toma un valor inicial y lo usa como el valor acumulado en el primer paso, mientras que *reduce()* usa en el primer paso el primer y el segundo elemento como argumentos de la operación. Para aplicar estas funciones en el orden inverso, se usan las funciones ***``reduceRight()``*** y ***``foldRight()``***, que operan de manera similar a *reduce()* y *fold()* pero comienzan desde el último elemento y avanzan hacia el anterior hasta el primero (además hay que tener en cuenta que en estas funciones los argumentos de la operación cambian su orden: primero va el elemento y luego el valor acumulado). También podemos realizar operaciones que toman los índices de los elementos como parámetros con las funciones ***``reduceIndexed()``*** y ***``foldIndexed()``*** pasando el índice del elemento como primer argumento de la operación (y las funciones inversas que aplican las operaciones a los elementos de la colección de derecha a izquierda: ***``reduceRightIndexed()``*** y ***``foldRightIndexed()``***).
 
 ```kotlin

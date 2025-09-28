@@ -1,122 +1,83 @@
-# Apuntes de Android
+<h1>Apuntes de Android</h1>
 
-## Arquitectura - _Core_
-<details>
-  <summary><b>🔎👇 Patrones de presentación & Repository</b></summary>
+***Index***:
+<!-- TOC -->
+  * [Patrones de presentación & *Repository*](#patrones-de-presentación--repository)
+    * [*MVP (Model View Presenter)*](#mvp-model-view-presenter)
+      * [En la *Activity*](#en-la-activity)
+      * [En el *Presenter*](#en-el-presenter)
+    * [*MVVM (Model View ViewModel)*](#mvvm-model-view-viewmodel)
+      * [En la *Activity*](#en-la-activity-1)
+      * [En el *ViewModel*](#en-el-viewmodel)
+      * [En la *Activity*](#en-la-activity-2)
+      * [En el *xml*](#en-el-xml)
+    * [*MVI (Model View Intent)*](#mvi-model-view-intent)
+      * [🧭 Flujos en el patrón MVI](#-flujos-en-el-patrón-mvi)
+      * [🧱 Estructura básica de clases (*data classes*)](#-estructura-básica-de-clases-data-classes)
+      * [🧠 *ViewModel* (maneja eventos y emite estados/efectos)](#-viewmodel-maneja-eventos-y-emite-estadosefectos)
+      * [🖼️ *Fragment* (observa el estado y envía eventos)](#-fragment-observa-el-estado-y-envía-eventos)
+    * [*Repository*](#repository)
+  * [Componentes de Arquitectura](#componentes-de-arquitectura)
+    * [*Lifecycle*](#lifecycle)
+    * [*ViewModel*](#viewmodel)
+    * [*LiveData*](#livedata)
+    * [Manejo de *Flows* en la UI](#manejo-de-flows-en-la-ui)
+      * [Consideraciones importantes](#consideraciones-importantes)
+      * [Ejemplos en un *fragment*](#ejemplos-en-un-fragment)
+  * [Inyección de dependencias](#inyección-de-dependencias)
+    * [¿Qué es?](#qué-es)
+    * [Dependencia fuerte == Alto acoplamiento](#dependencia-fuerte--alto-acoplamiento)
+    * [*Service Locator*](#service-locator)
+    * [Formas básicas para inyectar dependencias](#formas-básicas-para-inyectar-dependencias)
+    * [*Dagger*](#dagger)
+      * [``@Inject``](#inject)
+      * [``@Component``](#component)
+      * [``@Singleton``](#singleton)
+      * [``@Module``, ``@Provides`` y ``@Binds``](#module-provides-y-binds)
+    * [*Dagger Hilt*](#dagger-hilt)
+      * [Para las clases Android (``Activity``, ``Fragment``, ``View``, ``Service`` y ``BroadcastReceiver``)](#para-las-clases-android-activity-fragment-view-service-y-broadcastreceiver)
+      * [Para los *view models*](#para-los-view-models)
+      * [Inyección por constructor (*constructor injection*)](#inyección-por-constructor-constructor-injection)
+      * [Inyección a través de módulos](#inyección-a-través-de-módulos)
+    * [*Koin*](#koin)
+  * [UI imperativa](#ui-imperativa)
+    * [*ViewBinding*](#viewbinding)
+      * [Cómo usar *ViewBinding* en una *Activity*](#cómo-usar-viewbinding-en-una-activity)
+      * [Cómo usar *ViewBinding* en un *Adapter* de *RecyclerView*](#cómo-usar-viewbinding-en-un-adapter-de-recyclerview)
+    * [*DataBinding*](#databinding)
+    * [*@BindingAdapter*](#bindingadapter)
+      * [En el archivo *.kt*:](#en-el-archivo-kt)
+      * [Y en el *xml*:](#y-en-el-xml)
+      * [En el archivo *.kt*:](#en-el-archivo-kt-1)
+      * [Y en el *xml*:](#y-en-el-xml-1)
+    * [*RecyclerView*](#recyclerview)
+    * [Proceso de *layout* de una vista](#proceso-de-layout-de-una-vista)
+    * [*Styles y Themes*](#styles-y-themes)
+      * [En ***Styles.xml***:](#en-stylesxml)
+      * [En ***AndroidManifest.xml***:](#en-androidmanifestxml)
+    * [*Custom Views*](#custom-views)
+      * [En la clase ***custom***:](#en-la-clase-custom)
+      * [En el ***xml***:](#en-el-xml-1)
+      * [Por ejemplo, en ***res/values/attr.xml***:](#por-ejemplo-en-resvaluesattrxml)
+      * [Y en ***res/layout/mylayout.xml*** ahora se puede hacer:](#y-en-reslayoutmylayoutxml-ahora-se-puede-hacer)
+    * [*Menus*](#menus)
+      * [Para usar elementos de menú que se pueden activar, en el ***xml***:](#para-usar-elementos-de-menú-que-se-pueden-activar-en-el-xml)
+      * [Y para comprobar y establecer el estado de activación:](#y-para-comprobar-y-establecer-el-estado-de-activación)
+  * [UI declarativa](#ui-declarativa)
+  * [Navegación](#navegación)
+  * [Accesibilidad (*a11y*)](#accesibilidad-a11y)
+  * [*Background & System*](#background--system)
+  * [Persistencia de datos](#persistencia-de-datos)
+  * [*Networking & API's*](#networking--apis)
+  * [Multimedia](#multimedia)
+  * [*Testing*](#testing)
+    * [Consideraciones sobre los *tests*](#consideraciones-sobre-los-tests)
+  * [Referencias y Fuentes](#referencias-y-fuentes)
+<!-- TOC -->
 
-- [*MVP (Model View Presenter)*](#mvp-model-view-presenter)
-- [*MVVM (Model View ViewModel)*](#mvvm-model-view-viewmodel)
-- [*MVI (Model View Intent)*](#mvi-model-view-intent)
-- [*Repository*](#repository)
-</details>
-
-<details>
-  <summary><b>🔎👇 Componentes de Arquitectura</b></summary>
-
-- [*Lifecycle*](#lifecycle)
-- [*ViewModel*](#viewmodel)
-- [*LiveData*](#livedata)
-- [Manejo de *Flows* en la UI](#manejo-de-flows-en-la-ui)
-   - [Consideraciones importantes](#consideraciones-importantes)
-   - [Ejemplos en un *fragment*](#ejemplos-en-un-fragment)
-</details>
-
-<details>
-  <summary><b>🔎👇 Inyección de dependencias</b></summary>
-
-- [Inyección de dependencias: ¿qué es?](#inyección-de-dependencias-qué-es)
-- [Dependencia fuerte == Alto acoplamiento](#dependencia-fuerte--alto-acoplamiento)
-- [*Service Locator*](#service-locator)
-- [Formas básicas para inyectar dependencias](#formas-básicas-para-inyectar-dependencias)
-- [*Dagger*](#dagger)
-- [*Dagger Hilt*](#dagger-hilt)
-- [*Koin*](#koin)
-</details>
-
-## UI - Presentación
-<details>
-  <summary><b>🔎👇 UI imperativa</b></summary>
-
-- [*ViewBinding*](#viewbinding)
-- [*DataBinding*](#databinding)
-- [*@BindingAdapter*](#bindingadapter)
-- [*RecyclerView*](#recyclerview)
-- [*Styles y Themes*](#styles-y-themes)
-- [*Custom Views*](#custom-views)
-- [*Menus*](#menus)
-</details>
-
-<details>
-  <summary><b>🔎👇 UI declarativa</b></summary>
-
-- [*Jetpack Compose*](Android/UI/Jetpack Compose.md)
-</details>
-
-<details>
-  <summary><b>🔎👇 Navegación</b></summary>
-
-- [*Navigation component*](Android/UI/Navigation Component.md)
-</details>
-
-<details>
-  <summary><b>🔎👇 Accesibilidad</b></summary>
-
-- [Accesibilidad (*a11y*)](Android/UI/Accesibilidad.md)
-</details>
-
-## Librerías & _Frameworks_
-<details>
-  <summary><b>🔎👇 Background & Sistema</b></summary>
-
-- [*BroadcastReceiver*](Android/Libs%20&%20Frameworks/Background%20&%20Sistema.md)
-- [*Services*](Android/Libs%20&%20Frameworks/Background%20&%20Sistema.md)
-- [*WorkManager*](Android/Libs%20&%20Frameworks/Background%20&%20Sistema.md)
-- [*Push notifications*](Android/Libs%20&%20Frameworks/Background%20&%20Sistema.md)
-- [*Deep linking*](Android/Libs%20&%20Frameworks/Background%20&%20Sistema.md)
-- [*Location*](Android/Libs%20&%20Frameworks/Background%20&%20Sistema.md)
-</details>
-
-<details>
-  <summary><b>🔎👇 Persistencia de datos</b></summary>
-
-- [*SharedPreferences & EncryptedSharedPreferences*](Android/Libs%20&%20Frameworks/Persistencia%20de%20datos.md)
-- [*DataStore*](Android/Libs%20&%20Frameworks/Persistencia%20de%20datos.md)
-- [Bases de datos: *Room* y *Realm*](Android/Libs%20&%20Frameworks/Persistencia%20de%20datos.md)
-</details>
-
-<details>
-  <summary><b>🔎👇 Networking & API's</b></summary>
-
-- [*Retrofit*](Android/Libs%20&%20Frameworks/Networking%20&%20API's.md)
-- [*OAuth: Facebook, Twitter, Google+*](Android/Libs%20&%20Frameworks/Networking%20&%20API's.md)
-- [*Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook*](Android/Libs%20&%20Frameworks/Networking%20&%20API's.md)
-</details>
-
-<details>
-  <summary><b>🔎👇 Multimedia</b></summary>
-
-- [*Players: ExoPlayer* y *JW Player*](Android/Libs%20&%20Frameworks/Multimedia.md)
-</details>
-
-## _Testing_
-- [Consideraciones](#consideraciones-sobre-los-tests)
-
-<details>
-  <summary><b>🔎👇 Herramientas para testing en Android</b></summary>
-
-- [_JUnit_](Android/Testing/Testing Tools.md)
-- [_MockK_](Android/Testing/Testing Tools.md)
-- [_Mockito_](Android/Testing/Testing Tools.md)
-- [_Robolectric_](Android/Testing/Testing Tools.md)
-- [_Espresso_](Android/Testing/Testing Tools.md)
-- [*Testing* con Corrutinas](Android/Testing/Testing Tools.md)
-- [Complementos de *testing*](Android/Testing/Testing Tools.md)
-</details>
-
-## [Referencias - Fuentes](#referencias-y-fuentes)
----
 ---
 
+## Patrones de presentación & *Repository*
 ### *MVP (Model View Presenter)*
 Es una derivación del patrón MVC (*Model View Controller*) y es un patrón arquitectónico de interfaz de usuario diseñado principalmente para facilitar las pruebas unitarias automatizadas. En MVP, el presentador asume la funcionalidad del “hombre medio”. Toda **la lógica de presentación se envía al presentador** y toda **la lógica de negocio al modelo**.  
 Interacción entre componentes:
@@ -338,7 +299,7 @@ Separa claramente:
 > - Los estados (`uiState`) y efectos (`uiEffect`) son observados continuamente, por lo que deben **cancelarse automáticamente** al destruirse la vista para evitar fugas de memoria.
 > - Los eventos (`uiEvent`) son disparados puntualmente, por lo que requieren cancelación **manual** para evitar múltiples ejecuciones innecesarias o redundantes.
 
-#### 🧱 Estructura básica de clases (_data classes_)
+#### 🧱 Estructura básica de clases (*data classes*)
 
 ```kotlin
     // Estado de la UI (persistente)
@@ -361,7 +322,7 @@ Separa claramente:
     }
 ```
 
-#### 🧠 _ViewModel_ (maneja eventos y emite estados/efectos)
+#### 🧠 *ViewModel* (maneja eventos y emite estados/efectos)
 
 ```kotlin
     class MyViewModel : ViewModel() {
@@ -404,7 +365,7 @@ Separa claramente:
     }
 ```
 
-#### 🖼️ Fragment / Activity (observa el estado y envía eventos)
+#### 🖼️ *Fragment* (observa el estado y envía eventos)
 
 ```kotlin
     class MyFragment : Fragment() {
@@ -454,6 +415,7 @@ Hay casos en los que se usa *LiveData* para comunicarse entre un repositorio y u
 
 ---
 
+## Componentes de Arquitectura
 ### *Lifecycle*
 Los componentes concientes del ciclo de vida (***lifecycle-aware***), **ajustan sus comportamientos** en base al ciclo de vida de *activities* y *fragments*. **Evitan poner acciones** de los componentes y/o librerías dependientes **en los controladores del ciclo de vida** (***``onResume()``***, ***``onPause()``***, ***``onStop()``***, etc.). Este aislamiento de esas acciones, ayuda a crear código liviano, conciso y organizado, lo que se traduce en **mayor facilidad de mantenimiento** de la *app*. Para esto, se utiliza el modelo de observación propuesto en *Android Jetpack* para componentes conscientes de ciclos de vida de la librería ***androix.lifecycle***. Básicamente, se debe:
 1. Implementar ***LifecycleOwner*** sobre el componente que tiene el ciclo de vida
@@ -739,7 +701,9 @@ La emisión en sí misma es generalmente una operación ligera, por lo que no su
 
 ---
 
-### Inyección de dependencias: ¿qué es?
+## Inyección de dependencias
+### ¿Qué es?
+
 > Para profundizar sobre el Principio de Inversión de Dependencias, ver [acá](Apuntes-Arquitectura.md#dependency-inversion)
 
 La inyección de dependencias nació para reducir el acoplamiento entre los componentes (las clases) de un sistema; básicamente, es un patrón de diseño en el que **se suministran objetos a una clase en lugar de ser la propia clase la que crea dichos objetos**. Este patrón facilita mucho intentar cumplir uno de los principios SOLID, el de **inversión de dependencias**. Según este principio, **las clases deben depender de abstracciones y no de detalles de implementación**, esto las hace más fuertes frente al cambio e independientes de *frameworks*, además de más fáciles de testear (si por ejemplo se crea una instancia dentro de un método, no se podrá testear dicho método de forma aislada, ya que no se tendrá forma de sustituir el comportamiento de la instancia creada, y cualquier error en el test hará dudar de qué clase es la culpable).
@@ -1116,7 +1080,7 @@ Para obtener dependencias de un componente, se usa la anotación ``@Inject`` par
     }
 ````
 
-#### Para los _view models_
+#### Para los *view models*
 El ``ViewModel`` es una clase Android que usa la anotación ``@HiltViewModel``. Los _view models_ anotados con ``@HiltViewModel`` estarán disponibles para su creación mediante ``dagger.hilt.android.lifecycle.HiltViewModelFactory`` y se pueden recuperar de forma predeterminada en una _Activity_ o _Fragment_ anotado con ``@AndroidEntryPoint``.
 
 ````kotlin
@@ -1128,7 +1092,7 @@ El ``ViewModel`` es una clase Android que usa la anotación ``@HiltViewModel``. 
     }
 ````
 
-#### Inyección por constructor (_constructor injection_)
+#### Inyección por constructor (*constructor injection*)
 Para realizar la inyección de un campo, _Hilt_ necesita saber cómo proporcionar instancias de las dependencias necesarias del componente correspondiente. Un enlace (_binding_) contiene la información necesaria para proporcionar instancias de un tipo como dependencia.  
 Una forma de proporcionar información vinculante (_binding information_) a _Hilt_ es la **inyección por constructor**. Para eso, se usa la anotación ``@Inject`` en el constructor de una clase para indicarle a _Hilt_ cómo proporcionar instancias de esa clase. Los parámetros de un constructor anotado de una clase son las dependencias de esa clase.  
 En el ejemplo, ``LoginRepository`` tiene ``LoginService`` como dependencia. Por lo tanto, _Hilt_ también debe saber cómo proporcionar instancias de ``LoginService``:
@@ -1265,6 +1229,7 @@ Y ya se podría recibir la dependencia o dependencias en la *Activity* o *Fragme
 
 ---
 
+## UI imperativa
 ### *ViewBinding*
 Es una forma de **acceder a las vistas** (*xml*) que equilibra el rendimiento y la potencia, **sin necesidad de recurrir a otras alternativas**, como el método ***``findViewById()``*** (que en sí mismo es bastante costoso), ***Butterknife*** o ***Synthetic***. *ViewBinding* es un ‘subconjunto’ de *DataBinding* que evita la sobrecarga de compilación que produce el utilizar *DataBinding*. Se usa si no se necesita añadir código a las vistas (*xml*) ni realizar esa asignación directa entre una variable del código y una vista del *xml* que permite *DataBinding*. A diferencia de otras formas de enlazar las vistas, como por ejemplo *synthetic* de *kotlin extensions*, *ViewBinding* permite que **el compilador conozca la nulidad de la vista**.
 La forma de configurarlo depende de la versión de Android Studio. Para Android Studio 4.0 y siguientes, en el *build.gradle* poner lo siguiente **dentro de ``android{}``**:
@@ -1486,6 +1451,42 @@ Sin embargo, también es posible utilizar otras soluciones que provee *RecyclerV
 - ***DiffUtil***: Si el *RecyclerView* muestra una lista que se recupera desde cero para cada actualización (por ejemplo, de la red o de una base de datos), *DiffUtil* puede **calcular la diferencia entre las versiones de la lista**. *DiffUtil* toma ambas listas como entrada y calcula la diferencia, que se puede pasar a *RecyclerView* para activar animaciones y actualizaciones mínimas para mantener el rendimiento de la interfaz de usuario, y las animaciones significativas. Este enfoque requiere que cada lista se represente en la memoria con contenido inmutable y se basa en recibir actualizaciones como nuevas instancias de listas. También es ideal si la capa de interfaz de usuario no implementa un ordenamiento, solo presenta los datos en el orden en que se proporcionan. Hay tres API’s principales para aplicarlo (de mayor a menor nivel de abstracción): ***ListAdapter***, ***AsyncListDiffer*** y ***DiffUtil***. Cada enfoque permite especificar cómo se deben calcular las diferencias en función de los datos.
 - ***SortedList***: Puede mantener los elementos en orden y también **notificar los cambios en la lista** de modo que pueda vincularse a un *RecyclerView.Adapter*. Mantiene los elementos ordenados mediante el *callback* ***``compare(Object, Object)``*** y utiliza búsqueda binaria para recuperar elementos. Si los criterios de ordenamiento de los elementos pueden cambiar, hay que asegurarse de llamar a los métodos apropiados mientras se editan para evitar inconsistencias de datos. Se puede controlar el orden de los elementos y cambiar las notificaciones a través del parámetro ``Callback``. *SortedList* funciona si solo se necesita manejar eventos de inserción y eliminación, y tiene la ventaja de que **solo se necesita tener una única copia de la lista en memoria**.
 - ***Paging Library***: La librería de paginación amplía el enfoque basado en diferencias para admitir, adicionalmente, la carga paginada (cargar y mostrar pequeños fragmentos de datos a la vez). Esta carga de datos parciales a pedido reduce el uso del ancho de banda de la red y los recursos del sistema. Proporciona la clase ``androidx.paging.PagedList`` que funciona como una lista de carga automática, proporcionada una fuente de datos como una base de datos o una API de red paginada.
+
+### Proceso de *layout* de una vista
+
+> 🔍 Reference:  
+> https://developer.android.com/guide/topics/ui/how-android-draws
+> 
+
+1. ***Measure***
+El método [`measure(widthMeasureSpec: Int, heightMeasureSpec: Int)`](https://developer.android.com/reference/android/view/View#measure(int,%20int)):
+
+- Recibe especificaciones de medida para ancho y alto (`MeasureSpec`)
+- Determina el tamaño que necesita la vista según sus contenidos y restricciones
+- Calcula y almacena los valores de **`measuredWidth`** y **`measuredHeight`**
+- No asigna posición, solo calcula dimensiones
+- Es llamado por el padre de la vista durante la fase de medición
+- Los `MeasureSpec` contienen tanto el tamaño como el modo (`EXACTLY`, `AT_MOST`, `UNSPECIFIED`)
+
+2. ***Layout*** **(Disposición o Diseño)**
+El método [`layout(l: Int, t: Int, r: Int, b: Int)`](https://developer.android.com/reference/android/view/View#layout(int,%20int,%20int,%20int)):
+
+- Asigna la posición final y tamaño de la vista dentro de su padre
+- Parámetros: coordenadas del rectángulo que ocupará la vista (*left*, *top*, *right*, *bottom*)
+- Establece los valores de **`left`**, **`top`**, **`right`** y **`bottom`** de la vista
+- Calcula la posición de los hijos llamando a sus métodos `layout`
+- Es llamado después de `measure`, cuando el padre ya conoce dónde colocar la vista
+- Actualiza las propiedades **`x`**, **`y`**, **`width`** y **`height`** de la vista
+
+3. ***Draw***
+El método [`draw(canvas: android.graphics.Canvas)`](https://developer.android.com/reference/android/view/View#draw(android.graphics.Canvas)):
+
+- Dibuja la vista y su contenido en el *canvas* proporcionado
+- Renderiza el fondo, contenido, hijos y decoraciones (en ese orden)
+- Utiliza el *canvas* para aplicar transformaciones, filtros y efectos visuales
+- Es llamado cuando el sistema está listo para mostrar la vista en pantalla
+- Puede ser invocado múltiples veces (por ejemplo, durante animaciones)
+- Utiliza los valores de posición y tamaño establecidos en las fases anteriores 
 
 ### *Styles y Themes*
 La principal **diferencia entre estilos** (***styles***) y **temas** (***themes***), es que **un tema se aplica a toda una jerarquía de vistas, una ***activity*** o una** ***app***, mientras que **un estilo sólo afecta a la vista en la que se aplica**. En otras palabras, **un tema es un estilo que se propaga de padres a hijos**. Los temas contienen atributos o configuraciones que aplican a todos los elementos de la UI. Mientras que los temas tienen unos **atributos genéricos**, cada vista puede tener una serie de estilos **específicos** que hagan que esa vista se muestre de una forma u otra. Por ejemplo, el *style* por defecto de un *TextView*, es ***Widget.AppCompat.TextView***.  
@@ -1817,12 +1818,55 @@ Existen tres tipos fundamentales de presentaciones de menús o acciones en todas
 
 ---
 
+## UI declarativa
+
+- Ver [*Jetpack Compose*](Android/UI/Jetpack%20Compose.md)
+
+---
+
+## Navegación
+
+- Ver [*Navigation component*](Android/UI/Navigation%20Component.md)
+
+---
+
+## Accesibilidad (*a11y*)
+
+- Ver [Accesibilidad (*a11y*)](Android/UI/Accesibilidad.md)
+
+---
+
+## *Background & System*
+
+- Ver [*Background & System*](Android/Libs%20&%20Frameworks/Background%20&%20System.md)
+
+---
+
+## Persistencia de datos
+
+- Ver [Persistencia de datos](Android/Libs%20&%20Frameworks/Persistencia%20de%20datos.md)
+
+---
+
+## *Networking & API's*
+
+- Ver [*Networking & API's*](Android/Libs%20&%20Frameworks/Networking%20&%20API's.md)
+
+---
+
+## Multimedia
+
+- Ver [Multimedia](Android/Libs%20&%20Frameworks/Multimedia.md)
+
+---
+
+## *Testing*
 ### Consideraciones sobre los *tests*
 - Las pruebas unitarias **no deberían lidiar con nada del ciclo de vida** de Android, tal como el contexto.
 - ***Mocks***: **sirven para testear "comportamiento"**. Es decir, si una clase se llamó, cuántas veces se llamó, qué argumentos se pasaron, etc.
 - ***Fakes***: **sirven para testear el "estado"**. Es decir, se hace sobre los componentes, sobre esos ***test doubles***, y después se comprueba en qué estado quedó ese *fake*. Suelen ser simplificaciones de las dependencias sobre las que se está trabajando.
 
-- Ver [*Testing Tools*](Android/Testing/Testing Tools.md)
+- Ver [*Testing Tools*](Android/Testing/Testing%20Tools.md)
 
 ---
 

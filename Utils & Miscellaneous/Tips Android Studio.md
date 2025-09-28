@@ -1,20 +1,26 @@
-# AndroidStudio, APK's, JaCoCo, etc...
+<h1>Tips Android Studio</h1>
 
-- [Transferir *settings* de AS a IntelliJ y viceversa](#transferir-settings-de-as-a-intellij-y-viceversa)
-- [Cambiar de ubicación las carpetas `.android`, `.gradle`, `Sdk`](#cambiar-de-ubicación-las-carpetas-android-gradle-sdk)
-- [Generar un APK](#generar-un-apk)
-  - [Desde AndroidStudio](#desde-androidstudio)
-  - [Con línea de comandos](#con-línea-de-comandos)
-- [Agregar recursos exportados de Figma a un proyecto](#agregar-recursos-exportados-de-figma-a-un-proyecto)
-- [JaCoCo en AndroidStudio](#jacoco-en-androidstudio)
-  - [Agregar paquetes y/o clases al filtro de JaCoCo](#agregar-paquetes-yo-clases-al-filtro-de-jacoco)
-  - [Correr reporte de *coverage* de JaCoCo con Gradle](#correr-reporte-de-coverage-de-jacoco-con-gradle)
-- [Salir del editor VIM integrado en la terminal de AS (Windows)](#salir-del-editor-vim-integrado-en-la-terminal-de-as-windows)
+***Index***:
+<!-- TOC -->
+  * [Transferir *settings* de AS a IntelliJ y viceversa](#transferir-settings-de-as-a-intellij-y-viceversa)
+  * [Cambiar de ubicación las carpetas `.android`, `.gradle`, `Sdk`](#cambiar-de-ubicación-las-carpetas-android-gradle-sdk)
+  * [Generar un APK](#generar-un-apk)
+    * [Desde AndroidStudio](#desde-androidstudio)
+    * [Con línea de comandos](#con-línea-de-comandos)
+  * [Agregar recursos exportados de Figma a un proyecto](#agregar-recursos-exportados-de-figma-a-un-proyecto)
+  * [JaCoCo en AndroidStudio](#jacoco-en-androidstudio)
+    * [Agregar paquetes y/o clases al filtro de JaCoCo](#agregar-paquetes-yo-clases-al-filtro-de-jacoco)
+    * [Correr reporte de *coverage* de JaCoCo con Gradle](#correr-reporte-de-coverage-de-jacoco-con-gradle)
+  * [Salir del editor VIM integrado en la terminal de AS (Windows)](#salir-del-editor-vim-integrado-en-la-terminal-de-as-windows)
+<!-- TOC -->
 
 ---
 
 ## Transferir *settings* de AS a IntelliJ y viceversa
-> Ref: https://stackoverflow.com/a/25416163/12935412
+
+> 🔍 Reference:  
+> https://stackoverflow.com/a/25416163/12935412
+> 
 
 In order to transfer your existing settings from IntelliJ to Android Studio (or vice versa) select **File** ▶️ **Manage IDE Settings** ▶️ **Export Settings...** and select an appropriate path.  
 Then in the other IDE you wish to transfer the settings to, select **File** ▶️ **Manage IDE Settings** ▶️ **Import Settings** and locate the previously exported settings file.

@@ -1,15 +1,19 @@
-## *Ordering*
+<h1><i>Ordering</i></h1>
+
 El orden de los elementos es un aspecto importante en ciertos tipos de colecciones. Por ejemplo, dos listas con los mismos elementos no son iguales si sus elementos están ordenados de manera diferente.  
 El paquete de colecciones de Kotlin proporciona funciones específicas para ordenar los elementos de las colecciones por su **orden natural**, por **criterios personalizados** o **de manera aleatoria**. Estas funciones **se aplican a las colecciones de solo lectura** y devuelven como resultado una nueva colección que contiene los mismos elementos que la colección original pero presentados en el orden requerido.
 
-- [*Natural order*](#natural-order)
-- [*Custom order*](#custom-order)
-- [*Reverse order*](#reverse-order)
-- [*Random order*](#random-order)
+***Index***:
+<!-- TOC -->
+  * [*Natural order*](#natural-order)
+  * [*Custom order*](#custom-order)
+  * [*Reverse order*](#reverse-order)
+  * [*Random order*](#random-order)
+<!-- TOC -->
 
 ---
 
-### *Natural order*
+## *Natural order*
 En Kotlin, los objetos se pueden ordenar siguiendo distintos criterios. Primero, hay un orden natural para los objetos que heredan la interfaz ***``Comparable``*** y que se utiliza para clasificar los objetos del mismo tipo cuando no se especifica ningún otro criterio. Por ejemplo, los tipos numéricos utilizan el orden numérico tradicional (1 es mayor que 0 y -3.4f es mayor que -5f) y *Char* y *String* usan el orden lexicográfico ('b' es mayor que 'a' y 'mundo' es mayor que 'hola').
 Además, el usuario puede definir un orden natural para otro tipo haciendo que herede de la interfaz *Comparable*, lo que requiere implementar la función ***``compareTo()``***. Esta función debe tomar otro objeto del mismo tipo como argumento y devuelve un valor entero que muestra qué objeto es mayor: **si es positivo el objeto receptor es mayor, si es negativo el argumento es mayor y si es cero ambos objetos son iguales**. Un ejemplo de una clase que se puede usar para ordenar versiones:
 
@@ -38,7 +42,7 @@ Las funciones básicas ***``sorted()``*** y ***``sortedDescending()``*** devuelv
     println("En orden descendente: ${numeros.sortedDescending()}")
 ```
 
-### *Custom order*
+## *Custom order*
 Los ordenamientos personalizados permiten ordenar instancias de cualquier tipo de la forma que uno quiera, pudiendo definir un orden para objetos no comparables o bien definir un orden no natural para un tipo comparable. Para definir un orden determinado para un tipo, se debe crear un ***Comparator*** para él. *Comparator* contiene la función ***``compare()``*** que toma dos instancias de una clase y devuelve un resultado entero que se interpreta como se vio antes en la función *compareTo()*.
 
 ```kotlin
@@ -66,7 +70,7 @@ Para utilizar **criterios personalizados** u **ordenar objetos no comparables** 
     println("Orden ascendente por longitud: ${numeros.sortedWith(compareBy { it.length })}")
 ```
 
-### *Reverse order*
+## *Reverse order*
 Se puede recuperar la colección en orden inverso utilizando la función ***``reversed()``***. Hay que tener en cuenta que ``reversed()`` devuelve una nueva colección con copias de los elementos y, por tanto, si más adelante cambia la colección original, esto no afectará a los resultados obtenidos previamente con ``reversed()``. En cambio, la función ***``asReversed()``*** devuelve una vista invertida de la misma instancia de la colección, por lo que es preferible frente a ``reversed()`` al requerir menos recursos siempre que la lista original no vaya a cambiar o sea inmutable.
 
 ```kotlin
@@ -82,7 +86,7 @@ Se puede recuperar la colección en orden inverso utilizando la función ***``re
     println(ordenInversoAs) // [cinco, cuatro, tres, dos, uno]
 ```
 
-### *Random order*
+## *Random order*
 La función ***``shuffled()``*** devuelve una nueva lista que contiene los elementos de la colección mezclados en un **orden aleatorio**, pudiéndose llamar sin argumentos o con un objeto tipo ***``Random``***.
 
 ```kotlin

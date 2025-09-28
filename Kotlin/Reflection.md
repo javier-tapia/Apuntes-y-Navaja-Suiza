@@ -1,4 +1,5 @@
-## *Reflection*
+<h1><i>Reflection</i></h1>
+
 Es un conjunto de características de lenguaje y librería que permite realizar una **introspección de la estructura** de su propio programa **en tiempo de ejecución**. Kotlin hace que las funciones y propiedades sean ***ciudadanos de primera clase*** en el lenguaje (pueden usarse como valores: referenciarse, almacenarse y pasarse dinámicamente), y su introspección (es decir, saber un nombre o un tipo de una propiedad o función en tiempo de ejecución) está estrechamente entrelazado con el simple uso de un estilo funcional o reactivo.  
 La característica más básica de la reflexión es **obtener la referencia a una clase** Kotlin, utilizando el operador **``::``**. El valor de esa referencia es de tipo ***KClass***. Para obtener una referencia a una clase Java, se debe agregar ***``.java``***.
 
@@ -22,7 +23,17 @@ También se puede **obtener la referencia a una función, a una propiedad o a un
     }
 ```
 
-### *Function references*
+***Index***:
+<!-- TOC -->
+  * [*Function references*](#function-references)
+  * [*Property references*](#property-references)
+  * [*Constructor references*](#constructor-references)
+  * [Ejemplo de uso de `call`](#ejemplo-de-uso-de-call)
+<!-- TOC -->
+
+---
+
+## *Function references*
 En el siguiente ejemplo, **se pasa una función como parámetro de otra función**. El operador **``::``** puede usarse con funciones sobrecargadas cuando el tipo esperado se desprende del contexto.
 
 ```kotlin
@@ -33,7 +44,7 @@ En el siguiente ejemplo, **se pasa una función como parámetro de otra función
     println(numbers.filter(::isOdd)) // Refers to isOdd(x: Int)
 ```
 
-### *Property references*
+## *Property references*
 Para acceder a **propiedades como objetos de primera clase** en Kotlin, también podemos usar el operador **``::``**
 
 ```kotlin
@@ -45,7 +56,7 @@ Para acceder a **propiedades como objetos de primera clase** en Kotlin, también
     }
 ```
 
-### *Constructor references*
+## *Constructor references*
 Los constructores pueden referenciarse de la misma forma que las funciones y las propiedades. Además del operador **``::``** se le agrega el **nombre de la clase**. La siguiente función, espera una función sin parámetros como parámetro y retorna un tipo *Foo*:
 
 ```kotlin
@@ -62,7 +73,7 @@ Utilizando ***``::Foo``***, el constructor sin argumentos de la clase *Foo*, se 
     function(::Foo)
 ```
 
-### Ejemplo de uso de `call`
+## Ejemplo de uso de `call`
 La función ``call()`` es parte de la interfaz ``KCallable``, que representa cualquier invocable reflectivo (función, _getter_, _setter_, constructor, etc.). Permite ejecutar el miembro con argumentos en tiempo de ejecución.  
 > ⚠️ ``call()`` no hace verificación de tipos en tiempo de compilación. Si los argumentos no coinciden, se lanza ``IllegalArgumentException`` o ``TypeCastException``.
 

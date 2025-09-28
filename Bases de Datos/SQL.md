@@ -1,19 +1,22 @@
-# SQL
+<h1>SQL</h1>
 
-- [¿Qué es SQL?](#qué-es-sql)
-- [DDL, DML y DCL](#ddl-dml-y-dcl)
-- [`SELECT`, `FROM` y `WHERE`](#select-from-y-where)
-- [`ALIAS`](#alias)
-- [*Store Procedures*](#store-procedures)
-- [Vistas](#vistas)
-- [Operadores de Combinación - `JOIN’s`](#operadores-de-combinación---joins)
-- [Operadores de Conjunto](#operadores-de-conjunto)
-- [Operadores de Comparación](#operadores-de-comparación)
-- [Operadores Lógicos](#operadores-lógicos)
-- [Funciones de Agregación (*Grouping Functions*)](#funciones-de-agregación-grouping-functions)
-- [Funciones Escalares](#funciones-escalares)
-- [Funciones de Fecha y Hora](#funciones-de-fecha-y-hora)
-- [Funciones de Ventana](#funciones-de-ventana)
+***Index***:
+<!-- TOC -->
+  * [¿Qué es SQL?](#qué-es-sql)
+  * [DDL, DML y DCL](#ddl-dml-y-dcl)
+  * [`SELECT`, `FROM` y `WHERE`](#select-from-y-where)
+  * [`ALIAS`](#alias)
+  * [*Store Procedures*](#store-procedures)
+  * [Vistas](#vistas)
+  * [Operadores de Combinación - `JOIN’s`](#operadores-de-combinación---joins)
+  * [Operadores de Conjunto](#operadores-de-conjunto)
+  * [Operadores de Comparación](#operadores-de-comparación)
+  * [Operadores Lógicos](#operadores-lógicos)
+  * [Funciones de Agregación (*Grouping Functions*)](#funciones-de-agregación-grouping-functions)
+  * [Funciones Escalares](#funciones-escalares)
+  * [Funciones de Fecha y Hora](#funciones-de-fecha-y-hora)
+  * [Funciones de Ventana](#funciones-de-ventana)
+<!-- TOC -->
 
 ---
 

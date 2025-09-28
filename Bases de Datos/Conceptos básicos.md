@@ -1,11 +1,18 @@
-# Conceptos básicos
+<h1>Conceptos básicos</h1>
 
-- [¿Qué es una base de datos?](#qué-es-una-base-de-datos)
-- [¿Qué es una tabla?](#qué-es-una-tabla)
-- [Algunos tipos de datos](#algunos-tipos-de-datos)
-- [Transacciones](#transacciones)
-- [Modelo Conceptual, Modelo Lógico y Modelo Físico](#modelo-conceptual-modelo-lógico-y-modelo-físico)
-- [Normalización | Formas normales](#normalización--formas-normales)
+***Index***:
+<!-- TOC -->
+  * [¿Qué es una base de datos?](#qué-es-una-base-de-datos)
+  * [¿Qué es una tabla?](#qué-es-una-tabla)
+  * [Algunos tipos de datos](#algunos-tipos-de-datos)
+  * [Transacciones](#transacciones)
+  * [Modelo Conceptual, Modelo Lógico y Modelo Físico](#modelo-conceptual-modelo-lógico-y-modelo-físico)
+    * [**Modelo Conceptual**](#modelo-conceptual)
+    * [**Modelo Lógico**](#modelo-lógico)
+      * [**Modelo Relacional y Diagramas Entidad Relación**](#modelo-relacional-y-diagramas-entidad-relación)
+    * [**Modelo Físico**](#modelo-físico)
+  * [Normalización | Formas normales](#normalización--formas-normales)
+<!-- TOC -->
 
 ---
 

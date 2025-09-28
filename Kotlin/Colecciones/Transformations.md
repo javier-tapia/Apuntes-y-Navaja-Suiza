@@ -1,15 +1,19 @@
-## *Transformations*
+<h1><i>Transformations</i></h1>
+
 Estas funciones crean nuevas colecciones a partir de las existentes según las reglas de transformación proporcionadas.
 
-- [*Mapping*](#mapping)
-- [*Zipping*](#zipping)
-- [*Association*](#association)
-- [*Flattening*](#flattening)
-- [*String representation*](#string-representation)
+***Index***:
+<!-- TOC -->
+  * [*Mapping*](#mapping)
+  * [*Zipping*](#zipping)
+  * [*Association*](#association)
+  * [*Flattening*](#flattening)
+  * [*String representation*](#string-representation)
+<!-- TOC -->
 
 ---
 
-### *Mapping*
+## *Mapping*
 Crea una nueva colección a partir de los resultados de una función sobre los elementos de una colección. La función básica de *mapping* es ***``map()``***, que aplica una determinada función *lambda* a cada elemento y devuelve una lista de los resultados respetando el orden original de los elementos en la colección original. Si además se quiere usar los índices de los elementos como argumento, se usa ***``mapIndexed()``***.Si la transformación produce *null* en ciertos elementos, se pueden filtrar los *null* de la colección de resultados llamando a la función ***``mapNotNull()``*** en lugar de ***``map()``*** y ***``mapIndexedNotNull()``*** en lugar de ***``mapIndexed()``***.
 
 ```kotlin
@@ -34,7 +38,7 @@ Al transformar diccionarios se tienen dos opciones: transformar claves sin cambi
     // {key1=5, key2=6, key3=7, key11=16}
 ```
 
-### *Zipping*
+## *Zipping*
 Consiste en **construir pares a partir de elementos con las mismas posiciones en dos colecciones**. En la librería estándar de Kotlin esto se realiza mediante la **función de extensión** ***``zip()``*** (comprimir), que cuando se utiliza sobre una colección con otra colección como argumento, **devuelve una lista de objetos** ***Pair*** en la que los elementos de la primera colección (receptor) son los primeros elementos en estos pares. Si las colecciones tienen diferentes tamaños, el resultado de *zip()* es el tamaño más pequeño y los últimos elementos de la colección más grande no se incluyen en el resultado. La función *zip()* también puede ser llamada en forma *infix*: ***``a zip b``***. También se puede hacer la transformación inversa (descomprimir) con la función ***``unzip()``*** que genera dos listas a partir de pares de elementos, y obtiene así las listas originales.
 
 ```kotlin
@@ -63,7 +67,7 @@ También se puede utilizar *zip()* con una función de transformación que **tom
     // La capital de Francia es París
 ```
 
-### *Association*
+## *Association*
 Permiten **construir diccionarios** (***Map***) a partir de los elementos de una colección y ciertos valores asociados con ellos y, según el tipo de asociación, los elementos pueden ser claves o valores en el diccionario. La función básica ***``associateWith()``*** crea un *Map* en el que los elementos de la colección original son claves y los valores se generan a partir de ellos mediante una función de transformación determinada (si dos elementos son iguales, solo el último permanece).
 
 ```kotlin
@@ -98,7 +102,7 @@ Otra forma de crear diccionarios en los que tanto las claves como los valores se
     // {1=1, 2=2, 3=3}
 ```
 
-### *Flattening*
+## *Flattening*
 Cuando se utilizan **colecciones anidadas** (por ejemplo una lista de *sets*) pueden ser útiles algunas funciones de la librería estándar que proporcionan acceso a sus elementos, como la función ***``flatten()``*** que **devuelve una lista única de todos los elementos** de las colecciones anidadas.
 
 ```kotlin
@@ -124,7 +128,7 @@ Por su parte, la función ***``flatMap()``*** toma el resultado que devuelve una
     }
 ```
 
-### *String representation*
+## *String representation*
 Cuando se necesita recuperar el contenido de una colección en un formato legible, se pueden usar **funciones** que transforman las colecciones en *String*, como ***``joinToString()``*** y ***``joinTo()``***. Mientras que *joinToString()* construye un único String a partir de los elementos de la colección en función de los argumentos proporcionados, la función *joinTo()* hace lo mismo pero agrega el resultado a un objeto determinado. Cuando se utilizan con los argumentos por defecto, estas funciones devuelven un resultado similar a la función *toString()* sobre una colección.
 
 ```kotlin

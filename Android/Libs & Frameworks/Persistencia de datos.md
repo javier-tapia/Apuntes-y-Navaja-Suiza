@@ -1,22 +1,25 @@
-## Persistencia de datos
+<h1>Persistencia de datos</h1>
 
-- [*SharedPreferences y EncryptedSharedPreferences*](#sharedpreferences-y-encryptedsharedpreferences)
-- [*DataStore*](#datastore)
-- [Bases de datos: *Room y Realm*](#bases-de-datos-room-y-realm)
-    - [*Room*](#room)
-    - [*Realm*](#realm)
+***Index***:
+<!-- TOC -->
+  * [*SharedPreferences y EncryptedSharedPreferences*](#sharedpreferences-y-encryptedsharedpreferences)
+  * [*DataStore*](#datastore)
+  * [Bases de datos](#bases-de-datos)
+    * [*Room*](#room)
+    * [*Realm*](#realm)
+<!-- TOC -->
 
 ---
 
-### *SharedPreferences y EncryptedSharedPreferences*
+## *SharedPreferences y EncryptedSharedPreferences*
 TODO...
 
-### *DataStore*
+## *DataStore*
 TODO...
 
-### Bases de datos: *Room y Realm*
+## Bases de datos
 
-#### *Room*
+### *Room*
 Android soporta *SQLite* desde el comienzo. Sin embargo, para hacerlo funcionar, siempre fue necesario escribir mucho código *boilerplate*. Además, *SQLIte* no guardaba *POJO’s* (*plain-old Java objects* u objetos planos de Java), y no comprobaba consultas (*queries*) en tiempo de compilación. *Room* vino a solucionar estos problemas. Es una librería de mapeo *SQLite*, capaz de persistir *POJO’s* de Java, convertir consultas directamente a objetos, comprobar errores en tiempo de compilación y **producir observables ***LiveData*** de los resultados de las consultas**. *Room* es una librería ORM (*Object Relational Mapping* o mapeo objeto-relacional) con algunos agregados de Android.  
 Para crear una base de datos con *Room*, se necesita una **Entidad** (***Entity***) para persistir, que puede ser cualquier *POJO* Java (en Kotlin, se utilizan las ***data classes*** para este propósito) y representa una tabla dentro de la base de datos; una ***interface Dao*** (*data acces object* u objeto de acceso a datos) para hacer consultas y operaciones de entrada/salida; y también **una clase abstracta ***Database*** que debe extender a** ***RoomDatabase***.  
 *Room* genera todo el código necesario para actualizar el objeto *LiveData* cuando se actualiza una base de datos. El código generado **ejecuta la consulta de manera asíncrona** en un subproceso en segundo plano cuando es necesario. Este patrón es útil para mostrar los datos en una UI sincronizada con los datos almacenados en una base de datos.  
@@ -114,5 +117,5 @@ También se puede agregar la palabra reservada ***``suspend``*** a los métodos 
     }
 ```
 
-#### *Realm*
+### *Realm*
 Es una base de datos móvil que se ejecuta directamente en teléfonos, *tablets* o dispositivos portátiles. Los datos se exponen **directamente como objetos** y se pueden **consultar mediante código**, lo que elimina la necesidad de usar ORM, que puede traer problemas de rendimiento y mantenimiento.

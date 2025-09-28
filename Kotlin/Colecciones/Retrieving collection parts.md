@@ -1,14 +1,18 @@
-## *Retrieving collection parts*
+<h1><i>Retrieving collection parts</i></h1>
+
 Estas funciones utilizan varias formas, como listar sus posiciones explícitamente o especificar el tamaño del resultado, para obtener una colección resultante que **selecciona y toma ciertos elementos** de la colección a la que se aplican.
 
-- [*Slice*](#slice)
-- [*Take and drop*](#take-and-drop)
-- [*Chunked*](#chunked)
-- [*Windowed*](#windowed)
+***Index***:
+<!-- TOC -->
+  * [*Slice*](#slice)
+  * [*Take and drop*](#take-and-drop)
+  * [*Chunked*](#chunked)
+  * [*Windowed*](#windowed)
+<!-- TOC -->
 
 ---
 
-### *Slice*
+## *Slice*
 Devuelve una lista de elementos de la colección con unos índices determinados que se pasan como argumento, ya sea como un rango o como una colección de valores enteros.
 
 ```kotlin
@@ -18,7 +22,7 @@ Devuelve una lista de elementos de la colección con unos índices determinados 
     println(numeros.slice(setOf(3, 5, 0)))  // [cuatro, seis, uno]
 ```
 
-### *Take and drop*
+## *Take and drop*
 Para obtener un número específico de elementos se usan las **funciones** ***``take()``*** y ***``takeLast()``***, con la diferencia de que *take()* cuenta a partir del primer elemento y *takeLast()* a partir del último, hacia atrás. Cuando se llama a estas funciones con un número mayor que el tamaño de la colección, ambas devuelven la colección completa. Y para tomar todos los elementos excepto un número dado de elementos, ya sea desde el primer o último elemento, se usan las **funciones** ***``drop()``*** y ***``dropLast()``*** respectivamente.
 
 ```kotlin
@@ -47,7 +51,7 @@ También se pueden utilizar predicados para definir el número de elementos que 
     // [uno, dos, tres, cuatro]
 ```
 
-### *Chunked*
+## *Chunked*
 Para dividir una colección en partes de un tamaño determinado se usa la función ***``chunked()``***, que toma un solo argumento (el tamaño del fragmento) y devuelve una lista de listas del tamaño dado. La primera sublista contiene los primeros *n* elementos, la segunda los *n* siguientes y así hasta el final de la colección, por lo que la última sublista puede ser más pequeña si no hay suficientes elementos para completarla.
 
 ```kotlin
@@ -62,7 +66,7 @@ También se puede aplicar una transformación a cada fragmento o sublista utiliz
     println(numeros.chunked(3) { it.sum() })  // [3, 12, 21, 30, 25]
 ```
 
-### *Windowed*
+## *Windowed*
 La función ***``windowed()``*** también devuelve rangos de elementos de un tamaño determinado, pero a diferencia de ``chunked()``, cada uno de los fragmentos o ventanas (*windows*) empieza a partir de cada elemento de la colección.
 
 ```kotlin

@@ -1,23 +1,27 @@
-# Jetpack Compose (https://developer.android.com/compose)
-**Jetpack Compose** es el _toolkit_ moderno de Android para construir interfaces de usuario de forma **declarativa**. En lugar de manipular vistas imperativamente, se describe **cómo debería verse la UI según su estado**, y Compose se encarga de renderizarla y actualizarla automáticamente.
+<h1>Jetpack Compose</h1>
 
-- [*State* in *Compose*](#state-in-compose-httpsdeveloperandroidcomdevelopuicomposestate)
-  - [*UI State* vs *UI Events*](#ui-state-vs-ui-events)
-  - [*Compose State - Flow - LiveData*](#compose-state---flow---livedata)
-    - [Compose State](#compose-state)
-      - [`mutableStateOf`](#mutablestateof)
-      - [`produceState`](#producestate)
-      - [`derivedStateOf`](#derivedstateof)
-    - [*Flow*](#flow)
-    - [*LiveData*](#livedata)
-  - [`remember` and `rememberSaveable`](#remember-and-remembersaveable)
-    - [`remember` with a `key` vs `remember` in conjunction with `derivedStateOf`](#remember-with-a-key-vs-remember-in-conjunction-with-derivedstateof)
-  - [*Side Effects*](#side-effects)
-- [Animaciones](#animaciones)
-  - [*Tween*](#tween)
-- [Previews](#previews)
-  - [Live Template](#live-template--prevcol)
-  - [Using `PreviewParameterProvider`](#using-previewparameterprovider)
+[Jetpack Compose](https://developer.android.com/compose) es el _toolkit_ moderno de Android para construir interfaces de usuario de forma **declarativa**. En lugar de manipular vistas imperativamente, se describe **cómo debería verse la UI según su estado**, y Compose se encarga de renderizarla y actualizarla automáticamente.
+
+***Index***:
+<!-- TOC -->
+  * [*State* in *Compose* (https://developer.android.com/develop/ui/compose/state)](#state-in-compose-httpsdeveloperandroidcomdevelopuicomposestate)
+    * [*UI State* vs *UI Events*](#ui-state-vs-ui-events)
+    * [*Compose State - Flow - LiveData*](#compose-state---flow---livedata)
+      * [Compose State](#compose-state)
+        * [`mutableStateOf`](#mutablestateof)
+        * [`produceState`](#producestate)
+        * [`derivedStateOf`](#derivedstateof)
+      * [***Flow***](#flow)
+      * [***LiveData***](#livedata)
+    * [`*remember*` and `*rememberSaveable*`](#remember-and-remembersaveable)
+      * [`remember` with a `key` vs `remember` in conjunction with `derivedStateOf`](#remember-with-a-key-vs-remember-in-conjunction-with-derivedstateof)
+    * [*Side Effects*](#side-effects)
+  * [Animaciones](#animaciones)
+    * [*Tween*](#tween)
+  * [Previews](#previews)
+    * [Live Template → `prevCol`](#live-template--prevcol)
+    * [Using `PreviewParameterProvider`](#using-previewparameterprovider)
+<!-- TOC -->
 
 ---
 
@@ -79,6 +83,7 @@ Compose ships with functions to create [`State<T>`](https://developer.android.co
 | **_Use Cases_**     | _**Local composable state, UI element values, such as text field input, checkbox states, visibility flags, and other values that directly affect the composable's rendering**_ | _**ViewModel state, asynchronous data streams (e.g., network requests, database queries), user interactions, or other events that can change over time**_ |
 
 ##### [`produceState`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#produceState(kotlin.Any,kotlin.coroutines.SuspendFunction1))
+
 > Also, refer to [Side Effects](#side-effects)
 
 Return an observable [`snapshot`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/snapshots/Snapshot) [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State) that produces values over time without a defined data source.  
@@ -225,9 +230,13 @@ Dicho de otra forma, si se hiciera `val uiState: StateFlow<LoginUiState> = _uiSt
 
 ```kotlin
   // ViewModel
-  
   private val _uiState = MutableStateFlow(InterestsUiState(loading = true))
   val uiState: StateFlow<InterestsUiState> = _uiState.asStateFlow()
+
+  private val _uiStateTwo = MutableStateFlow(ExampleUiState(loading = true))
+  val uiStateTwo: StateFlow<ExampleUiState> = _uiStateTwo.onStart {
+    // Load initial data or whatever
+  }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExampleUiState(loading = true))
   
   fun onInterestChanged(interest: Int) {
     _uiState.update { uiState ->

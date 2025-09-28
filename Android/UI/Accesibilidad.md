@@ -1,24 +1,27 @@
-## Accesibilidad (_a11y_)
+<h1>Accesibilidad (<i>a11y</i>)</h1>
 
-- [Fundamentos: WCAG *mobile*](#fundamentos-wcag-mobile)
-- [Árbol de accesibilidad](#árbol-de-accesibilidad)
-  - [Nodos](#nodos)
-  - [Delegados](#delegados)
-- [Tecnologías asistivas](#tecnologías-asistivas)
-  - [Servicios de accesibilidad de Android](#servicios-de-accesibilidad-de-android)
-- [Buenas prácticas y errores comunes](#buenas-prácticas-y-errores-comunes)
-  - [Etiquetado de encabezados](#etiquetado-de-encabezados)
-  - [Uso de precios/montos](#uso-de-preciosmontos)
-  - [Uso de textos alternativos](#uso-de-textos-alternativos)
-  - [Orden de navegación](#orden-de-navegación)
-  - [Uso de roles](#uso-de-roles)
-  - [Uso de `labelFor`](#uso-de-labelfor)
-  - [Ocultar/Mostrar vistas](#ocultarmostrar-vistas)
-  - [Regiones o elementos *clickeables* o accionables](#regiones-o-elementos-clickeables-o-accionables)
-  - [Anuncio de mensajes dinámicos](#anuncio-de-mensajes-dinámicos)
-  - [Vistas semánticas](#vistas-semánticas)
-  - [*Custom Actions*](#custom-actions)
-  - [Animaciones y *reduce motion*](#animaciones-y-reduce-motion)
+***Index***:
+<!-- TOC -->
+  * [Fundamentos: WCAG *mobile*](#fundamentos-wcag-mobile)
+  * [Árbol de accesibilidad](#árbol-de-accesibilidad)
+    * [Nodos](#nodos)
+    * [Delegados](#delegados)
+  * [Tecnologías asistivas](#tecnologías-asistivas)
+    * [Servicios de accesibilidad de Android](#servicios-de-accesibilidad-de-android)
+  * [Buenas prácticas y errores comunes](#buenas-prácticas-y-errores-comunes)
+    * [Etiquetado de encabezados](#etiquetado-de-encabezados)
+    * [Uso de precios/montos](#uso-de-preciosmontos)
+    * [Uso de textos alternativos](#uso-de-textos-alternativos)
+    * [Orden de navegación](#orden-de-navegación)
+    * [Uso de roles](#uso-de-roles)
+    * [Uso de `labelFor`](#uso-de-labelfor)
+    * [Ocultar/Mostrar vistas](#ocultarmostrar-vistas)
+    * [Regiones o elementos *clickeables* o accionables](#regiones-o-elementos-clickeables-o-accionables)
+    * [Anuncio de mensajes dinámicos](#anuncio-de-mensajes-dinámicos)
+    * [Vistas semánticas](#vistas-semánticas)
+    * [*Custom Actions*](#custom-actions)
+    * [Animaciones y *reduce motion*](#animaciones-y-reduce-motion)
+<!-- TOC -->
 
 ---
 

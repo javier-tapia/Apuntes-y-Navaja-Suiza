@@ -1,14 +1,18 @@
-## *Retrieving single elements*
+<h1><i>Retrieving single elements</i></h1>
+
 Una lista es una colección ordenada, por lo que cada elemento tiene una posición que se puede usar para referir al elemento. En cambio, un *set* no es una colección ordenada, aunque aún así los elementos se almacenan en cierto orden (orden de inserción en *LinkedHashSet*, orden natural en *SortedSet*, etc.). Por lo tanto, los resultados que se obtienen de una posición son impredecibles, a menos que se conozca la implementación específica de *Set* utilizada.
 
-- [*Retrieving by position*](#retrieving-by-position)
-- [*Retrieving by condition*](#retrieving-by-condition)
-- [*Random element*](#random-element)
-- [*Checking existence*](#checking-existence)
+***Index***:
+<!-- TOC -->
+  * [*Retrieving by position*](#retrieving-by-position)
+  * [*Retrieving by condition*](#retrieving-by-condition)
+  * [*Random element*](#random-element)
+  * [*Checking existence*](#checking-existence)
+<!-- TOC -->
 
 ---
 
-### *Retrieving by position*
+## *Retrieving by position*
 Para recuperar un elemento en una posición específica, existe la función ***``elementAt()``*** que se llama con un número entero como argumento, y devuelve el elemento de la colección en esa posición (recordando que el primer elemento está en la posición 0 y el último en la posición tamaño - 1). Es útil para colecciones que no proporcionan (o que no se sabe que proporcionen) acceso indexado, si bien en el caso de *List* se suele utilizar el operador de acceso indexado *``get()``* o el índice entre ``[]``.También hay herramientas útiles para recuperar el primer y último elemento de la colección: ***``first()``*** y ***``last()``***.
 
 ```kotlin
@@ -35,7 +39,7 @@ Para evitar excepciones al recuperar elementos con posiciones no existentes se d
     println(numeros.elementAtOrElse(5) { index -> "Valor no definido para el índice $index" })
 ```
 
-### *Retrieving by condition*
+## *Retrieving by condition*
 Las **funciones** *``first()``* y *``last()``* también permiten buscar elementos en una colección que coincidan con un predicado determinado. Así, cuando se llama a *first()* con un predicado que comprueba un elemento de la colección, devuelve el primer elemento en el que el predicado se traduce en verdadero. A su vez, *last()* con un predicado devuelve el último elemento que coincide con él. Si ningún elemento coincide con el predicado, ambas funciones lanzan excepciones, y para evitarlo se usan ***``firstOrNull()``*** y ***``lastOrNull()``***, que devuelven *null* si no encuentran elementos coincidentes. Otra alternativa para evitar estas excepciones es usar ***``find()``*** en lugar de *``firstOrNull()``* y ***``findLast()``*** en lugar de *``lastOrNull()``*.
 
 ```kotlin
@@ -48,7 +52,7 @@ Las **funciones** *``first()``* y *``last()``* también permiten buscar elemento
     println(numeros.find { it.length > 6 }) // null
 ```
 
-### *Random element*
+## *Random element*
 Si se necesita recuperar un elemento arbitrario de una colección, se puede usar la función ***``random()``***, que se puede llamar sin argumentos o con un objeto tipo *Random* como fuente de la aleatoriedad.
 
 ```kotlin
@@ -62,7 +66,7 @@ Si se necesita recuperar un elemento arbitrario de una colección, se puede usar
     }
 ```
 
-### *Checking existence*
+## *Checking existence*
 Para verificar si un elemento está presente en la colección, se puede usar la función ***``contains()``***, que devuelve *true* si existe un elemento en la colección igual al argumento utilizado en la llamada a la función. También se puede llamar a *contains()* con la palabra reservada ***``in``***. Además, para comprobar la presencia de varios argumentos, se puede utilizar ***``containsAll()``*** con una colección de elementos que queremos verificar como argumento. También se puede verificar si una colección contiene algún elemento o está vacía con ***``isNotEmpty()``*** y con ***``isEmpty()``***.
 
 ```kotlin

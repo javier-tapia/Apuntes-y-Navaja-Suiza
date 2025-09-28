@@ -1,13 +1,17 @@
-## *Filtering*
+<h1><i>Filtering</i></h1>
+
 Las condiciones de filtrado se definen mediante **predicados: funciones** ***lambda*** **que toman un elemento de la colección y devuelven un valor booleano** (***true*** significa que el elemento dado coincide con el predicado, ***false*** significa lo contrario).
 
-- [*Filtering by predicate*](#filtering-by-predicate)
-- [*Partitioning*](#partitioning)
-- [*Testing predicates*](#testing-predicates)
+***Index***:
+<!-- TOC -->
+  * [*Filtering by predicate*](#filtering-by-predicate)
+  * [*Partitioning*](#partitioning)
+  * [*Testing predicates*](#testing-predicates)
+<!-- TOC -->
 
 ---
 
-### *Filtering by predicate*
+## *Filtering by predicate*
 La función básica de filtrado es ***``filter()``***. Cuando se llama con un predicado, **devuelve los elementos de la colección que coinciden**. Tanto para las listas y los conjuntos (*List* y *Set*) la colección resultante es una lista (*List*), mientras que para los diccionarios (*Map*) también es un *Map*.
 
 ```kotlin
@@ -45,7 +49,7 @@ También hay funciones que filtran elementos de una colección **en base a su ti
     }
 ```
 
-### *Partitioning*
+## *Partitioning*
 Otra función de filtrado es ***``partition()``***, que filtra una colección por un predicado y mantiene los elementos que no coinciden en una lista separada. Por lo tanto, **tiene un** ***Pair*** **de listas como valor de retorno**: la primera lista que contiene los elementos que coinciden con el predicado y la segunda que contiene todo lo demás de la colección original.
 
 ```kotlin
@@ -56,7 +60,7 @@ Otra función de filtrado es ***``partition()``***, que filtra una colección po
     println(noMatch) // [uno, dos]
 ```
 
-### *Testing predicates*
+## *Testing predicates*
 Hay funciones que simplemente **prueban** (***test***) **un predicado en los elementos de una colección**. A saber, ***``any()``*** (devuelve *true* si **al menos un elemento coincide con el predicado** dado); ***``none()``*** (devuelve *true* si **ninguno de los elementos coincide con el predicado** dado); ***``all()``*** (devuelve *true* si **todos los elementos coinciden con el predicado** dado).  
 Hay que tener en cuenta que *all()* devuelve *true* cuando se le llama con cualquier predicado válido sobre una colección vacía. Tal comportamiento se conoce en lógica como **verdad vacía** (***vacuous truth***): un enunciado condicional o universal que **solo es verdadero porque el antecedente no se puede satisfacer**.
 

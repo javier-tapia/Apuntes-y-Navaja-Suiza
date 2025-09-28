@@ -1,81 +1,88 @@
-# Apuntes de Kotlin  
+<h1>Apuntes de Kotlin</h1>  
 
-- [0. Modificadores de visibilidad](#0-modificadores-de-visibilidad-private-protected-internal-y-public-por-defecto)
-- [1. Clases y Objetos](#1-clases-y-objetos-en-kotlin)
-   - [1.1. Declaración de una clase](#11-declaración)
-   - [1.2. Clases de enumeración (*enum class*)](#12-clases-de-enumeración-enum-class)
-   - [1.3. Clases selladas (*sealed class*)](#13-clases-selladas-sealed-class)
-   - [1.4. Clases abstractas (*abstract class*)](#14-clases-abstractas-abstract-class)
-   - [1.5. Interfaces](#15-interfaces)
-   - [1.6. Tipos genéricos](#16-tipos-genéricos)
-      - [1.6.1. ``invariant``](#161-invariant)
-      - [1.6.2. ``covariant``](#162-covariant)
-      - [1.6.3. ``contravariant``](#163-contravariant)
-   - [1.7. Clases anidadas e internas (*inner class*)](#17-clases-anidadas-e-internas-inner-class)
-   - [1.8. *Data classes*](#18-data-classes)
-   - [1.9. *Object expressions* y *Object declarations*](#19-object-expressions-y-object-declarations)
-      - [1.9.1. *Object expression*](#191-object-expression)
-      - [1.9.2. *Object declaration*](#192-object-declaration)
-- [2. Propiedades y *fields*](#2-propiedades-y-fields)
-   - [2.1. Declaración](#21-declaración)
-   - [2.2. *Default arguments* y *Named arguments*](#22-default-arguments-y-named-arguments)
-   - [2.3. *Backing fields* (*getters* y *setters*)](#23-backing-fields-getters-y-setters)
-   - [2.4. *Class Delegation*](#24-class-delegation)
-   - [2.5. *Delegated properties*](#25-delegated-properties)
-      - [2.5.1. *Lazy properties*](#251-lazy-properties)
-      - [2.5.2. *Observable properties*](#252-observable-properties)
-      - [2.5.3. Almacenar propiedades en un mapa](#253-almacenar-propiedades-en-un-map)
-- [3. Funciones](#3-funciones)
-   - [3.1. Declaración](#31-declaración)
-   - [3.2. *Infix functions*](#32-infix-functions)
-   - [3.3. *Varargs* (número variable de argumentos)](#33-varargs-número-variable-de-argumentos)
-   - [3.4. *Expresiones Lambda* y *Funciones Anónimas*](#34-expresiones-lambda-y-funciones-anónimas)
-      - [3.4.1. *Trailing lambda*](#341-trailing-lambda)
-      - [3.4.2. Expresión _lambda_ con un solo parámetro](#342-lambda-con-un-solo-parámetro)
-      - [3.4.3. *Function Type*](#343-function-type)
-      - [3.4.4. *Non-local returns*](#344-non-local-returns)
-   - [3.5. Funciones de extensión](#35-funciones-de-extensión)
-   - [3.6. Funciones de Orden Superior (*Higher-Order Functions*)](#36-funciones-de-orden-superior-higher-order-functions)
-   - [3.7. *Function type with receiver* y *Function literal with receiver*](#37-function-type-with-receiver-y-function-literal-with-receiver)
-   - [3.8. *Closures*](#38-closures)
-   - [3.9. *Inline Functions*](#39-inline-functions)
-      - [3.9.1. Parámetros de tipo *reified*](#391-parámetros-de-tipo-reified)
-   - [3.10. Tipos genéricos](#310-tipos-genéricos)
-- [4. Colecciones](#4-colecciones)
-   - [4.1. Descripción](#41-descripción)
-   - [4.2. ``Collection<T>``](#42-collectiont)
-   - [4.3. ``List<T>``](#43-listt)
-   - [4.4. ``Set<T>``](#44-sett)
-   - [4.5. *Map* (o *Dictionary*)](#45-map-o-dictionary)
-   - [4.6. Construcción de colecciones](#46-construcción-de-colecciones)
-      - [4.6.1. Colecciones vacías](#461-colecciones-vacías)
-      - [4.6.2. Inicializar listas](#462-inicializar-listas)
-   - [4.7. Copia de colecciones](#47-copia-de-colecciones)
-   - [4.8. *Iterators*](#48-iterators)
-      - [4.8.1. *ListIterator*](#481-listiterator)
-      - [4.8.2. *MutableIterator*](#482-mutableiterator)
-   - [4.9. Rangos y progresiones](#49-rangos-y-progresiones)
-      - [4.9.1. Rangos](#491-rangos)
-      - [4.9.2. Progresiones](#492-progresiones)
-   - [4.10. ``Sequence<T>``](#410-sequencet)
-      - [4.10.1. Construcción](#4101-construcción)
-      - [4.10.2. *Sequence operations*](#4102-sequence-operations)
-   - [4.11. Operaciones](#411-operaciones)
-      - [4.11.1. Operaciones comunes](#4111-operaciones-comunes)
-      - [4.11.2. Operaciones de escritura](#4112-operaciones-de-escritura)
-- [5. Corrutinas (*Coroutines*)](#5-corrutinas-coroutines)
-- [6. Otros constructos del lenguaje](#6-otros-constructos-del-lenguaje)
-   - [6.1. *Operator overloading*](#61-operator-overloading)
-   - [6.2. *Destructuring declarations*](#62-destructuring-declarations)
-   - [6.3. *Type checks* y *Casts*](#63-type-checks-y-casts)
-   - [6.4. *This expression*](#64-this-expression)
-   - [6.5. *Null safety*](#65-null-safety)
-   - [6.6. *SAM* (*Single Abstract Method*) *conversions*](#66-sam-single-abstract-method-conversions)
-   - [6.7. *Reflection*](#67-reflection)
-   - [6.8. *Scope functions*](#68-scope-functions)
-- [Referencias](#referencias)
+***Index***:
+<!-- TOC -->
+  * [0. Modificadores de visibilidad: *private*, *protected*, *internal* y *public* (por defecto)](#0-modificadores-de-visibilidad-private-protected-internal-y-public-por-defecto)
+  * [1. Clases y Objetos en Kotlin](#1-clases-y-objetos-en-kotlin)
+    * [1.1. Declaración](#11-declaración)
+    * [1.2. Clases de enumeración (*enum class*)](#12-clases-de-enumeración-enum-class)
+    * [1.3. Clases selladas (*sealed class*)](#13-clases-selladas-sealed-class)
+    * [1.4. Clases abstractas (*abstract class*)](#14-clases-abstractas-abstract-class)
+    * [1.5. Interfaces](#15-interfaces)
+    * [1.6. Tipos genéricos](#16-tipos-genéricos)
+      * [:clipboard: A modo de resumen:](#clipboard-a-modo-de-resumen)
+      * [1.6.1. ``invariant``](#161-invariant)
+      * [1.6.2. ``covariant``](#162-covariant)
+      * [1.6.3. ``contravariant``](#163-contravariant)
+    * [1.7. Clases anidadas e internas (*inner class*)](#17-clases-anidadas-e-internas-inner-class)
+    * [1.8. *Data classes*](#18-data-classes)
+    * [1.9. *Object expressions* y *Object declarations*](#19-object-expressions-y-object-declarations)
+      * [1.9.1. *Object expression*](#191-object-expression)
+      * [1.9.2. *Object declaration*](#192-object-declaration)
+  * [2. Propiedades y fields](#2-propiedades-y-fields)
+    * [2.1. Declaración](#21-declaración)
+      * [2.1.1. Una propiedad ***top-level*** (dentro del paquete) deber ser inicializada.](#211-una-propiedad-top-level-dentro-del-paquete-deber-ser-inicializada)
+      * [2.1.2. Una propiedad ***miembro*** (dentro de la clase) debe ser inicializada **o** ser abstracta. También puede inicializarse más tarde con el modificador ***``lateinit``*** (sólo en *var properties* y para tipos no primitivos; *lateinit* retrasa la inicialización de la variable sin peligro de devolver una referencia nula) o con la función ***``lazy()``*** (ver *Propiedades delegadas*).](#212-una-propiedad-miembro-dentro-de-la-clase-debe-ser-inicializada-o-ser-abstracta-también-puede-inicializarse-más-tarde-con-el-modificador-lateinit-sólo-en-var-properties-y-para-tipos-no-primitivos-lateinit-retrasa-la-inicialización-de-la-variable-sin-peligro-de-devolver-una-referencia-nula-o-con-la-función-lazy-ver-propiedades-delegadas)
+      * [2.1.3. Una variable ***local*** (dentro de una función) debe tener anotado el tipo **o** ser inicializada, y no pueden ser sobreescritas.](#213-una-variable-local-dentro-de-una-función-debe-tener-anotado-el-tipo-o-ser-inicializada-y-no-pueden-ser-sobreescritas)
+      * [2.1.4. Un ***parámetro*** debe tener anotado el tipo. Dentro del *header* de una clase, si se agrega *var* o *val* al nombre del parámetro, se vuelve una *property* de la clase (**se declaran e inicializan** en el **constructor primario**). Por otro lado, los ***parámetros*** **de las funciones siempre son** ***val*** (de sólo lectura).](#214-un-parámetro-debe-tener-anotado-el-tipo-dentro-del-header-de-una-clase-si-se-agrega-var-o-val-al-nombre-del-parámetro-se-vuelve-una-property-de-la-clase-se-declaran-e-inicializan-en-el-constructor-primario-por-otro-lado-los-parámetros-de-las-funciones-siempre-son-val-de-sólo-lectura)
+    * [2.2. *Default arguments* y *Named arguments*](#22-default-arguments-y-named-arguments)
+    * [2.3. *Backing fields* (*getters* y *setters*)](#23-backing-fields-getters-y-setters)
+    * [2.4. *Class Delegation*](#24-class-delegation)
+    * [2.5. *Delegated properties*](#25-delegated-properties)
+      * [2.5.1. *Lazy properties*](#251-lazy-properties)
+      * [2.5.2. *Observable properties*](#252-observable-properties)
+      * [2.5.3. Almacenar propiedades en un *map*](#253-almacenar-propiedades-en-un-map)
+  * [3. Funciones](#3-funciones)
+    * [3.1. Declaración](#31-declaración)
+    * [3.2. *Infix functions*](#32-infix-functions)
+    * [3.3. *Varargs* (número variable de argumentos)](#33-varargs-número-variable-de-argumentos)
+    * [3.4. *Expresiones Lambda* y *Funciones Anónimas*](#34-expresiones-lambda-y-funciones-anónimas)
+      * [3.4.1. *Trailing lambda*](#341-trailing-lambda)
+      * [3.4.2. Lambda con un solo parámetro](#342-lambda-con-un-solo-parámetro)
+      * [3.4.3. *Function Type*](#343-function-type)
+      * [3.4.4. *Non-local returns*](#344-non-local-returns)
+    * [3.5. Funciones de extensión](#35-funciones-de-extensión)
+    * [3.6. Funciones de Orden Superior (*Higher-Order Functions*)](#36-funciones-de-orden-superior-higher-order-functions)
+    * [3.7. *Function type with receiver* y *Function literal with receiver*](#37-function-type-with-receiver-y-function-literal-with-receiver)
+    * [3.8. *Closures*](#38-closures)
+    * [3.9. *Inline Functions*](#39-inline-functions)
+      * [3.9.1. Parámetros de tipo *reified*](#391-parámetros-de-tipo-reified)
+    * [3.10. Tipos genéricos](#310-tipos-genéricos)
+  * [4. Colecciones](#4-colecciones)
+    * [4.1. Descripción](#41-descripción)
+    * [4.2. ``Collection<T>``](#42-collectiont)
+    * [4.3. ``List<T>``](#43-listt)
+    * [4.4. ``Set<T>``](#44-sett)
+    * [4.5. *Map* (o *Dictionary*)](#45-map-o-dictionary)
+    * [4.6. Construcción de colecciones](#46-construcción-de-colecciones)
+      * [4.6.1. Colecciones vacías](#461-colecciones-vacías)
+      * [4.6.2. Inicializar listas](#462-inicializar-listas)
+    * [4.7. Copia de colecciones](#47-copia-de-colecciones)
+    * [4.8. *Iterators*](#48-iterators)
+      * [4.8.1. *ListIterator*](#481-listiterator)
+      * [4.8.2. *MutableIterator*](#482-mutableiterator)
+    * [4.9. Rangos y progresiones](#49-rangos-y-progresiones)
+      * [4.9.1. Rangos](#491-rangos)
+      * [4.9.2. Progresiones](#492-progresiones)
+    * [4.10. ``Sequence<T>``](#410-sequencet)
+      * [4.10.1. Construcción](#4101-construcción)
+      * [4.10.2. *Sequence operations*](#4102-sequence-operations)
+    * [4.11. Operaciones](#411-operaciones)
+      * [4.11.1. Operaciones comunes](#4111-operaciones-comunes)
+      * [4.11.2. Operaciones de escritura](#4112-operaciones-de-escritura)
+  * [5. Corrutinas (*Coroutines*)](#5-corrutinas-coroutines)
+  * [6. Otros constructos del lenguaje](#6-otros-constructos-del-lenguaje)
+    * [6.1. *Operator overloading*](#61-operator-overloading)
+    * [6.2. *Destructuring declarations*](#62-destructuring-declarations)
+    * [6.3. *Type checks* y *Casts*](#63-type-checks-y-casts)
+    * [6.4. *This expression*](#64-this-expression)
+    * [6.5. *Null safety*](#65-null-safety)
+    * [6.6. *SAM* (*Single Abstract Method*) *conversions*](#66-sam-single-abstract-method-conversions)
+    * [6.7. *Reflection*](#67-reflection)
+    * [6.8. *Scope functions*](#68-scope-functions)
+  * [Referencias](#referencias)
+<!-- TOC -->
 
----
 ---
 
 ## 0. Modificadores de visibilidad: *private*, *protected*, *internal* y *public* (por defecto)
@@ -953,7 +960,7 @@ La **sintaxis de función anónima** permite especificar el tipo de receptor de 
 ```
 
 ### 3.8. *Closures*
-Una expresión *lambda* o una función anónima pueden acceder a su *closure*, es decir, a las **variables declaradas en un ámbito** (***scope***) **externo**. Las variables capturadas en el *closure* pueden ser modificadas en el *lambda*.
+Una expresión *lambda* o una función anónima (así como una función local y un *object expression*) pueden acceder a su *closure*, es decir, a las **variables declaradas en un ámbito** (***scope***) **externo**. Las variables capturadas en el *closure* pueden ser modificadas en el *lambda*.
 
 ```kotlin
     var sum = 0
@@ -1273,7 +1280,7 @@ Si ya se tiene un objeto *Iterable* (como un *List* o un *Set*), se puede crear 
      val numbersSequence = numbers.asSequence()
 ```
 
-Una forma más de crear una secuencia es construyéndola **_con una función que calcula sus elementos_**. Para construir una secuencia basada en una función, se llama a ***``generateSequence()``*** con esta función como argumento. Opcionalmente, se puede especificar el primer elemento como un valor explícito o como resultado de una llamada de función. La generación de la secuencia se detiene cuando la función proporcionada devuelve un valor nulo.
+Una forma más de crear una secuencia es construyéndola ***con una función que calcula sus elementos***. Para construir una secuencia basada en una función, se llama a ***``generateSequence()``*** con esta función como argumento. Opcionalmente, se puede especificar el primer elemento como un valor explícito o como resultado de una llamada de función. La generación de la secuencia se detiene cuando la función proporcionada devuelve un valor nulo.
 
 ```kotlin
      val oddNumbers = generateSequence(1) { it + 2 } // `it` is the previous element
@@ -1322,24 +1329,24 @@ Las operaciones comunes están disponibles **tanto para colecciones de solo lect
 
 - Ver [***Transformations***](Kotlin/Colecciones/Transformations.md)
 - Ver [***Filtering***](Kotlin/Colecciones/Filtering.md)
-- Ver [***plus and minus operators***](Kotlin/Colecciones/plus and minus operators.md)
+- Ver [***plus and minus operators***](Kotlin/Colecciones/plus%20and%20minus%20operators.md)
 - Ver [***Grouping***](Kotlin/Colecciones/Grouping.md)
-- Ver [***Retrieving collection parts***](Kotlin/Colecciones/Retrieving collection parts.md)
-- Ver [***Retrieving single elements***](Kotlin/Colecciones/Retrieving single elements.md)
+- Ver [***Retrieving collection parts***](Kotlin/Colecciones/Retrieving%20collection%20parts.md)
+- Ver [***Retrieving single elements***](Kotlin/Colecciones/Retrieving%20single%20elements.md)
 - Ver [***Ordering***](Kotlin/Colecciones/Ordering.md)
-- Ver [***Aggregate operations***](Kotlin/Colecciones/Aggregate operations.md)
+- Ver [***Aggregate operations***](Kotlin/Colecciones/Aggregate%20operations.md)
 
 #### 4.11.2. Operaciones de escritura
 Para colecciones mutables, hay operaciones de escritura que **cambian el estado de la colección**. Dichas operaciones incluyen agregar, eliminar y actualizar elementos. Para ciertas operaciones, existen pares de funciones para realizar **la misma operación**: una aplica la operación *in situ* y la otra devuelve el resultado como una colección separada. Por ejemplo, ***``sort()``*** ordena una colección mutable en el lugar, por lo que su estado cambia; ***``sorted()``*** crea una nueva colección que contiene los mismos elementos de forma ordenada.
 
-- Ver [**_Adding elements_**](Kotlin/Colecciones/Adding elements.md)
-- Ver [**_Removing elements_**](Kotlin/Colecciones/Removing elements.md)
+- Ver [***Adding elements***](Kotlin/Colecciones/Adding%20elements.md)
+- Ver [***Removing elements***](Kotlin/Colecciones/Removing%20elements.md)
 
 ---
 
 ## 5. Corrutinas (*Coroutines*)
 
-- Ver [**_Coroutines & Flows_**](Kotlin/Coroutines%20&%20Flows.md)
+- Ver [***Coroutines & Flows***](Kotlin/Coroutines%20&%20Flows.md)
 
 ---
 
@@ -1533,12 +1540,12 @@ Esta característica sólo funciona para **interoperar con Java**. Las ***functi
 
 ### 6.8. *Scope functions*
 
-- Ver [*Scope functions*](Kotlin/Scope Functions.md)
+- Ver [*Scope functions*](Kotlin/Scope%20Functions.md)
 
 ---
 ---
 
-## Referencias:
+## Referencias
 
 - [Kotlin Documentation](https://kotlinlang.org/docs/reference/)
 - [Learn Kotlin by Example](https://play.kotlinlang.org/byExample/overview)

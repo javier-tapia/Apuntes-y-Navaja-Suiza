@@ -1,4 +1,5 @@
-## *plus and minus operators*
+<h1><i>plus and minus operators</i></h1>
+
 En Kotlin, los operadores ***``plus``*** (**``+``**) y ***``minus``*** (**``-``**) se definen para las colecciones. Toman una colección como primer operando; el segundo operando puede ser un elemento u otra colección. El valor de retorno es una **nueva colección de solo lectura**.
 
 ```kotlin

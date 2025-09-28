@@ -1,16 +1,23 @@
-## Networking & API's
+<h1><i>Networking & API's</i></h1>
 
-- [*Retrofit*](#retrofit)
-- [*OAuth: Facebook, Twitter, Google+*](#oauth-facebook-twitter-google)
-- [*Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook*](#frameworks-y-sdks-firebase-fabric-sentry-segment-facebook)
+***Index***:
+<!-- TOC -->
+  * [*Retrofit*](#retrofit)
+  * [*Ktor*](#ktor)
+  * [*OAuth: Facebook, Twitter, Google+*](#oauth-facebook-twitter-google)
+  * [*Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook*](#frameworks-y-sdks-firebase-fabric-sentry-segment-facebook)
+<!-- TOC -->
 
 ---
 
-### *Retrofit*
+## *Retrofit*
 TODO...
 
-### *OAuth: Facebook, Twitter, Google+*
+## *Ktor*
 TODO...
 
-### *Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook*
+## *OAuth: Facebook, Twitter, Google+*
+TODO...
+
+## *Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook*
 TODO...

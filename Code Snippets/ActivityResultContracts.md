@@ -1,4 +1,4 @@
-# ActivityResultContracts
+<h1><i>ActivityResultContracts</i></h1>
 
 ## `StartActivityForResult`
 1. Crear una propiedad de tipo `ActivityResultLauncher<Intent!>` antes de crear la *activity* y registrar el *callback*:

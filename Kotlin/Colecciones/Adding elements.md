@@ -1,4 +1,5 @@
-## *Adding elements*
+<h1><i>Adding elements</i></h1>
+
 Para agregar un solo elemento a una lista o a un conjunto se usa la función ***``add()``***, que agrega el nuevo elemento al final de la colección.  También está la función ***``addAll()``*** que utiliza como argumento un iterable, una secuencia o un *array* para agregar cada elemento de dicho objeto, sin necesidad de que los tipos del argumento y de la colección receptora sean similares, esto es, se pueden agregar todos los elementos de un conjunto (*Set*) a una lista (*List*). Cuando *addAll()* se invoca sobre listas, los nuevos elementos se agregan en el mismo orden en que aparecen en el argumento. También se puede llamar a *addAll()* especificando una posición determinada como primer argumento, y entonces el primer elemento del argumento se inserta en esa posición seguido por el resto de elementos del argumento, desplazando a los elementos de la colección receptora hasta el final.
 
 ```kotlin

@@ -1,20 +1,24 @@
-## *Navigation Component*
+<h1><i>Navigation Component</i></h1>
+
 > :warning: La aparición de Jetpack Compose trajo algunos cambios a la hora de implementar el componente de Navegación. Y además, va evolucionando día a día, por lo cual puede que esto mismo quede deprecado rápido y haya que ir actualizándolo.
 >
 > 🔍 Revisar el archivo correspondiente a la Navegación en el proyecto [JetpackComposeCatalog](https://github.com/javier-tapia/JetpackComposeCatalog/blob/master/app/src/main/java/com/cursokotlin/jetpackcomponentscatalog/navigation/NavigationHandler.kt)
 
-- [¿Qué se usa ahora en Jetpack Compose?](#-qué-se-usa-ahora-en-jetpack-compose)
-- [¿Y si se está trabajando un proyecto híbrido (XML + Compose)?](#-y-si-se-está-trabajando-un-proyecto-híbrido-xml--compose)
-- [Navigation con XML's](#navigation-con-xmls)
-- [Navegar entre destinos](#navegar-entre-destinos)
-- [Pasar datos entre destinos](#pasar-datos-entre-destinos)
-- [``NavigationUI``](#navigationui)
-- [*Nested graphs*](#nested-graphs)
-- [Acciones globales](#acciones-globales)
+***Index***:
+<!-- TOC -->
+  * [✅ ¿Qué se usa ahora en Jetpack Compose?](#-qué-se-usa-ahora-en-jetpack-compose)
+  * [🚧 ¿Y si se está trabajando un proyecto híbrido (XML + Compose)?](#-y-si-se-está-trabajando-un-proyecto-híbrido-xml--compose)
+  * [Navigation con XML's](#navigation-con-xmls)
+  * [Navegar entre destinos](#navegar-entre-destinos)
+  * [Pasar datos entre destinos](#pasar-datos-entre-destinos)
+  * [``NavigationUI``](#navigationui)
+  * [*Nested graphs*](#nested-graphs)
+  * [Acciones globales](#acciones-globales)
+<!-- TOC -->
 
 ---
 
-### ✅ ¿Qué se usa ahora en Jetpack Compose?
+## ✅ ¿Qué se usa ahora en Jetpack Compose?
 1. Google lanzó una versión del componente de _Navigation_ pensada específicamente para Compose, dentro de la librería ``androidx.navigation:navigation-compose``.  
 Dependencia:
 ```kotlin
@@ -52,7 +56,7 @@ En Compose, se navega con rutas:
   }
 ```
 
-### 🚧 ¿Y si se está trabajando un proyecto híbrido (XML + Compose)?
+## 🚧 ¿Y si se está trabajando un proyecto híbrido (XML + Compose)?
 - Se puede seguir usando ``NavHostFragment`` y ``nav_graph.xml``.
 - Se puede integrar Compose dentro de los destinos usando ``ComposeView``.
 
@@ -67,7 +71,7 @@ En Compose, se navega con rutas:
 
 ---
 
-### Navigation con XML's
+## Navigation con XML's
 El **componente** ***Navigation*** consta de tres partes clave que se describen a continuación:  
 - **Gráfico de navegación** (***Navigation graph***): Es un recurso XML que contiene **toda la información relacionada con la navegación** en una ubicación centralizada. Esto incluye todas las áreas de contenido individuales dentro de la *app*, llamadas **destinos** (***destinations***), así como las posibles rutas que un usuario puede tomar a través de la *app*, llamadas **acciones** (***actions***).  
 - **``NavHost``**: Es un **contenedor vacío que muestra los destinos del gráfico de navegación**. El componente *Navigation* contiene una implementación ``NavHost`` predeterminada, **``NavHostFragment``**, que muestra destinos de *fragments*.  
@@ -164,7 +168,7 @@ Para recuperar un ``NavController`` (el objeto que administra la navegación de 
   }
 ```
 
-### Navegar entre destinos
+## Navegar entre destinos
 Para navegar entre destinos, Android recomienda utilizar el *plugin* de *Gradle* llamado ***Safe Args***, que permite navegar con **seguridad de tipo** y **pasar argumentos** entre los destinos. Para agregar *Safe Args* al proyecto, se incluye la siguiente *classpath* en el archivo *build.gradle* de nivel superior (a nivel de proyecto):
 
 ```kotlin
@@ -217,7 +221,7 @@ En el segundo caso, se puede usar **``navigate(NavDeepLinkRequest)``** para nave
 
 Además de Uri, ``NavDeepLinkRequest`` también admite vínculos directos con acciones y tipos de MIME. Para agregar una acción a la solicitud, se usa ***``fromAction()``*** o ***``setAction()``***. Para agregar un tipo de MIME a una solicitud, se usa ***``fromMimeType()``*** o ***``setMimeType()``***.
 
-### Pasar datos entre destinos
+## Pasar datos entre destinos
 *Navigation* permite adjuntar datos a una operación de navegación si se definen los argumentos de un destino. Por ejemplo, el destino de un perfil de usuario podría tomar como argumento el ID de un usuario para determinar a quién mostrar el contenido. En general, se debe optar por pasar **sólo la cantidad mínima de datos entre destinos**. Por ejemplo, pasar una clave a fin de recuperar un objeto en lugar de pasar el objeto en sí, ya que el espacio total para los estados guardados en Android es limitado.  
 Si se necesita pasar **grandes cantidades de datos**, es preferible utilizar un ***ViewModel*** **compartido**: dos *fragments* pueden compartir un *ViewModel* usando su ámbito de actividad (*activity scope*) para manejar la comunicación.
 
@@ -322,7 +326,7 @@ Y en el código del destino de recepción, se usa el **método** ***``getArgumen
   tv.text = arguments?.getString("amount")
 ```
 
-### ``NavigationUI``
+## ``NavigationUI``
 El componente *Navigation* incluye una clase ``NavigationUI``. Esta clase contiene métodos estáticos que administran la navegación con la barra superior de la *app* (***top bar***), el panel lateral de navegación (***navigation drawer***) y la navegación inferior (***bottom navigation***). ``NavigationUI`` también proporciona asistentes para **vincular destinos a componentes de UI controlados por el menú**: contiene un método asistente, ***``onNavDestinationSelected()``***, que toma un elemento ``MenuItem`` junto con el elemento ``NavController`` que aloja el destino asociado. Si el elemento ***``id``*** de MenuItem **coincide** con el elemento ***``id``*** del destino, ``NavController`` puede entonces navegar a ese destino.  
 - ***Top bar***: ``NavigationUI`` contiene métodos que actualizan automáticamente el contenido de la barra superior a medida que los usuarios navegan por la *app*. Por ejemplo, **se pueden usar las etiquetas (***labels***) del destino del gráfico de navegación para mantener actualizado el título de la barra superior** de la *app*, usando el **método** ***``setupWithNavController``***. Cuando se usa ``NavigationUI`` con alguna de las implementaciones de la barra superior (***Toolbar***, ***CollapsingToolbarLayout*** o ***ActionBar***), la etiqueta que se adjunta a los destinos puede ser automáticamente populada a partir de los argumentos proporcionados al destino, usando la sintaxis ***``{argName}``*** en la etiqueta. ``NavigationUI`` usa un objeto ***AppBarConfiguration*** para **administrar el comportamiento del botón** ***Navigation*** en la esquina superior izquierda del área de visualización de la *app*. El comportamiento del botón *Navigation* cambia si el usuario se encuentra en un **destino de nivel superior** (la raíz, o el destino de nivel más alto, en un conjunto de destinos relacionados de manera jerárquica). Los destinos de nivel superior no muestran un botón ***Arriba*** en la barra superior de la *app*, ya que no existe un destino superior a este. De forma predeterminada, el destino de inicio de la *app* es el único destino de nivel superior.  
 - ***Navigation drawer***: El ícono del panel lateral (***drawer icon***) se muestra en todos los destinos de nivel superior que usan un ``DrawerLayout``. Para agregar un panel lateral de navegación, primero se declara un ``DrawerLayout`` como vista raíz. Dentro del ``DrawerLayout``, se agrega un diseño para el contenido principal de la UI y otra vista que tenga el contenido del panel lateral de navegación (``NavigationView``). Luego, se conecta el ``DrawerLayout`` al gráfico de navegación pasándoselo a ***AppBarConfiguration***. Y por último, en el método *``onCreate()``* de la *activity* se llama a ***``setupWithNavController()``***.  
@@ -343,12 +347,12 @@ La interacción con ``NavController`` es el método principal para navegar entre
   }
 ```
 
-### *Nested graphs*
+## *Nested graphs*
 Por lo general, los flujos de acceso, los asistentes (*wizards*) y otros subflujos de la *app* se representan mejor como **gráficos de navegación anidados** (***nested graphs***). Si se anidan flujos de subnavegación autónomos de esta manera, el flujo principal de la UI de la *app* será más fácil de comprender y administrar. Además, los gráficos anidados son reutilizables. También proporcionan un nivel de encapsulación, es decir, que los destinos fuera del gráfico anidado no tienen acceso directo a ninguno de los destinos dentro del gráfico anidado. En su lugar, deberían tener un elemento *``navigate()``* que los dirija al propio gráfico anidado, donde la lógica interna puede cambiar sin afectar el resto del gráfico. Esto es útil, por ejemplo, para verificar si hay un usuario registrado. Si el usuario no está registrado, se lo puede dirigir a la pantalla de registro dentro del gráfico anidado. Esto es lo que se conoce como **navegación condicional**.  
 Para agrupar destinos en un gráfico anidado, se mantiene presionada la **tecla** ***Shift*** y se hace clic en los destinos que se desean incluir en el gráfico anidado. Luego, se hace clic derecho para abrir el menú contextual y se selecciona ***Move to Nested Graph > New Graph***.  
 Además, dentro de un gráfico de navegación se puede hacer referencia a otros gráficos mediante ***``include``***. Si bien esto es funcionalmente lo mismo que usar un gráfico anidado, *``include``* permite usar gráficos de otros módulos del proyecto o de proyectos de librería.
 
-### Acciones globales
+## Acciones globales
 Se puede usar una **acción general o global** (***global action***) para crear una acción común que varios destinos puedan utilizar. Por ejemplo, quizás se desee agregar botones en distintos destinos para navegar a la misma pantalla principal de la *app*. En el Editor de *Navigation*, una acción general se representa mediante **una flecha pequeña que apunta al destino asociado**. A fin de usar una acción general en el código, se pasa el ID de recurso de la acción general al **método** ***``navigate()``*** para cada elemento de la UI, como se muestra en el siguiente ejemplo:
 
 ```kotlin

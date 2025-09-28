@@ -1,4 +1,5 @@
-## Corrutinas (*Coroutines*) & *Flows*
+<h1>Corrutinas (<i>Coroutines</i>) & <i>Flows</i></h1>
+
 **Las corrutinas** están diseñadas para ejecutar **operaciones asíncronas** complejas de forma limpia y **secuencialmente**, lo que significa que el código de la corrutina espera a que regrese lo que invocó antes de continuar. Esto permite, entre otras cosas, **no bloquear el hilo principal**. Para eso, se utilizan **funciones de suspensión** (***suspension functions***), como ***``delay()``***, ***``await()``*** (que se utiliza junto con el *builder ``async{}``*) y ***``withContext()``*** (una práctica recomendada consiste en usar ``withContext()`` a fin de garantizar que todas las funciones sean seguras para el subproceso principal (*main-safe*), lo cual significa que se puede llamar a la función desde el subproceso principal). En esencia, **_la función de suspensión realiza una acción asíncrona, pero para la corrutina que la invoca, se considera síncrona_**.  
 También se puede indicar que una función personalizada es de suspensión anteponiéndole la palabra reservada ***``suspend``*** (pausa la ejecución de la corrutina actual y guarda todas las variables locales) o ***``resume``*** (continúa la ejecución de una corrutina suspendida desde donde se detuvo). A las funciones de suspensión sólo se las puede llamar **desde una corrutina** o **desde otra función de suspensión** y **retornan asincrónicamente un solo valor**.
 
@@ -6,24 +7,27 @@ También se puede indicar que una función personalizada es de suspensión antep
 A diferencia de los canales (*channels*), los _flows_ son *cold streams*, al igual que las secuencias (*sequences*) de Kotlin. El código dentro del constructor de un *flow* (*flow builder*), no se ejecuta hasta que el *flow* es recolectado.  
 En el mundo Android, estas características hacen de *Flow* una excelente alternativa a *LiveData*. *Flow* ofrece una funcionalidad similar: *builders*, *cold streams* y auxiliares útiles (por ejemplo, transformación de datos). Y a diferencia de *LiveData*, **no están vinculados al ciclo de vida y brindan más control sobre el contexto de ejecución**.
 
-- [Jerarquía conceptual de las corrutinas](#jerarquía-conceptual-de-las-corrutinas)
-- [*CoroutineScope*](#coroutinescope)
-- [*CoroutineContext*](#coroutinecontext)
-- [*Job*](#job)
-- [*SupervisorJob*](#supervisorjob)
-- [*Dispatchers*](#dispatchers)
-- [*CoroutineCancellationException*](#coroutinecancellationexception)
-- [*CoroutineName*](#coroutinename)
-- [_Testing_ en corrutinas: ``StandardTestDispatcher`` y ``UnconfinedTestDispatcher``](#_testing_-en-corrutinas-standardtestdispatcher-y-unconfinedtestdispatcher)
-  - [**StandardTestDispatcher**](#standardtestdispatcher)
-  - [**UnconfinedTestDispatcher**](#unconfinedtestdispatcher)
-  - [Ejemplo para crear una clase ``TestDispatcherRule`` (o ``MainCoroutineRule``)](#ejemplo-para-crear-una-clase-testdispatcherrule-o-maincoroutinerule)
-- [*Cold Flow* vs *Hot Flow*](#cold-flow-vs-hot-flow)
-- [*`StateFlow` vs `SharedFlow`*](#stateflow-vs-sharedflow)
+***Index***:
+<!-- TOC -->
+  * [Jerarquía conceptual de las corrutinas](#jerarquía-conceptual-de-las-corrutinas)
+  * [*CoroutineScope*](#coroutinescope)
+  * [*CoroutineContext*](#coroutinecontext)
+  * [*Job*](#job)
+  * [*SupervisorJob*](#supervisorjob)
+  * [*Dispatchers*](#dispatchers)
+  * [*CoroutineCancellationException*](#coroutinecancellationexception)
+  * [*CoroutineName*](#coroutinename)
+  * [*Testing* en corrutinas: ``StandardTestDispatcher`` y ``UnconfinedTestDispatcher``](#testing-en-corrutinas-standardtestdispatcher-y-unconfinedtestdispatcher)
+    * [**StandardTestDispatcher**](#standardtestdispatcher)
+    * [**UnconfinedTestDispatcher**](#unconfinedtestdispatcher)
+    * [Ejemplo para crear una clase ``TestDispatcherRule`` (o ``MainCoroutineRule``)](#ejemplo-para-crear-una-clase-testdispatcherrule-o-maincoroutinerule)
+  * [*Cold Flow* vs *Hot Flow*](#cold-flow-vs-hot-flow)
+  * [*`StateFlow` vs `SharedFlow`*](#stateflow-vs-sharedflow)
+<!-- TOC -->
 
 ---
 
-### Jerarquía conceptual de las corrutinas
+## Jerarquía conceptual de las corrutinas
 
 1. **CoroutineScope**: Es un concepto de nivel superior que proporciona un ámbito para lanzar corrutinas.
     - Tiene métodos como **`launch`**, **`async`**, etc.
@@ -43,7 +47,7 @@ CoroutineScope
 │   ├── CoroutineName
 ```
 
-### *CoroutineScope*
+## *CoroutineScope*
 **¿Qué es?**
 
 - Un ámbito o contenedor para corrutinas que define su ciclo de vida.
@@ -73,7 +77,7 @@ CoroutineScope
   scope.cancel() // Cancela todas las corrutinas lanzadas en este scope
 ```
 
-### *CoroutineContext*
+## *CoroutineContext*
 **¿Qué es?**
 
 - Un conjunto de elementos que definen el comportamiento de una corrutina.
@@ -102,7 +106,7 @@ CoroutineScope
   }
 ```
 
-### *Job*
+## *Job*
 **¿Qué es?**
 
 - Representa una tarea cancelable con un ciclo de vida.
@@ -135,7 +139,7 @@ CoroutineScope
   job.cancel() // Cancela la corrutina
 ```
 
-### *SupervisorJob*
+## *SupervisorJob*
 
 **¿Qué es?**
 
@@ -165,7 +169,7 @@ CoroutineScope
   }
 ```
 
-### *Dispatchers*
+## *Dispatchers*
 
 **¿Qué es?**
 
@@ -212,7 +216,7 @@ CoroutineScope
   }
 ```
 
-### *CoroutineCancellationException*
+## *CoroutineCancellationException*
 
 **Terminología**:
 
@@ -257,7 +261,7 @@ CoroutineScope
   }
 ```
 
-### *CoroutineName*
+## *CoroutineName*
 
 **¿Qué es?**
 
@@ -280,10 +284,10 @@ CoroutineScope
   }
 ```
 
-### _Testing_ en corrutinas: ``StandardTestDispatcher`` y ``UnconfinedTestDispatcher``
-Ambos son _dispatchers_ utilizados en pruebas de corrutinas en Kotlin, pero tienen comportamientos diferentes:
+## *Testing* en corrutinas: ``StandardTestDispatcher`` y ``UnconfinedTestDispatcher``
+Ambos son *dispatchers* utilizados en pruebas de corrutinas en Kotlin, pero tienen comportamientos diferentes:
 
-#### **StandardTestDispatcher**
+### **StandardTestDispatcher**
 
 1. **Ejecución controlada**: Las tareas se encolan pero no se ejecutan automáticamente. Se necesita llamar explícitamente a métodos como **`advanceUntilIdle()`** o **`advanceTimeBy()`** para que se ejecuten las tareas pendientes.
 2. **Control de tiempo**: Permite controlar exactamente cuándo se ejecutan las tareas, lo que facilita probar comportamientos que dependen del tiempo.
@@ -301,7 +305,7 @@ Ambos son _dispatchers_ utilizados en pruebas de corrutinas en Kotlin, pero tien
   testDispatcher.scheduler.advanceUntilIdle()
 ```
 
-#### **UnconfinedTestDispatcher**
+### **UnconfinedTestDispatcher**
 
 1. **Ejecución inmediata**: Las tareas se ejecutan inmediatamente, sin necesidad de avanzar manualmente el tiempo.
 2. **Comportamiento "ansioso" (*eager behavior*)**: Ejecuta las corrutinas tan pronto como se lanzan, hasta que alcanzan un punto de suspensión. La documentación de Kotlin también usa el término *"unconfined"* para describir este comportamiento, indicando que la ejecución no está confinada o restringida a un orden específico controlado por el programador, sino que fluye libremente.
@@ -318,7 +322,7 @@ Ambos son _dispatchers_ utilizados en pruebas de corrutinas en Kotlin, pero tien
   // No se necesita avanzar el tiempo manualmente
 ```
 
-#### Ejemplo para crear una clase ``TestDispatcherRule`` (o ``MainCoroutineRule``)
+### Ejemplo para crear una clase ``TestDispatcherRule`` (o ``MainCoroutineRule``)
 
 ```kotlin
   class TestDispatcherRule(
@@ -343,7 +347,7 @@ Ambos son _dispatchers_ utilizados en pruebas de corrutinas en Kotlin, pero tien
   }
 ```
 
-### *Cold Flow* vs *Hot Flow*
+## *Cold Flow* vs *Hot Flow*
 
 | ***Cold Flow***                                                                                                                                                                                 | ***Hot Flow***                                                                                                                                                                                                                    |
 |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -352,7 +356,7 @@ Ambos son _dispatchers_ utilizados en pruebas de corrutinas en Kotlin, pero tien
 |                                                                                                                                                                                                 | You can convert cold flow to hot flow, using `stateIn` and `sharedIn` intermediate operators.                                                                                                                                     |
 | Examples: `Flow`                                                                                                                                                                                | Examples: `SharedFlow` and `StateFlow`                                                                                                                                                                                            |
 
-### *`StateFlow` vs `SharedFlow`*
+## *`StateFlow` vs `SharedFlow`*
 
 | ***StateFlow***                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | ***SharedFlow***                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

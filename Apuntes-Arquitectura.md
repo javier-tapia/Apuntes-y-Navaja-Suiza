@@ -1,32 +1,26 @@
-# Apuntes de Arquitectura
+<h1>Apuntes de Arquitectura</h1>
 
-- [Principios SOLID](#principios-solid)
-   - [_Single Responsability_](#single-responsability)
-   - [_Open/Closed_](#openclosed)
-   - [_Liskov Substitution_](#liskov-substitution)
-   - [_Interface Segregation_](#interface-segregation)
-   - [_Dependency Inversion_](#dependency-inversion)
-- [*Clean Architecture* vs Guía de Arquitectura de Android vs MVVM](#clean-architecture-vs-guía-de-arquitectura-de-android-vs-mvvm)
-   - [Resumen General](#resumen-general)
-   - [Desglose de las funciones de cada capa](#desglose-de-las-funciones-de-cada-capa)
-     - [MVVM](#mvvm)
-     - [Guía de Arquitectura (Google/Android)](#guía-de-arquitectura-googleandroid)
-     - [*Clean Architecture*](#clean-architecture)
-   - [Diferencia entre Modelos de Datos y Modelos de Dominio](#diferencia-entre-modelos-de-datos-y-modelos-de-dominio)
-     - [Modelos de Datos (DTOs - Data Transfer Objects)](#modelos-de-datos-dtos---data-transfer-objects)
-     - [Modelos de Dominio](#modelos-de-dominio)
-- [Ejemplo: Aplicación de películas](#ejemplo-aplicación-de-películas)
-   - [1. Arquitectura General: Clean Architecture + MVVM](#1-arquitectura-general-clean-architecture--mvvm)
-     - [Capas principales](#capas-principales)
-   - [2. Componentes Clave](#2-componentes-clave)
-     - [Capa de Datos](#capa-de-datos)
-     - [Capa de Dominio](#capa-de-dominio)
-     - [Capa de Presentación](#capa-de-presentación)
-   - [3. Flujo de Datos](#3-flujo-de-datos)
-   - [4. Tecnologías Recomendadas](#4-tecnologías-recomendadas)
-   - [5. Estructura de Paquetes sugerida](#5-estructura-de-paquetes-sugerida)
+***Index***:
+<!-- TOC -->
+  * [Principios SOLID](#principios-solid)
+    * [*Single Responsability*](#single-responsability)
+    * [*Open/Closed*](#openclosed)
+    * [*Liskov Substitution*](#liskov-substitution)
+    * [*Interface Segregation*](#interface-segregation)
+    * [*Dependency Inversion*](#dependency-inversion)
+  * [*Clean Architecture* vs Guía de Arquitectura de Android vs MVVM](#clean-architecture-vs-guía-de-arquitectura-de-android-vs-mvvm)
+    * [Resumen General](#resumen-general)
+    * [Desglose de las funciones de cada capa](#desglose-de-las-funciones-de-cada-capa)
+      * [MVVM](#mvvm)
+      * [Guía de Arquitectura (Google/Android)](#guía-de-arquitectura-googleandroid)
+      * [*Clean Architecture*](#clean-architecture)
+    * [Diferencia entre Modelos de Datos y Modelos de Dominio](#diferencia-entre-modelos-de-datos-y-modelos-de-dominio)
+      * [Modelos de Datos (DTOs - Data Transfer Objects)](#modelos-de-datos-dtos---data-transfer-objects)
+      * [Modelos de Dominio](#modelos-de-dominio)
+    * [Ejemplo estructura](#ejemplo-estructura)
+  * [Patrones de Diseño](#patrones-de-diseño)
+<!-- TOC -->
 
----
 ---
 
 ## Principios SOLID
@@ -109,102 +103,8 @@ Cada capa en estas arquitecturas tiene un propósito específico y ayuda a mante
 
 En la práctica, los repositorios suelen transformar los modelos de datos (DTOs) en modelos de dominio al obtener información, y viceversa al guardarla, manteniendo así la capa de dominio aislada de los detalles de implementación de las fuentes de datos.
 
-## Ejemplo: Aplicación de películas
-
-### 1. Arquitectura General: Clean Architecture + MVVM
-
-La aplicación seguirá una arquitectura por capas siguiendo los principios de Clean Architecture combinada con el patrón MVVM (Model-View-ViewModel) recomendado por Google:
-
-#### Capas principales
-
-1. **Capa de Presentación (UI)**
-  - Componentes *Compose*
-  - *ViewModels*
-  - Estados de UI
-2. **Capa de Dominio**
-  - Casos de uso (*Use Cases*)
-  - Modelos de dominio
-  - Interfaces de repositorios
-3. **Capa de Datos**
-  - Implementaciones de repositorios
-  - Fuentes de datos (remota y local)
-  - Modelos de datos (DTOs)
-
-### 2. Componentes Clave
-
-#### Capa de Datos
-
-**Fuente de Datos Remota:**
-
-- `MovieApiService`: Interfaz para definir los *endpoints* de la API de películas
-- `MovieRemoteDataSource`: Clase que utiliza el servicio API para obtener datos
-
-**Fuente de Datos Local:**
-
-- `MovieDatabase`: Base de datos *Room* para almacenar películas favoritas
-- `MovieDao`: Interfaz para acceder a la base de datos
-- `MovieLocalDataSource`: Clase que utiliza el DAO para operaciones locales
-
-**Repositorios:**
-
-- `MovieRepository`: Implementación que coordina fuentes de datos remotas y locales
-
-#### Capa de Dominio
-
-**Modelos:**
-
-- `Movie`: Modelo de dominio que representa una película
-
-**Casos de Uso:**
-
-- `GetMoviesUseCase`: Obtener lista de películas
-- `GetMovieDetailsUseCase`: Obtener detalles de una película
-- `ToggleFavoriteUseCase`: Marcar/desmarcar película como favorita
-- `GetFavoriteMoviesUseCase`: Obtener películas favoritas
-
-#### Capa de Presentación
-
-**ViewModels:**
-
-- `MovieListViewModel`: Gestiona la lista de películas
-- `MovieDetailViewModel`: Gestiona los detalles de una película
-- `FavoritesViewModel`: Gestiona la lista de favoritos
-
-**Estados de UI:**
-
-- `MovieListUiState`: Estado para la pantalla de lista de películas
-- `MovieDetailUiState`: Estado para la pantalla de detalles
-- `FavoritesUiState`: Estado para la pantalla de favoritos
-
-**Pantallas Compose:**
-
-- `MovieListScreen`: Muestra la lista de películas
-- `MovieDetailScreen`: Muestra los detalles de una película
-- `FavoritesScreen`: Muestra las películas favoritas
-
-### 3. Flujo de Datos
-
-1. **Obtener lista de películas:**
-  - UI solicita datos → *ViewModel* → *UseCase* → *Repository* → API
-  - Los datos fluyen de vuelta como: API → *Repository* → *UseCase* → *ViewModel* → UI (como estado)
-2. **Marcar como favorito:**
-  - UI envía acción → *ViewModel* → *UseCase* → *Repository* → Base de datos local
-  - Confirmación: Base de datos → *Repository* → *UseCase* → *ViewModel* → UI (actualización de estado)
-3. **Ver detalles:**
-  - UI solicita detalles → *ViewModel* → *UseCase* → *Repository* → API/Local
-  - Datos fluyen de vuelta como: Fuente de datos → *Repository* → *UseCase* → *ViewModel* → UI
-
-### 4. Tecnologías Recomendadas
-
-- **Jetpack Compose**: Para toda la UI
-- ***ViewModel* + *StateFlow***: Para gestionar y exponer estados de UI
-- **Kotlin Coroutines + Flow**: Para operaciones asíncronas y flujos de datos reactivos
-- ***Retrofit***: Para comunicación con la API
-- ***Room***: Para persistencia local de favoritos
-- ***Hilt/Dagger***: Para inyección de dependencias
-- ***Navigation Compose***: Para la navegación entre pantallas
-
-### 5. Estructura de Paquetes sugerida
+### Ejemplo estructura
+Estructura de paquetes para una supuesta app destinada a mostrar una lista de películas, ver el detalle de una película, agregar una película a favoritos, etc.
 
 ```
 com.example.movieapp/
@@ -228,3 +128,8 @@ com.example.movieapp/
     ├── moviedetail/
     └── favorites/
 ```
+
+---
+
+## Patrones de Diseño
+TODO...

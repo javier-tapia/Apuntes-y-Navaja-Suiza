@@ -1,4 +1,5 @@
-## *Removing elements*
+<h1><i>Removing elements</i></h1>
+
 Para eliminar un elemento de una colección mutable se usa la función ***``remove()``***, que toma un valor y, en caso de existir en la colección, elimina la primera ocurrencia de ese valor (en caso contrario, no hace nada). Para eliminar múltiples elementos a la vez, existen las siguientes funciones:
 
 + ***``removeAll()``***, que elimina todos los elementos que están presentes en la colección de argumentos. Alternativamente, se puede llamar con un predicado como argumento y en este caso la función elimina todos los elementos para los cuales el predicado resulta verdadero (*true*)

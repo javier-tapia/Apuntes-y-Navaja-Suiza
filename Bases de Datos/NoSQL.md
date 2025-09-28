@@ -1,9 +1,12 @@
-# NoSQL
+<h1>NoSQL</h1>
 
-- [Esquema No-Relacional](#esquema-no-relacional)
-- [Flexibilidad en el esquema](#flexibilidad-en-el-esquema)
-- [Escalabilidad horizontal](#escalabilidad-horizontal)
-- [*Queries* complejas](#queries-complejas)
+***Index***:
+<!-- TOC -->
+  * [Esquema No-Relacional](#esquema-no-relacional)
+  * [Flexibilidad en el esquema](#flexibilidad-en-el-esquema)
+  * [Escalabilidad horizontal](#escalabilidad-horizontal)
+  * [*Queries* complejas](#queries-complejas)
+<!-- TOC -->
 
 ---
 
