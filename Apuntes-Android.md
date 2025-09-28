@@ -147,6 +147,7 @@ Un ejemplo del patrón MVP sería algo así:
 ```
 
 ### *MVVM (Model View ViewModel)*
+
 > Para una comparación con diferentes arquitecturas, ver [acá](Apuntes-Arquitectura.md#clean-architecture-vs-guía-de-arquitectura-de-android-vs-mvvm)
 
 Este patrón facilita la separación de la lógica de la interfaz gráfica de usuario y la lógica de negocio o modelo de datos de la aplicación. En MVVM, el *ViewModel* tiene la responsabilidad de convertir los objetos de datos del modelo en un formato que permita manejar y presentar fácilmente. En este sentido, **el ***ViewModel*** contiene toda la lógica de presentación de la vista**.  

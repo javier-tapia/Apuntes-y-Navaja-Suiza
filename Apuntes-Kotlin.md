@@ -21,10 +21,6 @@
       * [1.9.2. *Object declaration*](#192-object-declaration)
   * [2. Propiedades y fields](#2-propiedades-y-fields)
     * [2.1. Declaración](#21-declaración)
-      * [2.1.1. Una propiedad ***top-level*** (dentro del paquete) deber ser inicializada.](#211-una-propiedad-top-level-dentro-del-paquete-deber-ser-inicializada)
-      * [2.1.2. Una propiedad ***miembro*** (dentro de la clase) debe ser inicializada **o** ser abstracta. También puede inicializarse más tarde con el modificador ***``lateinit``*** (sólo en *var properties* y para tipos no primitivos; *lateinit* retrasa la inicialización de la variable sin peligro de devolver una referencia nula) o con la función ***``lazy()``*** (ver *Propiedades delegadas*).](#212-una-propiedad-miembro-dentro-de-la-clase-debe-ser-inicializada-o-ser-abstracta-también-puede-inicializarse-más-tarde-con-el-modificador-lateinit-sólo-en-var-properties-y-para-tipos-no-primitivos-lateinit-retrasa-la-inicialización-de-la-variable-sin-peligro-de-devolver-una-referencia-nula-o-con-la-función-lazy-ver-propiedades-delegadas)
-      * [2.1.3. Una variable ***local*** (dentro de una función) debe tener anotado el tipo **o** ser inicializada, y no pueden ser sobreescritas.](#213-una-variable-local-dentro-de-una-función-debe-tener-anotado-el-tipo-o-ser-inicializada-y-no-pueden-ser-sobreescritas)
-      * [2.1.4. Un ***parámetro*** debe tener anotado el tipo. Dentro del *header* de una clase, si se agrega *var* o *val* al nombre del parámetro, se vuelve una *property* de la clase (**se declaran e inicializan** en el **constructor primario**). Por otro lado, los ***parámetros*** **de las funciones siempre son** ***val*** (de sólo lectura).](#214-un-parámetro-debe-tener-anotado-el-tipo-dentro-del-header-de-una-clase-si-se-agrega-var-o-val-al-nombre-del-parámetro-se-vuelve-una-property-de-la-clase-se-declaran-e-inicializan-en-el-constructor-primario-por-otro-lado-los-parámetros-de-las-funciones-siempre-son-val-de-sólo-lectura)
     * [2.2. *Default arguments* y *Named arguments*](#22-default-arguments-y-named-arguments)
     * [2.3. *Backing fields* (*getters* y *setters*)](#23-backing-fields-getters-y-setters)
     * [2.4. *Class Delegation*](#24-class-delegation)
@@ -562,15 +558,13 @@ Un **``companion object``** es un *object declaration* dentro de una clase. Los 
     val ejemplo: String = “Hola mundo”
 ```
 
-Las variables pueden ser de tipo ***``var``*** (mutables), ***``val``*** (inmutables) o ***``const``*** (constante en tiempo de compilación, es decir, **no se puede asignar un valor a la variable en tiempo de ejecución** como en las *``val``*). Las propiedades *``const``* deben estar declaradas en *top-level* (ver siguiente apartado) o ser miembro de un *object* o de un *companion object* (ver apartado 1.9), deben ser inicializadas con un *String* o con un tipo primitivo, y no pueden tener *custom getters* (ver apartado 2.3).
+Las variables pueden ser de tipo ***``var``*** (mutables), ***``val``*** (inmutables) o ***``const``*** (constante en tiempo de compilación, es decir, **no se puede asignar un valor a la variable en tiempo de ejecución** como en las *``val``*). Las propiedades *``const``* deben estar declaradas en *top-level* o ser miembro de un *object* o de un *companion object* (ver apartado 1.9), deben ser inicializadas con un *String* o con un tipo primitivo, y no pueden tener *custom getters* (ver apartado 2.3).
 
-#### 2.1.1. Una propiedad ***top-level*** (dentro del paquete) deber ser inicializada.
-
-#### 2.1.2. Una propiedad ***miembro*** (dentro de la clase) debe ser inicializada **o** ser abstracta. También puede inicializarse más tarde con el modificador ***``lateinit``*** (sólo en *var properties* y para tipos no primitivos; *lateinit* retrasa la inicialización de la variable sin peligro de devolver una referencia nula) o con la función ***``lazy()``*** (ver *Propiedades delegadas*).
-
-#### 2.1.3. Una variable ***local*** (dentro de una función) debe tener anotado el tipo **o** ser inicializada, y no pueden ser sobreescritas.
-
-#### 2.1.4. Un ***parámetro*** debe tener anotado el tipo. Dentro del *header* de una clase, si se agrega *var* o *val* al nombre del parámetro, se vuelve una *property* de la clase (**se declaran e inicializan** en el **constructor primario**). Por otro lado, los ***parámetros*** **de las funciones siempre son** ***val*** (de sólo lectura).
+En relación a su visibilidad e inicialización:
+- Una propiedad ***top-level*** (dentro del paquete) deber ser inicializada.
+- Una propiedad ***miembro*** (dentro de la clase) debe ser inicializada **o** ser abstracta. También puede inicializarse más tarde con el modificador ***``lateinit``*** (sólo en *var properties* y para tipos no primitivos; *lateinit* retrasa la inicialización de la variable sin peligro de devolver una referencia nula) o con la función ***``lazy()``*** (ver *Propiedades delegadas*).
+- Una variable ***local*** (dentro de una función) debe tener anotado el tipo **o** ser inicializada, y no pueden ser sobreescritas.
+- Un ***parámetro*** debe tener anotado el tipo. Dentro del *header* de una clase, si se agrega *var* o *val* al nombre del parámetro, se vuelve una *property* de la clase (**se declaran e inicializan** en el **constructor primario**). Por otro lado, los ***parámetros*** **de las funciones siempre son** ***val*** (de sólo lectura).
 
 ### 2.2. *Default arguments* y *Named arguments*
 A los **parámetros de una función**, pueden asignárseles **valores por defecto**, que se usan cuando el argumento correspondiente **se omite** al invocar la función. O también se les puede **cambiar el valor** por defecto **al nombrarlos** y darles **otro valor** al momento de invocar la función. Esto evita *overloads* (definir múltiples métodos con el mismo nombre pero diferentes parámetros) y permite llamadas más claras, para evitar errores por un orden incorrecto de los argumentos (no es lo mismo *``"nombre@mail.com"``* que *``"mail.com@nombre"``*).  
@@ -1542,7 +1536,6 @@ Esta característica sólo funciona para **interoperar con Java**. Las ***functi
 
 - Ver [*Scope functions*](Kotlin/Scope%20Functions.md)
 
----
 ---
 
 ## Referencias
