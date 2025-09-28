@@ -545,7 +545,8 @@ Instancia usando una función de extensión de Kotlin:
 ```
 
 ### *LiveData*
-> Para profundizar sobre el uso de LiveData en Compose, ver [acá](Android/UI/Jetpack Compose.md#livedata)
+
+> Para profundizar sobre el uso de LiveData en Compose, ver [acá](Android/UI/Jetpack%20Compose.md#livedata)
 
 Es una clase de **almacenamiento de datos** que permite que estos sean **observados**. A diferencia de un *observable* regular, _LiveData_ es **consciente del ciclo de vida** de la *activity* (o *fragment*) evitando, por ejemplo, mandarle datos cuando dicha *activity* (o *fragment*) no está en primer plano, ya que *LiveData* considera que un observador, que está representado por la clase ***Observer***, está en estado activo si su ciclo de vida está en **``STARTED``** o **``RESUMED``**. *LiveData* **solo notifica a los observadores activos** sobre las actualizaciones. Los observadores inactivos registrados para ver objetos *LiveData* no reciben notificaciones sobre los cambios.  
 Se siguen estos pasos para trabajar con objetos *LiveData*:

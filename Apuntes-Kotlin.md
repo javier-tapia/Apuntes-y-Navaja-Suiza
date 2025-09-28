@@ -484,7 +484,7 @@ Una clase anidada marcada como *``inner``* puede acceder a los miembros de su cl
 ```
 
 ### 1.8. *Data classes*
-Se declaran anteponiendo la palabra reservada *``data``*. Tienen como objetivo principal **almacenar datos**, pero a su vez el compilador genera automáticamente funciones para todas las propiedades declaradas en el constructor primario: ***``equals()``*** / ***``hashCode()``***; ***``toString()``***; **funciones** ***``componentN()``***; función ***``copy()``***. Por esta razón, y porque en Kotlin no es necesario declarar los *setters* y *getters* de las propiedades (ver *Properties y Fields*), se considera a las *data classes* una mejor versión de los *POJO* usados en Java, ya que no requieren de tanto código. **Requerimientos**: el constructor primario debe tener **al menos un parámetro**; todos los parámetros del constructor primario **deben marcarse con** ***val*** **o** ***var***; **no pueden ser** *abstract*, *open*, *sealed* o *inner*.
+Se declaran anteponiendo la palabra reservada *``data``*. Tienen como objetivo principal **almacenar datos**, pero a su vez el compilador genera automáticamente funciones para todas las propiedades declaradas en el constructor primario: ***``equals()``*** / ***``hashCode()``***; ***``toString()``***; **funciones** ***``componentN()``***; función ***``copy()``***. Por esta razón, y porque en Kotlin no es necesario declarar los *setters* y *getters* de las propiedades (ver [*Properties y Fields*](#2-propiedades-y-fields)), se considera a las *data classes* una mejor versión de los *POJO* usados en Java, ya que no requieren de tanto código. **Requerimientos**: el constructor primario debe tener **al menos un parámetro**; todos los parámetros del constructor primario **deben marcarse con** ***val*** **o** ***var***; **no pueden ser** *abstract*, *open*, *sealed* o *inner*.
 
 ```kotlin
     data class User(val name: String, val age: Int)
@@ -882,7 +882,7 @@ Dichos retornos (ubicados en un *lambda*, pero que salen de la función que los 
 ```
 
 ### 3.5. Funciones de extensión
-Una función de extensión se declara agregando como prefijo **el tipo que está siendo extendido** (***receiver type***). La palabra reservada ***``this``*** (ver *This expressions* en *Otros*) dentro de una función de extensión corresponde al ***receiver object*** (objeto *receptor* o *destinatario*, el que se pasa antes del punto):
+Una función de extensión se declara agregando como prefijo **el tipo que está siendo extendido** (***receiver type***). La palabra reservada ***``this``*** (ver [*This expression*](#64-this-expression)) dentro de una función de extensión corresponde al ***receiver object*** (objeto *receptor* o *destinatario*, el que se pasa antes del punto):
 
 ```kotlin
     fun MutableList<Int>.swap(index1: Int, index2: Int) {
@@ -896,7 +896,7 @@ Una función de extensión se declara agregando como prefijo **el tipo que está
 ```
 
 ### 3.6. Funciones de Orden Superior (*Higher-Order Functions*)
-Una función de orden superior toma otra función (o expresión *lambda*) como **parámetro**, **devuelve una función**, **o hace ambos**. Para pasar una función como parámetro de una función de orden superior, se la debe referenciar con el ***operador ``::``*** (ver *Reflection*)
+Una función de orden superior toma otra función (o expresión *lambda*) como **parámetro**, **devuelve una función**, **o hace ambos**. Para pasar una función como parámetro de una función de orden superior, se la debe referenciar con el ***operador ``::``*** (ver [*Reflection*](Kotlin/Reflection.md))
 
 ```kotlin
     fun calCircumference(radius: Double) = (2 * Math.PI) * radius
@@ -926,7 +926,7 @@ Otro ejemplo, en el que la función de orden superior devuelve una función:
 ```
 
 ### 3.7. *Function type with receiver* y *Function literal with receiver*
-Partiendo de una función de extensión simple como ejemplo, si se necesita asociar esa función con una propiedad, entonces se puede usar una **referencia de función** (***function reference***) (ver *Reflection* en *Otros*).
+Partiendo de una función de extensión simple como ejemplo, si se necesita asociar esa función con una propiedad, entonces se puede usar una **referencia de función** (***function reference***) (ver [*Reflection*](Kotlin/Reflection.md)).
 
 ```kotlin
     fun Int.square() = this * this // Extension function
