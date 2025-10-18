@@ -10,6 +10,7 @@
     * [1.1. Estructura de módulos](#11-estructura-de-módulos)
       * [1.1.1. Módulo común (*shared*)](#111-módulo-común-shared)
       * [1.1.2. Módulos específicos de plataforma](#112-módulos-específicos-de-plataforma)
+      * [1.1.3. ⚠️ Nota sobre Windows y KMP](#113--nota-sobre-windows-y-kmp)
     * [1.2. Gradle y Kotlin DSL](#12-gradle-y-kotlin-dsl)
       * [1.2.1. Configuración de plugins](#121-configuración-de-plugins)
       * [1.2.2. Dependencias multiplataforma](#122-dependencias-multiplataforma)
@@ -97,6 +98,16 @@ TODO...
 
 #### 1.1.2. Módulos específicos de plataforma
 TODO...
+
+#### 1.1.3. ⚠️ Nota sobre Windows y KMP
+En Windows, Android Studio no ofrece directamente algunas plantillas para crear un proyecto desde cero.  
+Esto **no impide** usar Kotlin Multiplatform ni Compose Multiplatform. Solo implica que:
+
+- Hay que crear manualmente los módulos: `shared`, `androidApp`, `desktopApp`, etc.
+- Configurar Gradle y las dependencias de Compose Desktop manualmente.
+- Configurar `expect/actual` para URLs y otras diferencias entre plataformas.
+
+En otras palabras: Windows requiere un **setup manual paso a paso**, pero el proyecto resultante funciona igual que en Mac o Linux.
 
 ### 1.2. Gradle y Kotlin DSL
 TODO...
