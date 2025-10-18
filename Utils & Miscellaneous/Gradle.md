@@ -17,6 +17,8 @@
     * [About Gradle Wrapper Script in Android Studio](#about-gradle-wrapper-script-in-android-studio)
     * [Compilation process with Gradle](#compilation-process-with-gradle)
     * [Build configurations](#build-configurations)
+      * [How Flavors and Build Types combine](#how-flavors-and-build-types-combine)
+      * [Gradle Merge Rule](#gradle-merge-rule)
     * [Some Gradle tasks in Android](#some-gradle-tasks-in-android)
     * [Common Errors with Gradle](#common-errors-with-gradle)
       * [*Gradle* does not recognize a dependency](#gradle-does-not-recognize-a-dependency)
@@ -301,6 +303,27 @@ The plugin takes every local module, every external dependency, compilation reso
 - ***Dependencies***: Dependencies can be defined for a specific variant, build type, or flavor.
 - ***Signing***: It refers to the signature of an APK, which allows certifying that the APK can be uploaded to the PlayStore.
 - ***Optimization***: Allows you to configure which files should or should not be taken into account. R8 replaced ProGuard.
+
+#### How Flavors and Build Types combine
+
+| Flavor | Build Type | Build Variant | Qué incluye             |
+|--------|------------|---------------|-------------------------|
+| free   | debug      | freeDebug     | `main + free + debug`   |
+| free   | release    | freeRelease   | `main + free + release` |
+| paid   | debug      | paidDebug     | `main + paid + debug`   |
+| paid   | release    | paidRelease   | `main + paid + release` |
+
+#### Gradle Merge Rule
+
+```
+main < flavor < buildType
+```
+
+This means:
+- Code and resources in ``main/`` are **always used**. 
+- Code and resources in ``flavor/`` are **only used for that flavor**. 
+- Code and resources in ``buildType/`` are **only used for that build type**. 
+- If there is a conflict (same file), **buildType takes precedence over flavor**, **which in turn takes precedence over main**.
 
 ### Some Gradle tasks in Android
 

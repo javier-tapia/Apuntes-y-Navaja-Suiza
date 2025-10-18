@@ -16,6 +16,7 @@
     * [Hacer un *stash* con un mensaje *custom* para identificarlo](#hacer-un-stash-con-un-mensaje-custom-para-identificarlo)
     * [Borrar *stash* de la lista con el número](#borrar-stash-de-la-lista-con-el-número)
   * [Config global para *line endings*](#config-global-para-line-endings)
+  * [Limpiar cache de Git](#limpiar-cache-de-git)
 <!-- TOC -->
 
 ---
@@ -115,6 +116,19 @@ git stash drop {NÚMERO-STASH}
 ```
 
 ## Config global para *line endings*
+Sin el _flag_ (``true`` o ``false``) para consultar cuál es.
+
 ```bash
 git config --global core.autocrlf true
 ```
+
+## Limpiar cache de Git
+```bash
+git rm -r --cached .
+```
+
+- ``git rm``: Es el comando para eliminar archivos.
+- ``-r``: Significa "recursivo", para que actúe sobre directorios enteros.
+- ``--cached``: ¡Esta es la parte más importante! Le dice a Git que solo elimine los archivos del área de seguimiento (el "índice" o "caché" de Git). NO los borrará del disco duro.
+- ``.``: Es una abreviatura para "el directorio actual y todo lo que contiene".
+
