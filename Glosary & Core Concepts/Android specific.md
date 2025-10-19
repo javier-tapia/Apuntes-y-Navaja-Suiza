@@ -5,6 +5,10 @@
   * [*Desugaring*](#desugaring)
   * [*Insets*](#insets)
   * [`MessageQueue`, `Looper` and `Handler`](#messagequeue-looper-and-handler)
+  * [*Screen compositing*](#screen-compositing)
+    * [Componentes Principales](#componentes-principales)
+    * [Proceso](#proceso)
+    * [Beneficios](#beneficios)
 <!-- TOC -->
 
 ---
@@ -23,3 +27,22 @@ System UI is dynamic, and therefore, insets are dynamic as well. How big they ar
 
 ## `MessageQueue`, `Looper` and `Handler`
 TODO...
+
+## *Screen compositing*
+Es el proceso mediante el cual se combinan diferentes fuentes de contenido visual en la pantalla para formar una única imagen que se presenta al usuario.
+
+### Componentes Principales
+1. **Capas**: Cada elemento visual (como ventanas, íconos, menús y efectos gráficos) se puede tratar como una capa independiente. Estas capas pueden tener diferentes propiedades, como transparencia.
+2. **Fusión (Blending)**: Cuando se combinan capas, los valores de color de cada pixel se combinan según su nivel de transparencia (alpha). Este proceso permite que las capas superiores interactúen visualmente con las capas inferiores, dando como resultado efectos como sombras o mosaicos.
+3. **Buffering**: Generalmente, el contenido de las capas se dibuja primero en buffers (áreas de memoria de video) antes de ser compuestos en la pantalla. Esto ayuda a reducir el flickering y mejora la eficiencia de renderizado.
+4. **GPU y Hardware Acceleration**: El screen compositing a menudo se maneja mediante la GPU, especialmente cuando se utiliza aceleración por hardware. Esto permite que el proceso sea más eficiente, aprovechando el procesamiento paralelo que ofrece la GPU.
+
+### Proceso
+1. **Renderizar Capas**: Cada capa se dibuja en su buffer correspondiente.
+2. **Composición de la Pantalla**: La GPU toma estas capas, las combina según sus propiedades y las renderiza en el buffer de salida (la pantalla).
+3. **Visualización**: La imagen compuesta se muestra en la pantalla, proporcionando al usuario una interfaz interactiva.
+
+### Beneficios
+- **Eficiencia**: Permite un manejo más eficiente de múltiples elementos visuales al permitir que cada uno se dibuje de manera independiente.
+- **Efectos Visuales**: Facilita la creación de efectos visuales complejos, como sombras, transparencias y animaciones suaves.
+- **Mejor Experiencia de Usuario**: Al permitir que las interfaces sean más dinámicas y responden mejor a las interacciones del usuario.

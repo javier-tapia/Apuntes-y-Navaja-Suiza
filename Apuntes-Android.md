@@ -51,7 +51,6 @@
       * [En el archivo *.kt*:](#en-el-archivo-kt-1)
       * [Y en el *xml*:](#y-en-el-xml-1)
     * [*RecyclerView*](#recyclerview)
-    * [Proceso de *layout* de una vista](#proceso-de-layout-de-una-vista)
     * [*Styles y Themes*](#styles-y-themes)
       * [En ***Styles.xml***:](#en-stylesxml)
       * [En ***AndroidManifest.xml***:](#en-androidmanifestxml)
@@ -64,6 +63,7 @@
       * [Para usar elementos de menú que se pueden activar, en el ***xml***:](#para-usar-elementos-de-menú-que-se-pueden-activar-en-el-xml)
       * [Y para comprobar y establecer el estado de activación:](#y-para-comprobar-y-establecer-el-estado-de-activación)
   * [UI declarativa](#ui-declarativa)
+  * [Android Performance](#android-performance)
   * [Navegación](#navegación)
   * [Accesibilidad (*a11y*)](#accesibilidad-a11y)
   * [*Background & System*](#background--system)
@@ -1454,42 +1454,6 @@ Sin embargo, también es posible utilizar otras soluciones que provee *RecyclerV
 - ***SortedList***: Puede mantener los elementos en orden y también **notificar los cambios en la lista** de modo que pueda vincularse a un *RecyclerView.Adapter*. Mantiene los elementos ordenados mediante el *callback* ***``compare(Object, Object)``*** y utiliza búsqueda binaria para recuperar elementos. Si los criterios de ordenamiento de los elementos pueden cambiar, hay que asegurarse de llamar a los métodos apropiados mientras se editan para evitar inconsistencias de datos. Se puede controlar el orden de los elementos y cambiar las notificaciones a través del parámetro ``Callback``. *SortedList* funciona si solo se necesita manejar eventos de inserción y eliminación, y tiene la ventaja de que **solo se necesita tener una única copia de la lista en memoria**.
 - ***Paging Library***: La librería de paginación amplía el enfoque basado en diferencias para admitir, adicionalmente, la carga paginada (cargar y mostrar pequeños fragmentos de datos a la vez). Esta carga de datos parciales a pedido reduce el uso del ancho de banda de la red y los recursos del sistema. Proporciona la clase ``androidx.paging.PagedList`` que funciona como una lista de carga automática, proporcionada una fuente de datos como una base de datos o una API de red paginada.
 
-### Proceso de *layout* de una vista
-
-> 🔍 Reference:  
-> https://developer.android.com/guide/topics/ui/how-android-draws
-> 
-
-1. ***Measure***
-El método [`measure(widthMeasureSpec: Int, heightMeasureSpec: Int)`](https://developer.android.com/reference/android/view/View#measure(int,%20int)):
-
-- Recibe especificaciones de medida para ancho y alto (`MeasureSpec`)
-- Determina el tamaño que necesita la vista según sus contenidos y restricciones
-- Calcula y almacena los valores de **`measuredWidth`** y **`measuredHeight`**
-- No asigna posición, solo calcula dimensiones
-- Es llamado por el padre de la vista durante la fase de medición
-- Los `MeasureSpec` contienen tanto el tamaño como el modo (`EXACTLY`, `AT_MOST`, `UNSPECIFIED`)
-
-2. ***Layout*** **(Disposición o Diseño)**
-El método [`layout(l: Int, t: Int, r: Int, b: Int)`](https://developer.android.com/reference/android/view/View#layout(int,%20int,%20int,%20int)):
-
-- Asigna la posición final y tamaño de la vista dentro de su padre
-- Parámetros: coordenadas del rectángulo que ocupará la vista (*left*, *top*, *right*, *bottom*)
-- Establece los valores de **`left`**, **`top`**, **`right`** y **`bottom`** de la vista
-- Calcula la posición de los hijos llamando a sus métodos `layout`
-- Es llamado después de `measure`, cuando el padre ya conoce dónde colocar la vista
-- Actualiza las propiedades **`x`**, **`y`**, **`width`** y **`height`** de la vista
-
-3. ***Draw***
-El método [`draw(canvas: android.graphics.Canvas)`](https://developer.android.com/reference/android/view/View#draw(android.graphics.Canvas)):
-
-- Dibuja la vista y su contenido en el *canvas* proporcionado
-- Renderiza el fondo, contenido, hijos y decoraciones (en ese orden)
-- Utiliza el *canvas* para aplicar transformaciones, filtros y efectos visuales
-- Es llamado cuando el sistema está listo para mostrar la vista en pantalla
-- Puede ser invocado múltiples veces (por ejemplo, durante animaciones)
-- Utiliza los valores de posición y tamaño establecidos en las fases anteriores 
-
 ### *Styles y Themes*
 La principal **diferencia entre estilos** (***styles***) y **temas** (***themes***), es que **un tema se aplica a toda una jerarquía de vistas, una ***activity*** o una** ***app***, mientras que **un estilo sólo afecta a la vista en la que se aplica**. En otras palabras, **un tema es un estilo que se propaga de padres a hijos**. Los temas contienen atributos o configuraciones que aplican a todos los elementos de la UI. Mientras que los temas tienen unos **atributos genéricos**, cada vista puede tener una serie de estilos **específicos** que hagan que esa vista se muestre de una forma u otra. Por ejemplo, el *style* por defecto de un *TextView*, es ***Widget.AppCompat.TextView***.  
 Además, en caso de definir un nuevo estilo, sólo el elemento al que se le agrega el **atributo** ***``style``*** recibe los atributos del estilo definido; cualquier vista secundaria no aplica los estilos. Si se desea que las vistas secundarias hereden estilos, se aplica el estilo con el **atributo** ***``android:theme``***.  
@@ -1823,6 +1787,12 @@ Existen tres tipos fundamentales de presentaciones de menús o acciones en todas
 ## UI declarativa
 
 - Ver [*Jetpack Compose*](Android/UI/Jetpack%20Compose.md)
+
+---
+
+## Android Performance
+
+- Ver [*Performance*](Android/UI/Performance.md)
 
 ---
 
