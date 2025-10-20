@@ -4,6 +4,12 @@
 <!-- TOC -->
   * [Colores ARGB](#colores-argb)
   * [*Regex* para *matchear* cualquier *endpoint* que no sea el especificado](#regex-para-matchear-cualquier-endpoint-que-no-sea-el-especificado)
+  * [String extensions](#string-extensions)
+    * [``String?.nullIfNullOrEmpty``](#stringnullifnullorempty)
+    * [``String?.orDefaultIfNullOrEmpty``](#stringordefaultifnullorempty)
+    * [``String?.decodeUrl``](#stringdecodeurl)
+    * [``String?.encodeUrl``](#stringencodeurl)
+    * [``String.getCurrentTimestamp``](#stringgetcurrenttimestamp)
 <!-- TOC -->
 
 ---
@@ -37,4 +43,81 @@ Matchear todo excepto `https://mobile.example.com/some-path/something`
     2. https://mobile.example.com/some-path/somethingggg
     
     3. https://mobile.example.com/some-path/other
+```
+
+## String extensions
+
+### ``String?.nullIfNullOrEmpty``
+
+```kotlin
+/**
+ * Returns null whether this String is null or empty
+ *
+ * @receiver A nullable String
+ * @return Same String if neither null nor empty; null otherwise
+ */
+fun String?.nullIfNullOrEmpty(): String? {
+    if (this.isNullOrEmpty()) {
+        return null
+    }
+    return this
+}
+```
+
+### ``String?.orDefaultIfNullOrEmpty``
+
+```kotlin
+/**
+ * Returns the string itself if it is not null and not empty, otherwise returns the default value.
+ *
+ * @receiver The nullable string that might be null or empty.
+ * @param default The string to return if the receiver is null or empty.
+ * @return The original string if not null and not empty, otherwise the default value.
+ *
+ * @sample
+ * val result = nullString.orDefaultIfNullOrEmpty("Default") // returns "Default"
+ * val result = "".orDefaultIfNullOrEmpty("Default") // returns "Default"
+ * val result = "Value".orDefaultIfNullOrEmpty("Default") // returns "Value"
+ */
+fun String?.orDefaultIfNullOrEmpty(default: String): String = if (this.isNullOrEmpty()) default else this
+```
+
+### ``String?.decodeUrl``
+
+```kotlin
+/** Returns a decoded string if possible
+*
+* @receiver A nullable String
+* @return Decoded string url if is possible decode it otherwise return null
+*/
+fun String?.decodeUrl(): String? {
+    this ?: return null
+    val tempString = URLDecoder.decode(this, "UTF-8")
+    return tempString.replace("__PERCENT__", "%")
+}
+```
+
+### ``String?.encodeUrl``
+
+```kotlin
+/** Returns an encoded string if possible
+*
+* @receiver A nullable String
+* @return Encoded string url if is possible encode it otherwise return an empty String
+*/
+fun String?.encodeUrl(): String {
+    this ?: return ""
+    val tempString = this.replace("%", "__PERCENT__")
+    return URLEncoder.encode(tempString, "UTF-8")
+}
+```
+
+### ``String.getCurrentTimestamp``
+
+```kotlin
+fun String.getCurrentTimestamp(): String =
+    SimpleDateFormat(this, Locale.getDefault())
+        .format(
+            Calendar.getInstance().time,
+        )
 ```

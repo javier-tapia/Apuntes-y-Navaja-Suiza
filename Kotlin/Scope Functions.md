@@ -1,5 +1,8 @@
 <h1><i>Scope functions</i></h1>
 
+> 🔍 Reference:  
+> https://kotlinlang.org/docs/scope-functions.html
+
 Su único propósito es ejecutar un bloque de código **dentro del contexto de un objeto**. Cuando se llama a una de estas funciones en un objeto con una expresión *lambda* proporcionada, forma un **ámbito** (***scope***) **temporal**.  En este ámbito, se puede **acceder al objeto sin su nombre**.
 
 ```kotlin
@@ -21,17 +24,20 @@ Su único propósito es ejecutar un bloque de código **dentro del contexto de u
 ***Index***:
 <!-- TOC -->
   * [Comparativa](#comparativa)
+  * [Guía rápida de uso](#guía-rápida-de-uso)
   * [`let`](#let)
   * [`run`](#run)
   * [`with`](#with)
   * [`apply`](#apply)
   * [`also`](#also)
+  * [``takeIf`` and ``takeUnless``](#takeif-and-takeunless)
 <!-- TOC -->
 
 ---
 
 ## Comparativa
 Hay dos diferencias principales entre cada una de ellas: la forma de referirse al **objeto de contexto** y el **valor de retorno**.
+
 > Sobre el concepto de ***Receiver***, ver [acá](../Glosary%20&%20Core%20Concepts/Software%20in%20general.md#receiver)
 
 <br>
@@ -43,6 +49,19 @@ Hay dos diferencias principales entre cada una de ellas: la forma de referirse a
 | **`with`**           | `this` (*receiver*)                                     | Resultado de la *lambda*              |
 | **`apply`**          | `this` (*receiver*)                                     | Objeto de contexto                    |
 | **`also`**           | `it` (argumento de la *lambda*)                         | Objeto de contexto                    |
+
+## Guía rápida de uso
+Dependiendo del propósito, se puede elegir la función de alcance adecuada:
+
+| Propósito                                                     | Scope Function recomendada |
+|---------------------------------------------------------------|----------------------------|
+| Ejecutar una lambda sobre **objetos no nulos**                | `let`                      |
+| Introducir una **expresión como variable** en un ámbito local | `let`                      |
+| **Configurar un objeto** (modificar sus propiedades)          | `apply`                    |
+| Configurar un objeto y **calcular un resultado**              | `run`                      |
+| Ejecutar sentencias donde **se requiere una expresión**       | `run` (sin extensión)      |
+| Efectos adicionales sin alterar el objeto                     | `also`                     |
+| Agrupar llamadas a funciones sobre un objeto                  | `with`                     |
 
 ## `let`
 | **Situación**                                                                                    | **Usar `let`**                                                                                                                                                                                                                                                                       |
@@ -65,4 +84,7 @@ TODO...
 TODO...
 
 ## `also`
+TODO...
+
+## ``takeIf`` and ``takeUnless``
 TODO...

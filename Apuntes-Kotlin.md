@@ -66,7 +66,7 @@
     * [4.11. Operaciones](#411-operaciones)
       * [4.11.1. Operaciones comunes](#4111-operaciones-comunes)
       * [4.11.2. Operaciones de escritura](#4112-operaciones-de-escritura)
-  * [5. Corrutinas (*Coroutines*)](#5-corrutinas-coroutines)
+  * [5. Hilos, Corrutinas (*Coroutines*) y *Flows*](#5-hilos-corrutinas-coroutines-y-flows)
   * [6. Otros constructos del lenguaje](#6-otros-constructos-del-lenguaje)
     * [6.1. *Operator overloading*](#61-operator-overloading)
     * [6.2. *Destructuring declarations*](#62-destructuring-declarations)
@@ -1338,9 +1338,9 @@ Para colecciones mutables, hay operaciones de escritura que **cambian el estado 
 
 ---
 
-## 5. Corrutinas (*Coroutines*)
+## 5. Hilos, Corrutinas (*Coroutines*) y *Flows*
 
-- Ver [***Coroutines & Flows***](Kotlin/Coroutines%20&%20Flows.md)
+- Ver [***Hilos, Coroutines & Flows***](Kotlin/Hilos,%20Coroutines%20&%20Flows.md)
 
 ---
 
