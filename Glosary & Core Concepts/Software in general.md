@@ -3,11 +3,13 @@
 ***Index***:
 <!-- TOC -->
   * [*Abstraction*](#abstraction)
+  * [🛠 API vs Librería vs *Framework*](#-api-vs-librería-vs-framework)
   * [*Atomicity*](#atomicity)
   * [*Build*](#build)
   * [*Bytecode*](#bytecode)
   * [*Callback*](#callback)
   * [*Casting* (*cast*)](#casting-cast)
+  * [CDN (*Content Delivery Network*)](#cdn-content-delivery-network)
   * [Código binario](#código-binario)
   * [Código máquina](#código-máquina)
   * [Compatibilidad binaria](#compatibilidad-binaria)
@@ -18,6 +20,8 @@
   * [*Desugaring*](#desugaring)
   * [Expresión (*expression*)](#expresión-expression)
   * [Funciones vs Métodos](#funciones-vs-métodos)
+  * [HTTP (*HyperText Transfer Protocol*)](#http-hypertext-transfer-protocol)
+  * [Latencia](#latencia)
   * [Objeto compuesto](#objeto-compuesto)
   * [Parseo (*parsing*)](#parseo-parsing)
   * [Paso por Valor vs Paso por Referencia](#paso-por-valor-vs-paso-por-referencia)
@@ -29,6 +33,7 @@
   * [*Receiver*](#receiver)
   * [Sentencia (*statement*)](#sentencia-statement)
   * [Serializar (*serialize*)](#serializar-serialize)
+  * [TLS/SSL](#tlsssl)
 <!-- TOC -->
 
 ---
@@ -37,6 +42,20 @@
 Principio fundamental en la **Programación Orientada a Objetos** (**OOP**) que permite ocultar los detalles de implementación y resaltar las características esenciales de un objeto.  
 En el contexto de un sistema, al hablar de **componentes de alto nivel** y **bajo nivel**, nos referimos al **grado de abstracción** que cada componente representa. Los componentes de **alto nivel** suelen estar más alejados de los detalles específicos y operan con conceptos más generales (mayor abstracción). Por ejemplo, una interfaz que define métodos comunes para varias clases es un componente de alto nivel, porque permite a otros componentes interactuar con una amplia gama de objetos sin conocer sus detalles de implementación específicos. Por otro lado, los componentes de **bajo nivel** manejan detalles específicos y son más concretos (menor abstracción), como una clase que implementa funcionalidades particulares de un sistema.  
 En *Clean Architecture*, esta jerarquía de niveles de abstracción se traduce en un esquema de capas circulares donde las capas más internas son más abstractas (alto nivel) y representan la lógica de negocio, mientras que las capas externas manejan los detalles concretos y la implementación (bajo nivel). Este enfoque no solo mejora la organización y la mantenibilidad del código, sino que también facilita la prueba y evolución de cada componente por separado.
+
+## 🛠 API vs Librería vs *Framework*
+- **API (_Application Programming Interface_)** ➡️ **_Define QUÉ se puede hacer, pero NO CÓMO se hace_**.  
+  **_Interfaz pública (o contrato)_** que determina cómo interactuar con un sistema (por ejemplo, qué funciones tiene y cómo se utilizan) sin exponer su implementación interna (qué hacen esas funciones por debajo).  
+  ⚡ **Relación:** Una API puede ser implementada por una librería o un _framework_ y consumida por una aplicación cliente.  
+  📌 **Ejemplos:** Android SDK (`MediaPlayer`, `CameraX`), REST API de GitHub, OpenGL.
+- **Librería** ➡️ **_Define CÓMO se hace_**.  
+  Código reutilizable que proporciona **_implementaciones concretas_** y que **_el desarrollador puede invocar directamente_**.  
+  ⚡ **Relación:** Puede definir cómo cumplir el contrato de una API (implementación); puede ser usada dentro de un _framework_; puede exponer su propia API.  
+  📌 **Ejemplos:** ExoPlayer, Retrofit, Room, TensorFlow, React.
+- ***Framework*** ➡️ **_Define la arquitectura y orquesta el flujo de control_**.  
+  Conjunto estructurado de librerías y APIs que **_llama al código del desarrollador_** (**_inversión de control_**).  
+  ⚡ **Relación:** Integra librerías internas o externas y expone APIs; el desarrollador adapta su código al marco definido.  
+  📌 **Ejemplos:** Jetpack Compose, Spring, Django, Angular.
 
 ## *Atomicity*
 Atomic implies indivisibility and irreducibility, so _**an atomic operation must be performed entirely or not performed at all**_. An operation that is atomic on one machine may not be on another.  
@@ -61,6 +80,10 @@ Es una función que se pasa como parámetro a otra función y a la que se invoca
 
 ## *Casting* (*cast*)
 Conversión explícita de un tipo de dato a otro. Es decir, se le avisa al compilador que un objeto es de un tipo de dato diferente.
+
+## CDN (*Content Delivery Network*)
+Red distribuida de servidores que **almacena, replica y entrega contenido** (como videos, imágenes o archivos estáticos) desde ubicaciones geográficas cercanas al usuario.  
+Su objetivo es **reducir la [latencia](#latencia)** y **optimizar la entrega de recursos** a través del protocolo [HTTP (o HTTPS)](#http-hypertext-transfer-protocol), mejorando la velocidad, estabilidad y escalabilidad del servicio.
 
 ## Código binario
 Cualquier ***representación de datos que pueda ser entendida directamente por una computadora***, que típicamente es en forma de ***ceros y unos***. Esto incluye, entre otras cosas:
@@ -108,6 +131,13 @@ En cambio, si se declara como miembro, se denomina "Método". Y puede operar sob
 Dicho de otra forma, los "Métodos" son un sub-conjunto de las "Funciones" que se declaran dentro de una clase.
 
 Las *extension functions* se utilizan como si fueran métodos y proporcionan una sintaxis similar, pero siguen siendo funciones en el sentido de que son *top-level functions* que no se definen dentro de la clase que extienden. En esencia, ofrecen una forma de agregar funcionalidad de manera fluida a otras clases, pero sin ser realmente parte de la herencia o definición de esas clases.
+
+## HTTP (*HyperText Transfer Protocol*)
+Protocolo que define cómo se **transfieren y solicitan datos** entre un cliente (por ejemplo, un navegador o aplicación móvil) y un servidor web.  
+**HTTPS** (***HTTP Secure***) es su versión segura, la cual utiliza [**_TLS/SSL_**](#tlsssl) para **cifrar la comunicación** y garantizar la **confidencialidad, integridad y autenticación** de los datos transmitidos.
+
+## Latencia
+Tiempo que transcurre entre que se envía una señal o dato y el momento en que se recibe o procesa la respuesta. En el contexto de un _streaming_, representa el retraso entre la captura del contenido y su visualización en el dispositivo del usuario.
 
 ## Objeto compuesto
 Objetos que contienen otros objetos, como listas o instancias de clase
@@ -197,3 +227,12 @@ Ver [Expresión](#expresión-expression)
 ## Serializar (*serialize*)
 Codificar un objeto con el fin de transmitirlo, ya sea como una serie de *bytes* o en un formato como XML o JSON.  
 Ver [Deserializar](#deserializar-deserialize)
+
+## TLS/SSL
+> 👉 Hoy en día, TLS reemplaza completamente a SSL, que está obsoleto.
+
+**TLS** (**_Transport Layer Security_**) y su predecesor **SSL** (**_Secure Sockets Layer_**) son protocolos criptográficos que protegen la comunicación en redes, como Internet (ver también [HTTP](#http-hypertext-transfer-protocol)).  
+Proveen tres garantías principales:
+- **Cifrado**: los datos transmitidos no pueden ser leídos por terceros. 
+- **Integridad**: los datos no pueden ser modificados sin ser detectado. 
+- **Autenticación**: el cliente puede verificar la identidad del servidor (y viceversa, si se requiere).

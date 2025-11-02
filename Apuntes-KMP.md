@@ -32,7 +32,7 @@
 
 ## 0. ¿Qué son KMP y CMP?
 ### 0.1. Kotlin Multiplatform (KMP)
-Kotlin Multiplatform (KMP) es una funcionalidad del lenguaje Kotlin que permite escribir y reutilizar código a través de múltiples plataformas. Su objetivo principal es compartir la lógica de negocio, el acceso a datos y los modelos desde una única base de código, mientras se mantiene la flexibilidad para escribir código específico de cada plataforma cuando sea necesario para acceder a API's nativas.
+Kotlin Multiplatform (KMP) es una funcionalidad del lenguaje Kotlin que permite escribir y reutilizar código a través de múltiples plataformas. Su objetivo principal es compartir la lógica de negocio, el acceso a datos y los modelos desde una única base de código, mientras se mantiene la flexibilidad para escribir código específico de cada plataforma cuando sea necesario para acceder a APIs nativas.
 
 ### 0.2. Compose Multiplatform (CMP)
 Compose Multiplatform es un _framework_ de UI declarativo moderno creado por JetBrains, que extiende Jetpack Compose de Android a otras plataformas. Permite que la interfaz de usuario (UI) también se defina una sola vez en el código común y se renderice de forma nativa en cada plataforma de destino, como _desktop_ (Windows, macOS, Linux), Web, Android y iOS.
@@ -112,9 +112,9 @@ La estrategia de testing en KMP sigue la estructura de los _source sets_ para ma
 
 ### 4.1. Tests en el código común (`commonTest`)
 Este es el lugar ideal para la gran mayoría de los tests unitarios. El código escrito aquí se compila y ejecuta en todas las plataformas _target_.
-- **Qué testear aquí**: Lógica de negocio pura (casos de uso, _ViewModels_/_Presenters_), validaciones, _mappers_ de datos, y cualquier componente que no tenga dependencias de API's de plataforma.
+- **Qué testear aquí**: Lógica de negocio pura (casos de uso, _ViewModels_/_Presenters_), validaciones, _mappers_ de datos, y cualquier componente que no tenga dependencias de APIs de plataforma.
 - **Ventaja principal**: Se escriben una sola vez y verifican que el comportamiento central de la aplicación sea consistente en todos los _targets_.
-- **Limitación**: No se puede acceder a API's específicas de una plataforma (como el `Context` de Android o `NSUserDefaults` de iOS).
+- **Limitación**: No se puede acceder a APIs específicas de una plataforma (como el `Context` de Android o `NSUserDefaults` de iOS).
 
 ### 4.2. Tests específicos de plataforma (`androidTest`, `iosTest`, etc.)
 Estos _source sets_ se utilizan para testear código que sí depende de una plataforma concreta.

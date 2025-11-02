@@ -1,4 +1,4 @@
-<h1><i>Networking & API's</i></h1>
+<h1><i>Networking & APIs</i></h1>
 
 ***Index***:
 <!-- TOC -->

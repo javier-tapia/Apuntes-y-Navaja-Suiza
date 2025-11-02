@@ -68,7 +68,7 @@
   * [Accesibilidad (*a11y*)](#accesibilidad-a11y)
   * [*Background & System*](#background--system)
   * [Persistencia de datos](#persistencia-de-datos)
-  * [*Networking & API's*](#networking--apis)
+  * [*Networking & APIs*](#networking--apis)
   * [Multimedia](#multimedia)
   * [*Testing*](#testing)
     * [Consideraciones sobre los *tests*](#consideraciones-sobre-los-tests)
@@ -1820,9 +1820,9 @@ Existen tres tipos fundamentales de presentaciones de menús o acciones en todas
 
 ---
 
-## *Networking & API's*
+## *Networking & APIs*
 
-- Ver [*Networking & API's*](Android/Libs%20&%20Frameworks/Networking%20&%20API's.md)
+- Ver [*Networking & APIs*](Android/Libs%20&%20Frameworks/Networking%20&%20APIs.md)
 
 ---
 
