@@ -3,7 +3,8 @@
 ***Index***:
 <!-- TOC -->
   * [Principios SOLID](#principios-solid)
-    * [*Single Responsability*](#single-responsability)
+    * [Qué son](#qué-son)
+    * [*Single Responsibility*](#single-responsibility)
     * [*Open/Closed*](#openclosed)
     * [*Liskov Substitution*](#liskov-substitution)
     * [*Interface Segregation*](#interface-segregation)
@@ -24,21 +25,310 @@
 ---
 
 ## Principios SOLID
+### Qué son
+> :warning: Es importante destacar que **_estos principios están interrelacionados y se consideran como un todo_**. Y también **_es posible que en el intento de cumplir uno, se incumpla otro_**.
 
-### *Single Responsability*
-TODO...
+Los Principios de Diseño de _Software_ en general, son **_guías o pautas para escribir código_** que han demostrado ser eficaces a lo largo del tiempo.  
+Su principal característica es que ayudan a escribir un **código limpio** (**_clean code_**). Es decir, permiten lo siguiente:
+
+- Hacer un código entendible, no solo para el autor.
+- Mantener y desarrollar una pieza de _software_ rápidamente a largo plazo.
+- Crear tests legibles, rápidos, independientes y repetibles.
+- Lograr una **alta cohesión** y un **bajo acoplamiento**.
+
+Los SOLID no son los únicos. Ejemplos de otros Principios de Diseño pueden ser **DRY** (**_Don't Repeat Yourself_**), **KISS** (**_Keep It Simple, Stupid_**) o **YAGNI** (**_You Aren't Gonna Need It_**).
+
+### *Single Responsibility*
+Una clase debe tener **_una sola razón para cambiar_**. Es decir, debe ocuparse de una **_única parte del comportamiento del sistema_**.  
+**Ejemplo**: La clase ``User``, que representa a un usuario, no tiene por qué manejar una base de datos. Esa responsabilidad se debería sacar a otro componente.
+
+```kotlin
+// ❌ DON'T
+class User {
+    private val db = Room.databaseBuilder(
+        applicationContext,
+        AppDatabase::class.java, "database-name"
+    ).build()
+
+    var firstName: String = "Javi"
+        set(value) {
+            if (value.count() <= 3) println("'$value' no llega ni a 3 letras") else field = value
+        }
+
+    fun getUser(): User = db.userDao().getAll()
+}
+
+// ✅ DO
+class User {
+    var firstName: String = "Javi"
+        set(value) {
+            if (value.count() <= 3) println("'$value' no llega ni a 3 letras") else field = value
+        }
+}
+```
 
 ### *Open/Closed*
-TODO...
+Una clase debe estar **_abierta a la extensión_** (**_de su comportamiento_**) pero **_cerrada a la modificación_** (**_de su código_**).  
+**Ejemplo**: Si la función ``greeting()`` debe modificarse cada vez que se agrega un país, se viola este principio.
+
+```kotlin
+// ❌ DON'T
+enum class Country {
+    ARGENTINA, COLOMBIA, MEXICO
+}
+
+class User(val birthPlace: Country) {
+    fun greeting() {
+        when (birthPlace) {
+            Country.ARGENTINA -> println("Qué pasa che")
+            Country.COLOMBIA -> println("Qué más parce")
+            Country.MEXICO -> println("Qué onda wey")
+        }
+    }
+}
+
+fun main() {
+    val userArg = User(Country.ARGENTINA)
+    userArg.greeting() // Qué pasa che
+
+    val userCol = User(Country.COLOMBIA)
+    userCol.greeting() // Qué más parce
+}
+
+// ✅ DO
+interface User {
+    fun greeting()
+}
+
+class UserArgentina : User {
+    override fun greeting() = println("Qué pasa che")
+}
+
+class UserColombia : User {
+    override fun greeting() = println("Qué más parce")
+}
+
+class UserMexico : User {
+    override fun greeting() = println("Qué onda wey")
+}
+
+fun main() {
+    val userArg = UserArgentina()
+    userArg.greeting() // Qué pasa che
+
+    val userCol = UserColombia()
+    userCol.greeting() // Qué más parce
+}
+```
 
 ### *Liskov Substitution*
-TODO...
+Si una clase es extendida (heredada), **_se debe poder usar cualquiera de sus clases hijas_** en su lugar **_sin alterar el comportamiento esperado del programa_**.  
+**Ejemplo**: Si al usar una clase hija se rompe el comportamiento del programa, no se cumple con este principio. En este ejemplo, ``RegularUser`` no debería redefinir ``retrieveId()`` si no puede garantizar el mismo contrato que su clase base.
+
+```kotlin
+// ❌ DON'T
+open class User {
+    private var firstName: String = "Nombre: Javi"
+    private var idClient: Int = 12345
+    open fun retrieveName() = println(firstName)
+
+    open fun retrieveId() = println(idClient)
+}
+
+class RegularUser : User() {
+    override fun retrieveId() = throw Exception("Un usuario regular no puede acceder al ID")
+}
+
+fun main() {
+    val user = User()
+    val regular = RegularUser()
+
+    user.retrieveName() // Nombre: Javi
+    regular.retrieveName() // Nombre: Javi
+    user.retrieveId() // 12345
+    regular.retrieveId() // Exception in thread "main" java.lang.Exception: Un usuario regular no puede acceder al ID
+}
+
+// ✅ DO
+open class User {
+    private var firstName: String = "Nombre: Javi"
+    open fun retrieveName() = println(firstName)
+}
+
+class RegularUser : User()
+
+open class Admin : User() {
+    private var idClient: Int = 12345
+    open fun retrieveId() = println(idClient)
+}
+
+class Owner : Admin()
+
+fun main() {
+    val user = User()
+    val regular = RegularUser()
+    val admin = Admin()
+    val owner = Owner()
+
+    user.retrieveName() // Nombre: Javi
+    regular.retrieveName() // Nombre: Javi
+    admin.retrieveName() // Nombre: Javi
+    owner.retrieveName() // Nombre: Javi
+
+    // user.retrieveId() -> No tiene acceso a este método
+    // regular.retrieveId() -> No tiene acceso a este método
+    admin.retrieveId() // 12345
+    owner.retrieveId() // 12345
+}
+```
 
 ### *Interface Segregation*
-TODO...
+Una clase **_nunca debería depender de métodos que no usa_**. Es mejor tener más interfaces pequeñas que pocas interfaces grandes. Esto ayuda a **_reducir el acoplamiento_** innecesario y **_facilitar el mantenimiento_**.  
+**Ejemplo**: Crear una nueva interfaz para evitar el comportamiento por defecto de una función que no se necesita. Luego, que cada clase implemente la interfaz que necesite.
+
+```kotlin
+// ❌ DON'T
+interface User {
+    val name: String
+    val address: String
+    val isFullAge: Boolean
+}
+
+class RegularUser : User {
+    override val name: String
+        get() = "Beto A Saber"
+    override val address: String
+        get() = "Calle Falsa 123"
+    override val isFullAge: Boolean
+        get() = true
+}
+
+class Admin : User {
+    override val name: String
+        get() = "Javi"
+    override val address: String
+        get() = "Av Siempre Viva"
+    override val isFullAge: Boolean
+        get() = throw UnsupportedOperationException()
+}
+
+// ✅ DO
+interface User {
+    val name: String
+    val address: String
+}
+
+interface ValidateAge {
+    val isFullAge: Boolean
+}
+
+class RegularUser : User, ValidateAge {
+    override val name: String
+        get() = "Beto A Saber"
+    override val address: String
+        get() = "Calle Falsa 123"
+    override val isFullAge: Boolean
+        get() = true
+}
+
+class Admin : User {
+    override val name: String
+        get() = "Javi"
+    override val address: String
+        get() = "Dr Moreno"
+}
+```
 
 ### *Dependency Inversion*
-TODO...
+Una clase debe **_depender de abstracciones y no de implementaciones concretas_**. Este principio promueve un diseño desacoplado y facilita la prueba unitaria (_mocking_/_stubbing_).  
+
+> ℹ️ La **_inyección de dependencias_** es una técnica que permite implementar este principio
+
+**Ejemplo**: En lugar de depender de implementaciones, se deberían crear abstracciones (interfaces) que definan el contrato, y luego inyectar las implementaciones concretas según la necesidad.
+
+```kotlin
+// ❌ DON'T
+class Greeting {
+    fun greet() = print("Hola. ")
+}
+
+class Claim {
+    fun claim() = println("Estoy haciendo un reclamo.")
+}
+
+class Whatever(
+    private val greeting: Greeting,
+    private val claim: Claim
+) {
+    fun communicate() {
+        greeting.greet()
+        claim.claim()
+    }
+}
+
+fun main() {
+    val greeting = Greeting()
+    val claim = Claim()
+    val whatever = Whatever(greeting, claim)
+
+    whatever.communicate() // Hola. Estoy haciendo un reclamo.
+}
+
+// ✅ DO
+interface MessageType {
+    fun giveMessage()
+}
+
+interface ReasonType {
+    fun giveReason()
+}
+
+class Greeting : MessageType {
+    override fun giveMessage() {
+        print("Hola. ")
+    }
+}
+
+class SayBye : MessageType {
+    override fun giveMessage() {
+        print("Hasta nunca. ")
+    }
+}
+
+class Claim : ReasonType {
+    override fun giveReason() {
+        println("Estoy haciendo un reclamo.")
+    }
+}
+
+class Threat : ReasonType {
+    override fun giveReason() {
+        println("¡Volveré con mi abogado!")
+    }
+}
+
+class Whatever(
+    private val messageType: MessageType,
+    private val reasonType: ReasonType
+) {
+    fun communicate() {
+        messageType.giveMessage()
+        reasonType.giveReason()
+    }
+}
+
+fun main() {
+    val messageTypeGreeting: MessageType = Greeting()
+    val reasonTypeClaim: ReasonType = Claim()
+    var whatever = Whatever(messageTypeGreeting, reasonTypeClaim)
+    whatever.communicate() // Hola. Estoy haciendo un reclamo.
+
+    val messageTypeBye: MessageType = SayBye()
+    val reasonTypeThreat = Threat()
+    whatever = Whatever(messageTypeBye, reasonTypeThreat)
+    whatever.communicate() // Hasta nunca. ¡Volveré con mi abogado!
+}
+```
 
 ---
 
