@@ -375,9 +375,9 @@ Permite asegurarse de que **_una clase tenga una única instancia_**, a la vez q
 
 El motivo más habitual es **_controlar el acceso a algún recurso compartido_**; por ejemplo, una base de datos o un archivo.
 
-<div style="text-align: center; margin-top: 2em; margin-bottom: 4em;">
+<p align="center">
     <img src="images/singleton.png" width="700" alt="">
-</div>
+</p>
 
 #### Ejemplo
 
