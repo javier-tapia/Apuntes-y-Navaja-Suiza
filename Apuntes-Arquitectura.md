@@ -380,7 +380,6 @@ El motivo más habitual es **_controlar el acceso a algún recurso compartido_**
     <img src="images/singleton.png" width="700" alt="">
 </p>
 <br>
-<br>
 
 #### Ejemplo
 
@@ -424,9 +423,11 @@ Opcionalmente, también se puede utilizar una clase **_director_**, la cual pued
 
 Este patrón es util para **_evitar que los constructores de las clases tengan una enorme cantidad de parámetros_** (incluso cuando no se necesitan todos en todo momento) o la necesidad de crear **_múltiples subclases_** que cubran todas las combinaciones posibles de los parámetros.
 
-<div style="text-align: center; margin-top: 2em; margin-bottom: 4em;">
+<br>
+<p align="center">
     <img src="images/builder.png" width="1000" alt="">
-</div>
+</p>
+<br>
 
 #### Ejemplo
 
@@ -515,9 +516,11 @@ A su vez, para cada variante de una familia de productos, se crea una **_clase d
 
 En resumen, se crean dos niveles de abstracción: uno para los objetos creados y otro para las fábricas.
 
-<div style="text-align: center; margin-top: 2em; margin-bottom: 4em;">
+<br>
+<p align="center">
     <img src="images/abstract-factory.png" width="1000" alt="">
-</div>
+</p>
+<br>
 
 #### Ejemplo
 

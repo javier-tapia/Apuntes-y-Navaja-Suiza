@@ -99,8 +99,10 @@ También se puede activar el ***Debug GPU overdraw*** :arrow_right: ***Show over
 | Red        | 4x or more  |
 
 <br>
-
-<img src="../../images/gpu-overdraw-after_2x.png" width="1400" alt="">
+<p align="center">
+    <img src="../../images/gpu-overdraw-after_2x.png" width="1400" alt="">
+</p>
+<br>
 
 ### Soluciones comunes y estrategias
 
@@ -231,8 +233,10 @@ Las opciones de desarrollador de un dispositivo Android brindan una herramienta 
 Las barras tienen componentes de colores que corresponden a una etapa en el _pipeline_ de procesamiento y ayudan a identificar qué partes de la interacción con la UI son más lentas de lo esperado, para luego tomar medidas en pos de mejorar la velocidad.
 
 <br>
-
-<img src="../../images/gpu-components-bars.png" width="936" alt="">
+<p align="center">
+    <img src="../../images/gpu-components-bars.png" width="936" alt="">
+</p>
+<br>
 
 ### Soluciones comunes y estrategias
 Las razones comunes para un dibujado lento son una app que tarda demasiado en procesar la entrada del usuario en el hilo de la UI y fondos e imágenes que son innecesarios o demasiado grandes.  

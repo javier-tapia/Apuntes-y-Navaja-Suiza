@@ -343,11 +343,19 @@ This means:
 
 - Validate that `Command-lines Options` is empty:
 
-<img src="../images/command-line-options-empty.png" width="1141" alt="">
+<br>
+<p align="center">
+    <img src="../images/command-line-options-empty.png" width="1141" alt="">
+</p>
+<br>
 
 - Open the *Gradle* window and disable *offline mode*:
 
-<img src="../images/gradle-toggle-offline-mode.png" width="652" alt="">
+<br>
+<p align="center">
+    <img src="../images/gradle-toggle-offline-mode.png" width="652" alt="">
+</p>
+<br>
 
 #### *Clean cache and restart*, *Sync with Gradle*, *Clean & Rebuild*, *Make project*, `--refresh-dependencies` don't work
 - **Delete Gradle User Home Cache**:

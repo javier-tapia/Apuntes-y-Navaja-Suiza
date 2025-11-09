@@ -36,7 +36,11 @@ actor (persona, otra app, etc.) con el sistema y sus roles.
     - _Generalización_ :arrow_right: Concepto de herencia en POO. Relación "es un". La flecha apunta
       al caso "gneral" (o "padre") desde el caso "especializado" (o "hijo")
 
-<img src="../images/uml-use-case.png" width="679" alt="">
+<br>
+<p align="center">
+    <img src="../images/uml-use-case.png" width="679" alt="">
+</p>
+<br>
 
 ### Diagrama de Clases
 Los más comunes en el modelado de sistemas orientados a objetos. Representa clases (u objetos) y sus
@@ -46,7 +50,11 @@ relaciones.
   una perspectiva orientada a objetos.
 - **_Clasificador_** :arrow_right: Representación gráfica
 
-<img src="../images/uml-class.png" width="465" alt="">
+<br>
+<p align="center">
+    <img src="../images/uml-class.png" width="465" alt="">
+</p>
+<br>
 
 - **_Asociación_** :arrow_right: Representa una relación entre clases. Implica que una clase "
   conoce" a otra y tiene una referencia a ella. Opcionalmente, se puede indicar un tipo con un
@@ -79,7 +87,11 @@ Elementos
   durante el cual el objeto va a estar realizando una acción.
 - Retornos (opcionales) :arrow_right: Líneas punteadas que indican respuestas
 
-<img src="../images/uml-sequence.png" width="651" alt="">
+<br>
+<p align="center">
+    <img src="../images/uml-sequence.png" width="651" alt="">
+</p>
+<br>
 
 ### Diagrama de Actividades
 Similares a los diagramas de Flujo. Se utilizan para mostrar el flujo de control de una actividad a
@@ -97,12 +109,20 @@ otra.
 #### Ejemplo de **Flujo de Control**
 Autenticación de un usuario en el sistema.
 
-<img src="../images/uml-activities-control-flow.png" width="1250" alt="">
+<br>
+<p align="center">
+    <img src="../images/uml-activities-control-flow.png" width="1250" alt="">
+</p>
+<br>
 
 #### Ejemplo de **Flujo de Trabajo**
 Proceso de compra online con interacción entre Cliente, Sistema y un Servicio de Pago externo.
 
-<img src="../images/uml-activities-work-flow.png" width="1250" alt="">
+<br>
+<p align="center">
+    <img src="../images/uml-activities-work-flow.png" width="1250" alt="">
+</p>
+<br>
 
 ### Diagrama de Estados (o Máquinas de Estados)
 Describe el comportamiento de un sistema en cuanto a sus **_estados_** (situaciones o condiciones en las que puede estar un objeto) y **_transiciones_** (cambios de un estado a otro desencadenados por eventos o condiciones específicas).
@@ -202,8 +222,10 @@ stateDiagram-v2
 
 - No se genera el diagrama por algún error en la ruta → Agregar la ruta correcta del archivo `dot` ejecutable en `Open Settings` > `Graphviz dot executable`
 
-<img src="../images/graphviz-dot-executable-path.png" width="1264" alt="">
-
+<br>
+<p align="center">
+    <img src="../images/graphviz-dot-executable-path.png" width="1264" alt="">
+</p>
 <br>
 
 ## Links útiles
