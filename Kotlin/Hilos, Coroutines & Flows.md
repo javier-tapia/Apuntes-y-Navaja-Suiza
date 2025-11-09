@@ -436,8 +436,8 @@ Ambos son *dispatchers* utilizados en pruebas de corrutinas en Kotlin, pero tien
 
 ### [`synchronized()`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/synchronized.html)
 
-- **Descripción**: Bloquea el acceso a una sección crítica del código en un contexto de múltiples hilos (*threads*). Esto asegura que ***sólo un hilo pueda ejecutar el bloque de código que está dentro de `synchronized` al mismo tiempo***. Se pueden sincronizar bloques de código dentro de métodos, funciones o incluso *lambdas*.
-- **Uso**: Es útil cuando necesitas controlar el acceso a recursos compartidos desde múltiples hilos.
+- **Descripción**: Bloquea el acceso a una sección crítica del código en un contexto de múltiples hilos (*threads*). Esto asegura que ***solo un hilo pueda ejecutar el bloque de código que está dentro de `synchronized` al mismo tiempo***. Se pueden sincronizar bloques de código dentro de métodos, funciones o incluso *lambdas*.
+- **Uso**: Es útil cuando se necesita controlar el acceso a recursos compartidos desde múltiples hilos.
 
   **Ejemplo**:
 

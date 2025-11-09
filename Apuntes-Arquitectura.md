@@ -3,12 +3,36 @@
 ***Index***:
 <!-- TOC -->
   * [Principios SOLID](#principios-solid)
-    * [Qué son](#qué-son)
+    * [Qué son los Principios de Diseño](#qué-son-los-principios-de-diseño)
     * [*Single Responsibility*](#single-responsibility)
     * [*Open/Closed*](#openclosed)
     * [*Liskov Substitution*](#liskov-substitution)
     * [*Interface Segregation*](#interface-segregation)
     * [*Dependency Inversion*](#dependency-inversion)
+  * [Patrones de Diseño](#patrones-de-diseño)
+    * [Qué es un Patrón de Diseño](#qué-es-un-patrón-de-diseño)
+    * [Clasificación de los Patrones](#clasificación-de-los-patrones)
+    * [*Singleton*](#singleton)
+      * [Ejemplo](#ejemplo)
+    * [*Builder*](#builder)
+      * [Ejemplo](#ejemplo-1)
+    * [*Abstract Factory*](#abstract-factory)
+      * [Ejemplo](#ejemplo-2)
+    * [*Factory Method*](#factory-method)
+      * [Ejemplo](#ejemplo-3)
+    * [*Adapter*](#adapter)
+      * [Ejemplo](#ejemplo-4)
+    * [*Facade*](#facade)
+      * [Ejemplo](#ejemplo-5)
+    * [*Decorator*](#decorator)
+      * [Ejemplo](#ejemplo-6)
+    * [*Strategy*](#strategy)
+      * [Ejemplo](#ejemplo-7)
+    * [*Observer*](#observer)
+      * [Ejemplo](#ejemplo-8)
+    * [*State*](#state)
+      * [Ejemplo](#ejemplo-9)
+    * [Referencias](#referencias)
   * [*Clean Architecture* vs Guía de Arquitectura de Android vs MVVM](#clean-architecture-vs-guía-de-arquitectura-de-android-vs-mvvm)
     * [Resumen General](#resumen-general)
     * [Desglose de las funciones de cada capa](#desglose-de-las-funciones-de-cada-capa)
@@ -19,13 +43,12 @@
       * [Modelos de Datos (DTOs - Data Transfer Objects)](#modelos-de-datos-dtos---data-transfer-objects)
       * [Modelos de Dominio](#modelos-de-dominio)
     * [Ejemplo estructura](#ejemplo-estructura)
-  * [Patrones de Diseño](#patrones-de-diseño)
 <!-- TOC -->
 
 ---
 
 ## Principios SOLID
-### Qué son
+### Qué son los Principios de Diseño
 > :warning: Es importante destacar que **_estos principios están interrelacionados y se consideran como un todo_**. Y también **_es posible que en el intento de cumplir uno, se incumpla otro_**.
 
 Los Principios de Diseño de _Software_ en general, son **_guías o pautas para escribir código_** que han demostrado ser eficaces a lo largo del tiempo.  
@@ -332,6 +355,310 @@ fun main() {
 
 ---
 
+## Patrones de Diseño
+### Qué es un Patrón de Diseño
+Es una **_solución reutilizable y comprobada_** que muestra **_cómo estructurar el código_** para solucionar **_problemas de diseño comunes y habituales_**.  
+A menudo los patrones se confunden con algoritmos porque ambos conceptos describen soluciones típicas a problemas conocidos. Mientras que un algoritmo siempre define un grupo claro de acciones para lograr un objetivo, un patrón es una descripción de más alto nivel de una solución. El código del mismo patrón aplicado a dos programas distintos puede ser diferente.  
+Una analogía de **_un algoritmo sería una receta de cocina_**: ambos cuentan con pasos claros para alcanzar una meta. Por su parte, **_un patrón es más similar a un plano_**, ya que se puede observar cómo son su resultado y sus funciones, pero el orden exacto de la implementación depende del desarrollador.
+
+### Clasificación de los Patrones
+> :warning: Los ejemplos de cada patrón presentados más abajo representan implementaciones genéricas extrapolables a cualquier lenguaje orientado a objetos, no necesariamente son una versión idiomática en Kotlin, que para algunos casos podría resolverlo más fácilmente debido a las facilidades del lenguaje (ver [Design Patterns with Kotlin](Code%20Snippets%20with%20Kotlin/Design%20Patterns.md))
+
+Los Patrones de Diseño se suelen clasificar en tres grandes grupos:
+
+- **Patrones Creacionales** :arrow_right: Proporcionan mecanismos de creación de objetos que incrementan la flexibilidad y la reutilización de código existente. Agrupa a: _Factory Method_, _Abstract Factory_, _Builder_, _Singleton_ y _Prototype_.
+- **Patrones Estructurales** :arrow_right: Explican cómo ensamblar objetos y clases en estructuras más grandes a la vez que se mantiene la flexibilidad y eficiencia de la estructura. Agrupa a: _Adapter_, _Bridge_, _Composite_, _Decorator_, _Facade_, _Flyweight_ y _Proxy_.
+- **Patrones de Comportamiento** :arrow_right: Se encargan de una comunicación efectiva y la asignación de responsabilidades entre objetos. Agrupa a: _Chain of Responsibility_, _Command_, _Iterator_, _Mediator_, _Memento_, _Observer_, _State_, _Strategy_, _Template Method_ y _Visitor_.
+
+### *Singleton*
+Permite asegurarse de que **_una clase tenga una única instancia_**, a la vez que **_proporciona un punto de acceso global a dicha instancia y evita que otro código la sobreescriba_**.
+
+El motivo más habitual es **_controlar el acceso a algún recurso compartido_**; por ejemplo, una base de datos o un archivo.
+
+<div style="text-align: center; margin-top: 2em; margin-bottom: 4em;">
+    <img src="images/singleton.png" width="700" alt="">
+</div>
+
+#### Ejemplo
+
+🧠 Idea clave: el constructor es privado y el acceso se hace a través de un método estático.
+
+```kotlin
+// Clase Singleton
+class Logger private constructor() {
+
+    fun log(message: String) {
+        println("Log: $message")
+    }
+
+    companion object {
+        private var instance: Logger? = null
+
+        fun getInstance(): Logger {
+            if (instance == null) {
+                // Nota: si la app soporta multihilo, se debería sincronizar este bloque
+                instance = Logger()
+            }
+            return instance!!
+        }
+    }
+}
+
+// Cliente
+fun main() {
+    val logger1 = Logger.getInstance()
+    val logger2 = Logger.getInstance()
+
+    println(logger1 == logger2) // true
+    logger1.log("Aplicación iniciada.") // Log: Aplicación iniciada.
+}
+```
+
+### *Builder*
+Permite **_construir objetos complejos paso a paso_** y producir distintos tipos y representaciones de un objeto empleando el mismo código de construcción. A su vez, **_no permite a otros objetos acceder al producto mientras se construye_**. Para eso, se extrae el código de construcción del objeto de su propia clase a **_objetos independientes llamados builders_**. Cada uno de esos _builders_ representa un "paso" de la construcción del objeto. Y lo importante, es que no es necesario llamarlos a todos: se pueden invocar solo aquellos que sean necesarios para producir una configuración particular del objeto.
+
+Opcionalmente, también se puede utilizar una clase **_director_**, la cual puede **_definir el orden en el que se deben ejecutar los pasos_** para la construcción de objetos "habituales" o más usados, mientras que el _builder_ proporciona la implementación de dichos pasos.
+
+Este patrón es util para **_evitar que los constructores de las clases tengan una enorme cantidad de parámetros_** (incluso cuando no se necesitan todos en todo momento) o la necesidad de crear **_múltiples subclases_** que cubran todas las combinaciones posibles de los parámetros.
+
+<div style="text-align: center; margin-top: 2em; margin-bottom: 4em;">
+    <img src="images/builder.png" width="1000" alt="">
+</div>
+
+#### Ejemplo
+
+🧠 Idea clave: el ``Director`` orquesta el proceso; el ``Builder`` encapsula los pasos concretos.
+
+```kotlin
+// Producto final
+class Product {
+    private val parts = mutableListOf<String>()
+
+    fun addPart(part: String) = parts.add(part)
+
+    fun show() {
+        println("Partes del producto: ${parts.joinToString()}")
+    }
+}
+
+// Interfaz Builder
+interface Builder {
+    fun reset()
+    fun buildPartA()
+    fun buildPartB()
+    fun buildPartZ()
+    fun getResult(): Product
+}
+
+// Builder concreto
+class ConcreteBuilder : Builder {
+    private var product = Product()
+
+    override fun reset() {
+        product = Product()
+    }
+
+    override fun buildPartA() {
+        product.addPart("Parte A")
+    }
+
+    override fun buildPartB() {
+        product.addPart("Parte B")
+    }
+
+    override fun buildPartZ() {
+        product.addPart("Parte Z")
+    }
+
+    override fun getResult(): Product = product
+}
+
+// Director opcional: define el orden de construcción
+class Director(private var builder: Builder) {
+
+    fun changeBuilder(builder: Builder) {
+        this.builder = builder
+    }
+
+    fun make(type: String) {
+        builder.reset()
+        if (type == "simple") {
+            builder.buildPartB()
+        } else {
+            builder.buildPartA()
+            builder.buildPartB()
+            builder.buildPartZ()
+        }
+    }
+}
+
+// Cliente
+fun main() {
+    val builder = ConcreteBuilder()
+    val director = Director(builder)
+
+    director.make("complejo")
+    val product = builder.getResult()
+    product.show() // Partes del producto: Parte A, Parte B, Parte Z
+}
+```
+
+### *Abstract Factory*
+Permite producir **_familias de objetos relacionados (y sus variantes)_** sin especificar sus clases concretas, ya sea porque no se conozcan de antemano o sencillamente porque se quiere permitir una futura extensibilidad.
+
+El patrón sugiere declarar de forma explícita **_interfaces para cada producto diferente de la familia de productos_** y hacer que todas **_las variantes de los productos sigan esas interfaces_**.  
+Luego, declarar la *Abstract Factory*: una **_interfaz con una lista de métodos de creación para todos los productos que son parte de la familia de productos_**, los cuales deben devolver productos abstractos representados por las interfaces que extraídas previamente.  
+A su vez, para cada variante de una familia de productos, se crea una **_clase de fábrica independiente_** basada en la interfaz *Abstract Factory*, la cual devuelve productos de un tipo particular (variantes específicas de los productos).
+
+En resumen, se crean dos niveles de abstracción: uno para los objetos creados y otro para las fábricas.
+
+<div style="text-align: center; margin-top: 2em; margin-bottom: 4em;">
+    <img src="images/abstract-factory.png" width="1000" alt="">
+</div>
+
+#### Ejemplo
+
+🧠 Idea clave: se crean familias completas de productos relacionados (botones y checkboxes) sin conocer sus clases concretas.
+
+```kotlin
+// Interfaces abstractas para los productos
+interface Button {
+    fun paint()
+}
+
+interface Checkbox {
+    fun paint()
+}
+
+// Implementaciones concretas
+class WinButton : Button {
+    override fun paint() = println("Renderizando botón estilo Windows")
+}
+
+class MacButton : Button {
+    override fun paint() = println("Renderizando botón estilo macOS")
+}
+
+class WinCheckbox : Checkbox {
+    override fun paint() = println("Renderizando checkbox estilo Windows")
+}
+
+class MacCheckbox : Checkbox {
+    override fun paint() = println("Renderizando checkbox estilo macOS")
+}
+
+// Fábrica abstracta
+interface GUIFactory {
+    fun createButton(): Button
+    fun createCheckbox(): Checkbox
+}
+
+// Fábricas concretas
+class WinFactory : GUIFactory {
+    override fun createButton(): Button = WinButton()
+    override fun createCheckbox(): Checkbox = WinCheckbox()
+}
+
+class MacFactory : GUIFactory {
+    override fun createButton(): Button = MacButton()
+    override fun createCheckbox(): Checkbox = MacCheckbox()
+}
+
+// Cliente
+class Application(private val factory: GUIFactory) {
+
+    private val button = factory.createButton()
+    private val checkbox = factory.createCheckbox()
+
+    fun render() {
+        button.paint() // Renderizando botón estilo macOS
+        checkbox.paint() // Renderizando checkbox estilo macOS
+    }
+}
+
+fun main() {
+    val factory: GUIFactory = MacFactory()
+    val app = Application(factory)
+    app.render()
+}
+```
+
+### *Factory Method*
+TODO...
+
+#### Ejemplo
+
+🧠 Idea clave:
+```kotlin
+
+```
+
+### *Adapter*
+TODO...
+
+#### Ejemplo
+
+🧠 Idea clave:
+```kotlin
+
+```
+
+### *Facade*
+TODO...
+
+#### Ejemplo
+
+🧠 Idea clave:
+```kotlin
+
+```
+
+### *Decorator*
+TODO...
+
+#### Ejemplo
+
+🧠 Idea clave:
+```kotlin
+
+```
+
+### *Strategy*
+TODO...
+
+#### Ejemplo
+
+🧠 Idea clave:
+```kotlin
+
+```
+
+### *Observer*
+TODO...
+
+#### Ejemplo
+
+🧠 Idea clave:
+```kotlin
+
+```
+
+### *State*
+TODO...
+
+#### Ejemplo
+
+🧠 Idea clave:
+```kotlin
+
+```
+
+### Referencias
+- [Design Patterns In Kotlin](https://medium.com/@michalankiersztajn/list/design-patterns-in-kotlin-12e52466affe)
+- [Refactoring Guru - Patrones de diseño](https://refactoring.guru/es/design-patterns/catalog)
+
+---
+
 ## *Clean Architecture* vs Guía de Arquitectura de Android vs MVVM
 
 ### Resumen General
@@ -418,8 +745,3 @@ com.example.movieapp/
     ├── moviedetail/
     └── favorites/
 ```
-
----
-
-## Patrones de Diseño
-TODO...
