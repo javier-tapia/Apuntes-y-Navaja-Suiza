@@ -258,8 +258,8 @@ class UIFactoryScope {
 val factoryClassic: UIFactory = LightUIFactory()
 val buttonClassic = factoryClassic.createButton()
 val checkboxClassic = factoryClassic.createCheckbox()
-println(buttonClassic.render())   // Esto se imprime: Renderizando botón claro
-println(checkboxClassic.render()) // Esto se imprime: Renderizando checkbox claro
+println(buttonClassic.render())   // Renderizando botón claro
+println(checkboxClassic.render()) // Renderizando checkbox claro
 
 // ============================================================
 // 2️⃣ Uso idiomático (con lambdas)
@@ -270,8 +270,8 @@ val factoryLambda = LambdaUIFactory(
 )
 val buttonLambda = factoryLambda.createButton()
 val checkboxLambda = factoryLambda.createCheckbox()
-println(buttonLambda.render())   // Esto se imprime: Renderizando botón oscuro
-println(checkboxLambda.render()) // Esto se imprime: Renderizando checkbox oscuro
+println(buttonLambda.render())   // Renderizando botón oscuro
+println(checkboxLambda.render()) // Renderizando checkbox oscuro
 
 // ============================================================
 // 3️⃣ Uso DSL-style
@@ -281,8 +281,8 @@ val factoryDSL = uiFactory {
 }
 val buttonDSL = factoryDSL.createButton()
 val checkboxDSL = factoryDSL.createCheckbox()
-println(buttonDSL.render())   // Esto se imprime: Renderizando botón oscuro
-println(checkboxDSL.render()) // Esto se imprime: Renderizando checkbox oscuro
+println(buttonDSL.render())   // Renderizando botón oscuro
+println(checkboxDSL.render()) // Renderizando checkbox oscuro
 ```
 
 ## *Factory Method*
