@@ -377,13 +377,13 @@ El motivo más habitual es **_controlar el acceso a algún recurso compartido_**
 
 <br>
 <p align="center">
-    <img src="images/singleton.png" width="700" alt="">
+    <img src="images/singleton.png" width="1000" alt="">
 </p>
 <br>
 
 #### Ejemplo
 
-🧠 Idea clave: el constructor es privado y el acceso se hace a través de un método estático.
+🧠 **Idea clave**: el constructor es privado y el acceso se hace a través de un método estático.
 
 ```kotlin
 // Clase Singleton
@@ -431,7 +431,7 @@ Este patrón es util para **_evitar que los constructores de las clases tengan u
 
 #### Ejemplo
 
-🧠 Idea clave: el ``Director`` orquesta el proceso; el ``Builder`` encapsula los pasos concretos.
+🧠 **Idea clave**: el ``Director`` orquesta el proceso; el ``Builder`` encapsula los pasos concretos.
 
 ```kotlin
 // Producto final
@@ -524,7 +524,7 @@ En resumen, se crean dos niveles de abstracción: uno para los objetos creados y
 
 #### Ejemplo
 
-🧠 Idea clave: se crean familias completas de productos relacionados (botones y checkboxes) sin conocer sus clases concretas.
+🧠 **Idea clave**: se crean familias completas de productos relacionados (botones y checkboxes) sin conocer sus clases concretas.
 
 ```kotlin
 // Interfaces abstractas para los productos
@@ -590,13 +590,63 @@ fun main() {
 ```
 
 ### *Factory Method*
-TODO...
+Delega la responsabilidad de crear el objeto a un único método. Normalmente, esto termina siendo una clase ``Factory`` (o `Creator`) cuya única función es crear objetos del tipo de la interfaz del producto. Las subclases que heredan de dicha clase ``Factory``, van a sobreescribir su método de creación, los cuales retornarán los productos concretos (las diferentes implementaciones de la interfaz del producto).
+
+Es util para **_evitar duplicar la lógica_** de creación de objetos, **_ocultar la complejidad_** de la creación de objetos y crear **_funcionalidades más genéricas_**.
+
+<br>
+<p align="center">
+    <img src="images/factory-method.png" width="1000" alt="">
+</p>
+<br>
 
 #### Ejemplo
 
-🧠 Idea clave:
-```kotlin
+🧠 **Idea clave**: El *Factory Method* define un punto de extensión en una clase base para delegar la creación de objetos a sus subclases. Cada subclase decide qué producto concreto instanciar, pero el código cliente solo conoce la interfaz común.
 
+```kotlin
+// Interfaz del producto
+interface Product {
+    fun doStuff()
+}
+
+// Productos concretos
+class ConcreteProductA : Product {
+    override fun doStuff() = println("Haciendo algo con el Producto A")
+}
+
+class ConcreteProductB : Product {
+    override fun doStuff() = println("Haciendo algo con el Producto B")
+}
+
+// Clase base (creador)
+abstract class Factory {
+    fun someOperation() {
+        val product = createProduct()
+        product.doStuff()
+    }
+
+    // Factory Method a implementar por las subclases
+    protected abstract fun createProduct(): Product
+}
+
+// Fábricas concretas
+class ConcreteFactoryA : Factory() {
+    override fun createProduct(): Product = ConcreteProductA()
+}
+
+class ConcreteFactoryB : Factory() {
+    override fun createProduct(): Product = ConcreteProductB()
+}
+
+// Cliente
+fun main() {
+    val factoryA: Factory = ConcreteFactoryA()
+    factoryA.someOperation()   // Haciendo algo con el Producto A
+
+    val factoryB: Factory = ConcreteFactoryB()
+    factoryB.someOperation()   // Haciendo algo con el Producto B
+}
 ```
 
 ### *Adapter*
@@ -604,7 +654,7 @@ TODO...
 
 #### Ejemplo
 
-🧠 Idea clave:
+🧠 **Idea clave**:
 ```kotlin
 
 ```
@@ -614,7 +664,7 @@ TODO...
 
 #### Ejemplo
 
-🧠 Idea clave:
+🧠 **Idea clave**:
 ```kotlin
 
 ```
@@ -624,7 +674,7 @@ TODO...
 
 #### Ejemplo
 
-🧠 Idea clave:
+🧠 **Idea clave**:
 ```kotlin
 
 ```
@@ -634,7 +684,7 @@ TODO...
 
 #### Ejemplo
 
-🧠 Idea clave:
+🧠 **Idea clave**:
 ```kotlin
 
 ```
@@ -644,7 +694,7 @@ TODO...
 
 #### Ejemplo
 
-🧠 Idea clave:
+🧠 **Idea clave**:
 ```kotlin
 
 ```
@@ -654,7 +704,7 @@ TODO...
 
 #### Ejemplo
 
-🧠 Idea clave:
+🧠 **Idea clave**:
 ```kotlin
 
 ```
