@@ -2,486 +2,748 @@
 
 [Jetpack Compose](https://developer.android.com/compose) es el _toolkit_ moderno de Android para construir interfaces de usuario de forma **declarativa**. En lugar de manipular vistas imperativamente, se describe **cómo debería verse la UI según su estado**, y Compose se encarga de renderizarla y actualizarla automáticamente.
 
+> 🔍 Ver también el proyecto [JetpackComposeCatalog](https://github.com/javier-tapia/JetpackComposeCatalog)
+
 ***Index***:
 <!-- TOC -->
-  * [*State* in *Compose* (https://developer.android.com/develop/ui/compose/state)](#state-in-compose-httpsdeveloperandroidcomdevelopuicomposestate)
+  * [Algunos conceptos básicos](#algunos-conceptos-básicos)
     * [*UI State* vs *UI Events*](#ui-state-vs-ui-events)
-    * [*Compose State - Flow - LiveData*](#compose-state---flow---livedata)
-      * [Compose State](#compose-state)
-        * [`mutableStateOf`](#mutablestateof)
-        * [`produceState`](#producestate)
-        * [`derivedStateOf`](#derivedstateof)
-      * [***Flow***](#flow)
-      * [***LiveData***](#livedata)
-    * [`*remember*` and `*rememberSaveable*`](#remember-and-remembersaveable)
-      * [`remember` with a `key` vs `remember` in conjunction with `derivedStateOf`](#remember-with-a-key-vs-remember-in-conjunction-with-derivedstateof)
-    * [*Side Effects*](#side-effects)
-  * [Animaciones](#animaciones)
-    * [*Tween*](#tween)
+    * [*State hoisting*](#state-hoisting)
+    * [``Modifier``](#modifier)
+    * [*Slot API* & ``Scaffold``](#slot-api--scaffold)
+    * [Estructura del código](#estructura-del-código)
+  * [El estado en *Compose*](#el-estado-en-compose)
+    * [Compose ``State``](#compose-state)
+      * [Primero: qué es `snapshot`](#primero-qué-es-snapshot)
+      * [La función `mutableStateOf`](#la-función-mutablestateof)
+      * [La función `produceState`](#la-función-producestate)
+      * [La función `derivedStateOf`](#la-función-derivedstateof)
+    * [*Flow*](#flow)
+      * [La función `collectAsState()`](#la-función-collectasstate)
+      * [La función `collectAsStateWithLifecycle()`](#la-función-collectasstatewithlifecycle)
+      * [La función `asStateFlow()`](#la-función-asstateflow)
+    * [*LiveData*](#livedata)
+      * [La función `observeAsState()`](#la-función-observeasstate)
+  * [*Side Effects*](#side-effects)
+    * [`LaunchedEffect`](#launchedeffect)
+    * [`SideEffect`](#sideeffect)
+    * [`DisposableEffect`](#disposableeffect)
+    * [`rememberCoroutineScope`](#remembercoroutinescope)
+    * [`rememberUpdatedState`](#rememberupdatedstate)
+    * [`produceState`](#producestate)
+    * [`derivedStateOf`](#derivedstateof)
+    * [`snapshotFlow`](#snapshotflow)
+  * [Algunas comparativas útiles](#algunas-comparativas-útiles)
+    * [``MutableState`` vs ``StateFlow``](#mutablestate-vs-stateflow)
+    * [`remember` vs `rememberSaveable`](#remember-vs-remembersaveable)
+      * [`remember` con `key` vs `remember` junto con `derivedStateOf`](#remember-con-key-vs-remember-junto-con-derivedstateof)
+    * [`LaunchedEffect` vs `SideEffect`](#launchedeffect-vs-sideeffect)
+  * [Animaciones en *Compose*](#animaciones-en-compose)
+    * [Qué es *Tween*](#qué-es-tween)
+    * [Animaciones *as state*](#animaciones-as-state)
+    * [Animaciones de visibilidad](#animaciones-de-visibilidad)
+    * [Animaciones de cambio de componentes (*crossfade*)](#animaciones-de-cambio-de-componentes-crossfade)
+    * [Animaciones de contenido](#animaciones-de-contenido)
+    * [*InfiniteTransition*](#infinitetransition)
   * [Previews](#previews)
-    * [Live Template → `prevCol`](#live-template--prevcol)
-    * [Using `PreviewParameterProvider`](#using-previewparameterprovider)
+    * [Live Template :arrow_right: `prevCol`](#live-template-arrow_right-prevcol)
+    * [Usando `PreviewParameterProvider`](#usando-previewparameterprovider)
 <!-- TOC -->
 
 ---
 
-## *State* in *Compose* (https://developer.android.com/develop/ui/compose/state)
-
+## Algunos conceptos básicos
 ### *UI State* vs *UI Events*
 
-- ***UI State*** → **Qué se muestra** en la pantalla y **cómo se muestra** (propiedades intrínsecas a los elementos de la UI que influyen en cómo se renderizan, como el tamaño de fuente, el color, etc.)
-- ***UI Events*** → **Acciones** (del usuario o del sistema) que deberían gestionarse en la capa de UI (se incluye al *ViewModel*)
+- ***UI State*** :arrow_right: **Qué se muestra** en la pantalla y **cómo se muestra** (propiedades intrínsecas a los elementos de la UI que influyen en cómo se renderizan, como el tamaño de fuente, el color, etc.)
+- ***UI Events*** :arrow_right: **Acciones** (del usuario o del sistema) que deberían gestionarse en la capa de UI (se incluye al *ViewModel*)
 
-### *Compose State - Flow - LiveData*
+### *State hoisting*
 
-#### Compose State
+Los estados no deberían estar en los ``Composables`` (deberían ser ***stateless*** en la medida de lo posible, en lugar de ***stateful***).
 
-##### [`mutableStateOf`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#mutableStateOf(kotlin.Any,androidx.compose.runtime.SnapshotMutationPolicy))
+Para eso, se usa un patrón llamado ***State Hoisting***, que consiste en **_extraer los estados de los ``Composables`` y que el control del mismo recaiga en un miembro de jerarquía superior_**, lo cual permite **_reutilizarlo en otros componentes_**. En vez de crear el estado dentro del `Composable`, se sustituye por dos argumentos: **_uno proporciona el valor_** y el **_otro es una lambda que modifica ese valor_**.
 
-Creates an observable [`MutableState<T>`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/MutableState) (which is an observable type integrated with the compose runtime, i.e. `MutableState` class is a single **value holder whose reads and writes are observed by Compose**) initialized with the passed in [`value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#mutableStateOf(kotlin.Any,androidx.compose.runtime.SnapshotMutationPolicy)). **Any changes to `value` (reads and writes) schedules recomposition of any composable functions that read `value`**.
+### ``Modifier``
+
+- Permite añadir apariencia o capacidades extra a un composable.
+- Es un `companion object` de una interfaz con el mismo nombre.
+- Tiene una API de tipo ***Builder***.
+- Es importante el orden: **_se van a aplicar en el orden que se hayan definido_**.
+
+Hay varios tipos de modificadores:
+- **De posicionamiento y tamaño**: Indica cómo se va a posicionar una vista respecto a las vistas con las que interactúa, así como el espacio que ocuparán en pantalla. Ejemplos: `fillMaxWidth`, `width`, `height`.
+- **De funcionalidad**: Permiten ampliar características sobre el composable en el que se aplican. Ejemplos: `clickable`, `horizontalScroll`, `draggable`.
+- **De apariencia**: Ejemplos: `background`, `padding` (en Compose, solo existe el `padding`, no hay `margins`), `scale`, `border`, `alpha`.
+- **_Listeners_**: Permiten escuchar ciertos eventos relacionados con la vista. Ejemplos: `onFocusChanged`, `onKeyEvent`, `onSizeChanged`.
+
+### *Slot API* & ``Scaffold``
+
+Al igual que en los *xml*, la *AppBar* se puede colocar en cualquier parte de la pantalla. Pero si se quiere usar en la parte superior de la pantalla (lo habitual), lo ideal es usar el composable `Scaffold`. Este componente permite posicionar elementos típicos de *Material* en sus posiciones habituales sin necesidad de hacer nada extra.  
+`Scaffold` es el ejemplo perfecto de un patrón que se repite en _Jetpack Compose_, llamado ***Slot API***. Este patrón consiste básicamente en que **el componente ofrece huecos o *slots*** donde se puede añadir lo que uno quiera (*lambdas* genéricas que aceptan contenido composable). Ver [Practical Compose Slot API example](https://www.valueof.io/blog/compose-slot-api-example-composable-content-lambda)
+
+Para agregar una ``TopAppBar`` en un ``Scaffold``, lo primero que se debe hacer, es ir al *Manifest* y asegurarse que el ***theme*** de la *activity* no tenga (o herede de un tema que no tenga) ``ActionBar``.  
+Por ejemplo:
+
+```xml
+<style name="Theme.MyMovies" parent="android:Theme.Material.Light.NoActionBar">
+```
+
+Por ejemplo, el parámetro `title` de la `TopAppBar` no obliga a que deba contener un `Text` sí o sí. Bien podría contener una `Row` con un texto, un `Spacer` y un ícono:
 
 ```kotlin
-  interface State<T : Any?>
-  
-  interface MutableState<T> : State<T> {
+Scaffold(
+    topBar = {
+        TopAppBar(title = {
+            Row {
+                Text(text = stringResource(id = R.string.app_name))
+                Spacer(modifier = Modifier.width(16.dp))
+                Icon(imageVector = Icons.Default.Android, contentDescription = null)
+            }
+        })
+    }
+)
+```  
+
+También se puede agregar un **ícono de navegación** de forma muy simple con un `IconButton` (un botón que contiene un ícono):
+
+```kotlin
+Scaffold(
+    topBar = {
+        TopAppBar(
+            title = { Text(text = stringResource(id = R.string.app_name)) },
+            navigationIcon = {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = null
+                    )
+                }
+            }
+        )
+    }
+)
+```  
+
+También es posible agregar **acciones de menú**:
+
+```kotlin
+Scaffold(
+    topBar = {
+        TopAppBar(
+            title = { Text(text = stringResource(id = R.string.app_name)) },
+            actions = {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                }
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = null
+                    )
+                }
+            }
+        )
+    }
+)
+```
+
+Dentro de esos _slots_, el ``Scaffold`` también puede alojar una ``bottomBar``, un ``snackbarHost`` y varios componentes más. Entre ellos, el ``content`` recibe lo que la app va a pintar como contenido justamente.  
+Dicho ``content`` recibe un objeto ``PaddingValues``, el cual refleja el espacio ocupado por la ``topBar``, ``bottomBar`` u otras barras del ``Scaffold``. Si no se define ninguna barra, los valores de _padding_ serán ``0.dp``.
+
+```kotlin
+Scaffold(
+    snackbarHost = { SnackbarHost(snackbarHostState) },
+    topBar = { MyTopAppBar() },
+    bottomBar = { MyBottomNavigation() },
+    content = { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
+        ) {
+            Text(text = "Text 1")
+            Text(text = "Text 2")
+        }
+    }
+)
+```
+
+### Estructura del código
+
+Algunas recomendaciones a tener en cuenta a la hora de estructurar el código en *Jetpack Compose*:
+- **Crear un ``Composable`` con la base de la aplicación** :arrow_right: Lo ideal es tener un ``Composable`` que defina las configuraciones y reutilizarlo en todos lados. Es importante recordar que **las funciones `Composable` deben devolver `Unit`, ya que estas funciones emiten componentes de UI**, pero no devuelven nada.
+- **Dividir el ``Composable`` en otros más pequeños** :arrow_right: Los ``Composables`` deberían ser autoexplicativos y tener nombres semánticos.
+- **Crear ``Composables`` que definan las pantallas** :arrow_right: Lo ideal, es crear ``Composables`` para definir cada una de las pantallas.
+- **Estructurar los paquetes de UI por pantallas** :arrow_right: El código queda más ordenado, puede crecer de forma más extensible y se podrán crear tanto *features* como ``Composables`` sin que se vuelva un desorden.
+- **Extraer las dimensiones** :arrow_right: *Hardcodear* las dimensiones va a representar un problema si se quiere **configurar la aplicación para distintos tamaños de pantalla (dispositivos diferentes)**. Para eso, es preferible extraerlos al archivo ***dimens*** y obtenerlos con el método ``dimensionResource``.
+
+## El estado en *Compose*
+
+> 🔍 Reference:  
+> https://developer.android.com/develop/ui/compose/state
+
+### Compose ``State``
+#### Primero: qué es [`snapshot`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/snapshots/Snapshot)
+Es el mecanismo interno de Compose que **_registra y controla las lecturas y escrituras de estado_** para poder **_detectar cambios y disparar recomposiciones de forma eficiente y aislada_**.
+
+#### La función [`mutableStateOf`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#mutableStateOf(kotlin.Any,androidx.compose.runtime.SnapshotMutationPolicy))
+
+```kotlin
+interface State<T : Any?>
+
+interface MutableState<T> : State<T> {
     override var value: T
-  }
-  
-  fun <T : Any?> mutableStateOf(
+}
+
+fun <T : Any?> mutableStateOf(
     value: T,
     policy: SnapshotMutationPolicy<T> = structuralEqualityPolicy()
-  ): MutableState<T>
+): MutableState<T>
 ```
 
-**Code snippet examples**:
+Crea un [`MutableState<T>`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/MutableState) observable (un tipo observable integrado con el _runtime_ de Compose; es decir, la clase `MutableState` es un **_contenedor de un único valor cuyos accesos de lectura y escritura son observados por Compose_**) inicializado con el `value` pasado como parámetro.  
+**_Cualquier cambio en `value` (ya sea lectura o escritura) programa la recomposición de cualquier función composable que lea `value`._**
+
+Ejemplo:
 
 ```kotlin
-  val mutableState = remember { mutableStateOf(default) }
-  
-  var value by remember { mutableStateOf(default) }
-  
-  val (value, setValue) = remember { mutableStateOf(default) }
-  
-  var username by mutableStateOf("")
-      private set
+val mutableState = remember { mutableStateOf(default) }
+
+// El delegado (con ``by``) se encarga de importar el ``getter`` y ``setter`` correspondientes.
+// Esto evita tener que poner el ``.value`` de un estado cada vez que se lo necesita.
+var value by remember { mutableStateOf(default) }
+
+val (value, setValue) = remember { mutableStateOf(default) }
+
+var username by mutableStateOf("")
+  private set
 ```
 
-Compose doesn't require that you use `MutableState<T>` to hold state; it supports other observable types. **Before reading another observable type in Compose, you must convert it to a `State<T>` so that composables can automatically recompose when the state changes**.  
-Compose ships with functions to create [`State<T>`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State) from common observable types used in Android apps. Before using these integrations, add the appropriate [artifact(s)](https://developer.android.com/jetpack/androidx/releases/compose-runtime#declaring_dependencies).
+Compose no requiere que se use `MutableState<T>` para mantener estado; también es compatible con otros tipos observables. **_Antes de leer otro tipo observable en Compose, se lo debe convertir a un `State<T>` para que las funciones composables puedan recomponerse automáticamente cuando ese estado cambie_**.  
+Compose incluye funciones para crear [`State<T>`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State) a partir de tipos observables comunes usados en apps Android. Antes de usar estas integraciones, se deben agregar los [artefactos](https://developer.android.com/jetpack/androidx/releases/compose-runtime#declaring_dependencies) correspondientes.
 
-**Key Differences with StateFlow** (refer to [***Flow***](#flow))
+#### La función [`produceState`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#produceState(kotlin.Any,kotlin.coroutines.SuspendFunction1))
 
-| ***Feature***       | `MutableState`                                                                                                                                                                 | `StateFlow`                                                                                                                                               |
-|---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Purpose             | Managing _**synchronous**_, recomposition-triggering state                                                                                                                     | Managing _**asynchronous**_, observable state                                                                                                             |
-| Mutability          | _**Directly mutable**_. You can change its value using its value property                                                                                                      | _**Read-only**_ (requires `MutableStateFlow` for updates)                                                                                                 |
-| Asynchronous        | No                                                                                                                                                                             | Yes                                                                                                                                                       |
-| Backing Property    | Not typical                                                                                                                                                                    | Common (with `.asStateFlow()`)                                                                                                                            |
-| Initial Value       | Required                                                                                                                                                                       | Required                                                                                                                                                  |
-| Lifecycle           | Inherently tied to composable lifecycle. When the composable is recomposed, the MutableState (if remembered correctly) retains its value                                       | Not inherently lifecycle-aware. You need to use functions like `collectAsStateWithLifecycle()` in Compose to ensure proper lifecycle handling             |
-| Compose Integration | Automatic recomposition on value change                                                                                                                                        | Requires `collectAsStateWithLifecycle()` (or `collectAsState()`)                                                                                          |
-| **_Use Cases_**     | _**Local composable state, UI element values, such as text field input, checkbox states, visibility flags, and other values that directly affect the composable's rendering**_ | _**ViewModel state, asynchronous data streams (e.g., network requests, database queries), user interactions, or other events that can change over time**_ |
-
-##### [`produceState`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#produceState(kotlin.Any,kotlin.coroutines.SuspendFunction1))
-
-> Also, refer to [Side Effects](#side-effects)
-
-Return an observable [`snapshot`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/snapshots/Snapshot) [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State) that produces values over time without a defined data source.  
-[`producer`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#produceState(kotlin.Any,kotlin.coroutines.SuspendFunction1)) is launched when [`produceState`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#produceState(kotlin.Any,kotlin.coroutines.SuspendFunction1)) enters the composition and is cancelled when [`produceState`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#produceState(kotlin.Any,kotlin.coroutines.SuspendFunction1)) leaves the composition. In other words, it launches a coroutine scoped to the Composition that can push values into a returned [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State). **_Use it to convert non-Compose state into Compose state_**, for example bringing external subscription-driven state such as `Flow`, `LiveData`, or `RxJava` into the Composition.  
-[`producer`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#produceState(kotlin.Any,kotlin.coroutines.SuspendFunction1)) should use [`ProduceStateScope.value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProduceStateScope#value()) to set new values on the returned [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State).  
-The returned [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State) conflates values; no change will be observable if [`ProduceStateScope.value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProduceStateScope#value()) is used to set a value that is [`equal`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/equals.html) to its old value, and observers may only see the latest value if several values are set in rapid succession.  
-Even though `produceState` creates a coroutine, it can also be used to observe non-suspending sources of data. To remove the subscription to that source, use the [`awaitDispose`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProduceStateScope#awaitDispose(kotlin.Function0)) function.
+> Ver también [produceState](#producestate) en la sección de _Side Effects_
 
 ```kotlin
-  interface State<T : Any?>
-  
-  @Composable
-  fun <T : Any?> produceState(
+interface State<T : Any?>
+
+@Composable
+fun <T : Any?> produceState(
     initialValue: T,
     producer: suspendProduceStateScope<T>.() -> Unit
-  ): State<T>
+): State<T>
 ```
 
-**Code snippet example**:
+**_Se usa para convertir estado externo a Compose en estado compatible con Compose_**. Por ejemplo, para traer a la composición estados basados en suscripciones externas como `Flow`, `LiveData` o `RxJava`.
+
+Devuelve un `State` observable que **_produce valores a lo largo del tiempo sin una fuente de datos predefinida_**.  
+El `producer` se lanza cuando `produceState` entra en la composición y se cancela cuando `produceState` sale de la composición. En otras palabras, inicia una _coroutine_ con *scope* en la composición que puede emitir valores hacia el `State` retornado. Aunque crea una _coroutine_, también puede usarse para **_observar fuentes de datos que no requieren suspensión_**. Para desuscribirse de esa fuente, se utiliza la función [`awaitDispose`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProduceStateScope#awaitDispose(kotlin.Function0)).  
+El `producer` debe usar [`ProduceStateScope.value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/ProduceStateScope#value()) para asignar nuevos valores al `State` retornado, el cual **_fusionará los valores (conflate)_**:
+- No se observarán cambios si se asigna un valor igual al anterior.
+- Si se asignan varios valores en sucesión rápida, **_los observadores pueden ver solo el último_**.
+
+Ejemplo:
 
 ```kotlin
-  val uiState by
-  produceState<UiState<List<Person>>>(UiState.Loading, viewModel) {
+val uiState by
+produceState<UiState<List<Person>>>(UiState.Loading, viewModel) {
     viewModel.people.map { UiState.Data(it) }.collect { value = it }
-  }
-  
-  when (val state = uiState) {
+}
+
+when (val state = uiState) {
     is UiState.Loading -> _root_ide_package_.org.w3c.dom.Text("Loading...")
     is UiState.Data ->
-      Column {
-        for (person in state.data) {
-          _root_ide_package_.org.w3c.dom.Text("Hello, ${person.name}")
+        Column {
+            for (person in state.data) {
+                _root_ide_package_.org.w3c.dom.Text("Hello, ${person.name}")
+            }
         }
-      }
-  }
-  
-----------
-  
-  val uiState by produceState<TasksUiState>(
+}
+
+// --------------------------------------------------------------------------------
+
+val uiState by produceState<TasksUiState>(
     initialValue = TasksUiState.Loading,
     key1 = lifecycle,
     key2 = tasksViewModel
-  ) {
+) {
     lifecycle.repeatOnLifecycle(
-      state = Lifecycle.State.STARTED
+        state = Lifecycle.State.STARTED
     ) {
-      tasksViewModel.uiState.collect {
-        value = it
-      }
+        tasksViewModel.uiState.collect {
+            value = it
+        }
     }
-  }
+}
 ```
 
-##### [`derivedStateOf`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#derivedStateOf(kotlin.Function0))
-> Also, refer to [Side Effects](#side-effects) and [`remember` with a `key` vs `remember` in conjunction with `derivedStateOf`](#remember-with-a-key-vs-remember-in-conjunction-with-derivedstateof)
+#### La función [`derivedStateOf`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#derivedStateOf(kotlin.Function0))
 
-**_Convert one or multiple state objects into another state_**.  
-In Compose, [recomposition](https://developer.android.com/develop/ui/compose/mental-model#recomposition) occurs each time an observed state object or composable input changes. A state object or input may be changing more often than the UI actually needs to update, leading to unnecessary recomposition.  
-You should use the [`derivedStateOf`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#derivedStateOf(kotlin.Function0)) function when your inputs to a composable are changing more often than you need to recompose. This often occurs when something is frequently changing, such as a scroll position, but the composable only needs to react to it once it crosses a certain threshold. `derivedStateOf` **_creates a new Compose state object you can observe that only updates as much as you need_**. In this way, it acts similarly to the Kotlin Flows [`distinctUntilChanged()`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/distinct-until-changed.html#:%7E:text=Returns%20flow%20where%20all%20subsequent,a%20StateFlow%20has%20no%20effect.) operator. However, **`derivedStateOf`** is expensive, and you should only use it to avoid unnecessary recomposition when a result hasn't changed.  
-**_Creates a [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State) object whose [`State.value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State#value()) is the result of [`calculation`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#derivedStateOf(kotlin.Function0))_**. The result of calculation will be cached in such a way that calling [`State.value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State#value()) repeatedly will not cause [`calculation`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#derivedStateOf(kotlin.Function0)) to be executed multiple times, but reading [`State.value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State#value()) will cause all [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State) objects that got read during the [`calculation`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#derivedStateOf(kotlin.Function0)) to be read in the current [`Snapshot`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/snapshots/Snapshot), meaning that this will correctly subscribe to the derived state objects if the value is being read in an observed context such as a [`Composable`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/Composable) function. Derived states without mutation policy trigger updates on each dependency change. To avoid invalidation on update, provide suitable [`SnapshotMutationPolicy`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/SnapshotMutationPolicy) through [`derivedStateOf`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#derivedStateOf(kotlin.Function0)) overload.
+> Consultar también [`derivedStateOf`](#derivedstateof) en la sección de _Side Effects_ y [`remember` con `key` vs `remember` junto con `derivedStateOf`](#remember-con-key-vs-remember-junto-con-derivedstateof)  en la sección de Comparativas
 
 ```kotlin
-  interface State<T : Any?>
-  
-  fun <T : Any?> derivedStateOf(calculation: () -> T): State<T>
+interface State<T : Any?>
+
+fun <T : Any?> derivedStateOf(calculation: () -> T): State<T>
 ```
 
-**Code snippet example**:
+Crea un objeto `State` cuyo [`value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State#value()) es el resultado de `calculation`.  
+El resultado se cachea. Por lo tanto, leer `State.value` múltiples veces no vuelve a ejecutar `calculation`. Sin embargo, leer `State.value` hace que todos los estados consultados durante la ejecución de `calculation` se registren dentro del `Snapshot` actual. Esto garantiza que otras composables se suscriban correctamente al estado derivado cuando se lea en un contexto observado (como dentro de una función `@Composable`).
+
+En Compose, la [recomposición](https://developer.android.com/develop/ui/compose/mental-model#recomposition) ocurre cada vez que cambia un estado observado o un parámetro de un composable. A veces, un estado o entrada puede estar cambiando más seguido de lo que la UI realmente necesita actualizar, generando recomposiciones innecesarias.
+
+Se debe usar `derivedStateOf` cuando las entradas cambian más frecuentemente de lo que se necesita que se recomponga. Esto suele ocurrir cuando algo cambia constantemente (como la posición del _scroll_), pero el composable solo debe reaccionar cuando se cruza un cierto umbral. Para esto, `derivedStateOf` **_crea un nuevo estado observable que solo se actualizará cuando realmente sea necesario_**. En ese sentido, es similar al operador de Kotlin Flow [`distinctUntilChanged()`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/distinct-until-changed.html).
+
+Sin embargo, **_`derivedStateOf` tiene un costo_**, y se debería usar únicamente para **_evitar recomposiciones innecesarias cuando el resultado no cambió_**.
+
+Los estados derivados sin una política de mutación personalizada se invalidan en cada cambio de sus dependencias. Para evitar invalidaciones innecesarias, se puede usar una [`SnapshotMutationPolicy`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/SnapshotMutationPolicy) adecuada mediante la sobrecarga correspondiente de `derivedStateOf`.
+
+Ejemplo:
 
 ```kotlin
-  @Composable
-  fun CountDisplay(count: State<Int>) {
+@Composable
+fun CountDisplay(count: State<Int>) {
     _root_ide_package_.org.w3c.dom.Text("Count: ${count.value}")
-  }
-  
-  @Composable
-  fun Example() {
+}
+
+@Composable
+fun Example() {
     var a by remember { mutableStateOf(0) }
     var b by remember { mutableStateOf(0) }
     val sum = remember { derivedStateOf { a + b } }
-    // Changing either a or b will cause CountDisplay to recompose but not trigger Example
-    // to recompose.
+    // Modificar a o b hará que CountDisplay se recomponga, pero no provocará que Example se recomponga.
     CountDisplay(sum)
-  }
-  
-------------------------------------------------------
-  
-  @Composable
-  // When the messages parameter changes, the MessageList
-  // composable recomposes. derivedStateOf does not
-  // affect this recomposition.
-  fun MessageList(messages: List<Message>) {
+}
+
+// --------------------------------------------------------------------------------
+
+// Cuando cambia el parámetro ``messages``, el composable MessageList se recompone. 
+// ``derivedStateOf`` no afecta a esta recomposición.
+@Composable
+fun MessageList(messages: List<Message>) {
     Box {
-      val listState = rememberLazyListState()
-  
-      LazyColumn(state = listState) {
-        // ...
-      }
-  
-      // Show the button if the first visible item is past
-      // the first item. We use a remembered derived state to
-      // minimize unnecessary compositions
-      val showButton by remember {
-        derivedStateOf {
-          listState.firstVisibleItemIndex > 0
+        val listState = rememberLazyListState()
+
+        LazyColumn(state = listState) {
+            // ...
         }
-      }
-  
-      AnimatedVisibility(visible = showButton) {
-        ScrollToTopButton()
-      }
+
+        // Muestra el botón si el primer elemento visible está más allá del primer elemento.
+        // Usamos un estado derivado almacenado en memoria para minimizar composiciones innecesarias.
+        val showButton by remember {
+            derivedStateOf {
+                listState.firstVisibleItemIndex > 0
+            }
+        }
+
+        AnimatedVisibility(visible = showButton) {
+            ScrollToTopButton()
+        }
     }
-  }
+}
 ```
 
-#### ***Flow***
-[`collectAsState()`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#(kotlinx.coroutines.flow.StateFlow).collectAsState(kotlin.coroutines.CoroutineContext)) is similar to `collectAsStateWithLifecycle` (see below), because it also collects values from a `Flow` and transforms it into Compose [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State). Use `collectAsState` for platform-agnostic code instead of `collectAsStateWithLifecycle`, which is Android-only.  
-[`collectAsStateWithLifecycle()`](https://developer.android.com/reference/kotlin/androidx/lifecycle/compose/package-summary#extension-functions) collects values from a [`Flow`](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html) in a lifecycle-aware manner, allowing your app to conserve app resources. It represents the latest emitted value from the Compose [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State). Use this API as the recommended way to collect flows on Android apps.
+### *Flow*
+#### La función [`collectAsState()`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#(kotlinx.coroutines.flow.StateFlow).collectAsState(kotlin.coroutines.CoroutineContext))
+
+Es similar a `collectAsStateWithLifecycle` (ver siguiente), ya que también colecta valores de un `Flow` y los transforma en un `State` de Compose.  
+Se debe usar `collectAsState` cuando se necesite escribir **_código agnóstico de la plataforma_**, en lugar de `collectAsStateWithLifecycle`, que es exclusivo de Android.
+
+#### La función [`collectAsStateWithLifecycle()`](https://developer.android.com/reference/kotlin/androidx/lifecycle/compose/package-summary#extension-functions)
 
 ```kotlin
-  import kotlin.coroutines.CoroutineContext
-  import kotlin.coroutines.EmptyCoroutineContext
-  
-  interface State<T : Any?>
-  
-  @Composable
-  fun <T : Any?> StateFlow<T>.collectAsStateWithLifecycle(
+interface State<T : Any?>
+
+@Composable
+fun <T : Any?> StateFlow<T>.collectAsStateWithLifecycle(
     lifecycle: Lifecycle,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
     context: CoroutineContext = EmptyCoroutineContext
-  ): State<T>
+): State<T>
 ```
 
-> *Under the hood, the implementation of `collectAsStateWithLifecycle` uses the `repeatOnLifecycle` API which is the recommended way to collect flows in Android using the View system.
-`collectAsStateWithLifecycle` saves you from typing the boilerplate code shown below that also collects flows in a lifecycle-aware manner from a composable function (...)
-The UI can help free up resources by collecting the UI state using `collectAsStateWithLifecycle`. The ViewModel can do the same by producing the UI state in a collector-aware manner. If there are no collectors , such as when the UI isn’t visible on screen, stop the upstream flows coming from the data layer. You can do so using the [`.stateIn(WhileSubscribed)`](https://github.com/android/nowinandroid/blob/main/feature-author/src/main/java/com/google/samples/apps/nowinandroid/feature/author/AuthorViewModel.kt#L104) flow API when producing the UI state.*  
-> Source: https://manuelvivo.dev/consuming-flows-compose || https://medium.com/androiddevelopers/consuming-flows-safely-in-jetpack-compose-cde014d0d5a3
+Colecta valores de un [`Flow`](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html) de forma consciente del ciclo de vida, permitiendo que la app conserve recursos.  
+**_Representa el último valor emitido_** a través de un `State` de Compose.  
+Usar esta API es la forma recomendada de colectar *flows* en aplicaciones Android.
 
-[`.asStateFlow()`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/as-state-flow.html) → La extensión `.asStateFlow()` en Kotlin sirve para **exponer una versión inmutable** de un `MutableStateFlow`.  
+> *Under the hood*, la implementación de `collectAsStateWithLifecycle` utiliza la API `repeatOnLifecycle`, que es la forma recomendada de recolectar *flows* en Android cuando se usa el sistema de *Views*.  
+> `collectAsStateWithLifecycle` te evita escribir el *boilerplate* necesario para recolectar *flows* de manera *lifecycle-aware* desde una función composable (...)  
+> La UI puede ayudar a liberar recursos recolectando el estado de UI usando `collectAsStateWithLifecycle`. El ViewModel puede hacer lo mismo produciendo el estado de UI de manera *collector-aware*. Si no hay *collectors* (por ejemplo, cuando la UI no está visible en pantalla), detener los _flows upstream_ provenientes de la capa de datos. Esto se logra usando [`.stateIn(WhileSubscribed)`](https://github.com/android/nowinandroid/blob/main/feature-author/src/main/java/com/google/samples/apps/nowinandroid/feature/author/AuthorViewModel.kt#L104) al producir el estado de UI.  
+> Fuente: https://manuelvivo.dev/consuming-flows-compose || https://medium.com/androiddevelopers/consuming-flows-safely-in-jetpack-compose-cde014d0d5a3
+
+#### La función [`asStateFlow()`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/as-state-flow.html)
+La extensión `.asStateFlow()` de Kotlin sirve para **_exponer una versión inmutable_** de un `MutableStateFlow`.  
 Dicho de otra forma, si se hiciera `val uiState: StateFlow<LoginUiState> = _uiState`, el compilador **permitirá eso sin problemas**, porque `MutableStateFlow` **es un `StateFlow`.** Pero se sigue teniendo acceso a los métodos mutables si se hace un *cast* o se pasa la instancia a algún otro componente (`(uiState as MutableStateFlow).value = otroValor`), **_pudiendo mutar el estado desde fuera, lo cual rompe el principio de encapsulamiento_**.  
-`.asStateFlow()` devuelve una instancia de `StateFlow` que **_oculta los métodos de mutabilidad_** (como `.value =`, `.emit()`, etc.), aunque internamente siga siendo la misma instancia. Con esto, se **_evita la posibilidad de que alguien haga *cast* o acceda directamente a la mutabilidad_** desde fuera del scope controlado.
+`.asStateFlow()` devuelve una instancia de `StateFlow` que **_oculta los métodos de mutabilidad_** (como `.value =`, `.emit()`, etc.), aunque internamente siga siendo la misma instancia. Con esto, se **_evita la posibilidad de que alguien haga un *cast* o acceda directamente a la mutabilidad_** desde fuera del _scope_ controlado.
 
-**Code snippet example**:
+Ejemplo:
 
 ```kotlin
-  // ViewModel
-  private val _uiState = MutableStateFlow(InterestsUiState(loading = true))
-  val uiState: StateFlow<InterestsUiState> = _uiState.asStateFlow()
+// ViewModel
+private val _uiState = MutableStateFlow(InterestsUiState(loading = true))
+val uiState: StateFlow<InterestsUiState> = _uiState.asStateFlow()
 
-  private val _uiStateTwo = MutableStateFlow(ExampleUiState(loading = true))
-  val uiStateTwo: StateFlow<ExampleUiState> = _uiStateTwo.onStart {
-    // Load initial data or whatever
-  }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExampleUiState(loading = true))
-  
-  fun onInterestChanged(interest: Int) {
+private val _uiStateTwo = MutableStateFlow(ExampleUiState(loading = true))
+val uiStateTwo: StateFlow<ExampleUiState> = _uiStateTwo.onStart {
+    // Cargar datos iniciales o lo que sea
+}.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ExampleUiState(loading = true))
+
+fun onInterestChanged(interest: Int) {
     _uiState.update { uiState ->
-      uiState.copy(
-        interest = interest
-      )
+        uiState.copy(
+            interest = interest
+        )
     }
-  }
-  
-  val selectedTopics =
+}
+
+val selectedTopics =
     interestsRepository.observeTopicsSelected().stateIn(
-      viewModelScope,
-      SharingStarted.WhileSubscribed(5000),
-      emptySet()
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptySet()
     )
-  
-------------
-  
-  // Composable
-  
-  val uiState by interestsViewModel.uiState.collectAsStateWithLifecycle()
-  
-  val selectedTopics by interestsViewModel.selectedTopics.collectAsStateWithLifecycle()
+
+// --------------------------------------------------------------------------------
+
+// Composable
+
+val uiState by interestsViewModel.uiState.collectAsStateWithLifecycle()
+
+val selectedTopics by interestsViewModel.selectedTopics.collectAsStateWithLifecycle()
 ```
 
-#### ***LiveData***
-[`observeAsState()`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/livedata/package-summary#(androidx.lifecycle.LiveData).observeAsState(kotlin.Any)) starts observing this [`LiveData`](https://developer.android.com/reference/kotlin/androidx/lifecycle/LiveData) and represents its values via [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State). Every time there would be new value posted into the [`LiveData`](https://developer.android.com/reference/kotlin/androidx/lifecycle/LiveData) the returned [`State`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State) will be updated causing recomposition of every [`State.value`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/State#value()) usage.  
-The [`initial`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/livedata/package-summary#(androidx.lifecycle.LiveData).observeAsState(kotlin.Any)) value will be used only if this LiveData is not already [`initialized`](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/index.html). Note that if [`T`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/livedata/package-summary#(androidx.lifecycle.LiveData).observeAsState(kotlin.Any)) is a non-null type, it is your responsibility to ensure that any value you set on this LiveData is also non-null.  
-Uses `Lifecyle` internally for safely observing the data. The inner observer will automatically be removed when this composable disposes or the current [`LifecycleOwner`](https://developer.android.com/reference/kotlin/androidx/lifecycle/LifecycleOwner) moves to the [`Lifecycle.State.DESTROYED`](https://developer.android.com/reference/kotlin/androidx/lifecycle/Lifecycle.State#DESTROYED) state.
+### *LiveData*
+
+#### La función [`observeAsState()`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/livedata/package-summary#(androidx.lifecycle.LiveData).observeAsState(kotlin.Any))
 
 ```kotlin
-  interface State<T : Any?>
-  
-  @Composable
-  fun <R : Any?, T : R> LiveData<T>.observeAsState(initial: R): State<R>
+interface State<T : Any?>
+
+@Composable
+fun <R : Any?, T : R> LiveData<T>.observeAsState(initial: R): State<R>
 ```
 
-**Code snippet example**:
+Comienza a observar el [`LiveData`](https://developer.android.com/reference/kotlin/androidx/lifecycle/LiveData) y expone sus valores como un `State`. Cada vez que se postea un nuevo valor en el `LiveData`, el `State` resultante se actualizará, **_disparando recomposición_** en todos los lugares donde se lea `State.value`.
+
+El parámetro `initial` se usa **_solo si el ``LiveData`` aún no está inicializado_**.
+
+Si `T` es un tipo no nulo, es responsabilidad del desarrollador garantizar que el `LiveData` **_nunca contenga valores nulos_**.
+
+Internamente, utiliza `Lifecycle` para observar los datos de forma segura. El observador se elimina automáticamente cuando el composable se desecha o cuando el [`LifecycleOwner`](https://developer.android.com/reference/kotlin/androidx/lifecycle/LifecycleOwner) llega al estado [`Lifecycle.State.DESTROYED`](https://developer.android.com/reference/kotlin/androidx/lifecycle/Lifecycle.State#DESTROYED).
+
+Ejemplo:
 
 ```kotlin
-  // ViewModel
-  
-  private var _textFieldHelperErrorMessage = MutableLiveData<String>()
-  val textFieldHelperErrorMessage: LiveData<String> = _textFieldHelperErrorMessage
-  
--------------
-  
-  // Composable
-  
-  val textFieldHelperErrorMessage by viewModel.textFieldHelperErrorMessage.observeAsState(initial = "")
+// ViewModel
+
+private var _textFieldHelperErrorMessage = MutableLiveData<String>()
+val textFieldHelperErrorMessage: LiveData<String> = _textFieldHelperErrorMessage
+
+// --------------------------------------------------------------------------------
+
+// Composable
+
+val textFieldHelperErrorMessage by viewModel.textFieldHelperErrorMessage.observeAsState(initial = "")
 ```
 
-### `*remember*` and `*rememberSaveable*`
-Composable functions can use the [`remember`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#remember(kotlin.Function0)) API to store an object in memory. `remember` can be used to store both mutable and immutable objects. You can use the remembered value as a parameter for other composables or even as logic in statements to change which composables are displayed.  
-The [`remember`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#remember(kotlin.Any,kotlin.Any,kotlin.Any,kotlin.Function0)) API is frequently used together with [`MutableState`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/MutableState) (see previous section about states). In general, **_`remember` takes a `calculation` lambda parameter. When `remember` is first run, it invokes the `calculation` lambda and stores its result. During recomposition, `remember` returns the value that was last stored_**.  
-`remember` stores the value until it leaves the Composition. However, there is a way to invalidate the cached value. The `remember` API also takes a `key` or `keys` parameter. ***If any of these keys change, the next time the function recomposes*, `remember` *invalidates the cache and executes the calculation lambda block again***.
+## [*Side Effects*](https://developer.android.com/develop/ui/compose/side-effects)
+
+> **_Un efecto es una función composable que no emite UI y ejecuta side-effects cuando la composición se completa._**
+
+Un efecto secundario es un **_cambio en el estado de la app que ocurre fuera del alcance de una función composable_**.  
+Ejemplos típicos incluyen solicitudes de red, operaciones de base de datos, actualizar un ViewModel, etc.
+
+A veces los _side-effects_ son necesarios, por ejemplo, para **_ejecutar un evento puntual_** como mostrar un _snackbar_ o navegar a otra pantalla cuando cierta condición de estado lo requiere. Estas acciones deben ejecutarse desde un entorno controlado que **_conozca el ciclo de vida_** del composable.
+
+### `LaunchedEffect`
+- Ejecuta **_funciones suspendidas_** dentro del _scope_ del propio composable. 
+- Se **_dispara cuando entra en la composición y se reinicia si cambia alguno de sus keys_**. 
+- Si no se proporcionan _keys_, se reiniciará en **cada recomposición**. 
+- Se usa principalmente para _side-effects_ que deben estar **_vinculados al ciclo de vida del composable_** y que pueden necesitar re-ejecutarse cuando ciertos estados cambian.
+- **Ejemplos comunes** :arrow_right: **_Lanzar una coroutine para cargar datos al mostrar una pantalla_**, o **_iniciar una animación que debe reiniciarse cuando cambia un valor específico_**.
+
+### `SideEffect`
+- Ejecuta un **_bloque de código después de cada recomposición exitosa_**. 
+- No está **_atada a cambios de estado específicos_** dentro del composable: simplemente corre su bloque una vez que la UI se ha actualizado y es estable.
+- Se usa típicamente para _side effects_ que deben mantenerse **sincronizados con el runtime de Compose**, pero que no necesitan re-ejecutarse en función del cambio de un estado particular.
+- **Ejemplo común** :arrow_right: **_Publicar estado de Compose hacia código externo que no es de Compose_**, asegurando que ese código externo siempre reciba la **_versión más reciente del estado de la UI_**.
+
+### `DisposableEffect`
+- Ejecuta **_efectos que requieren una limpieza (cleanup)_** cuando sale de la composición o cuando cambian sus *keys*.
+- Se ejecuta cuando entra en composición y su bloque `onDispose { ... }` se llama automáticamente para liberar recursos asociados al efecto (por ejemplo, remover _listeners_, cancelar suscripciones, desregistrar _callbacks_, etc.).
+- **Ejemplo común** :arrow_right: Integrar código que necesita **_administrar recursos manualmente_** durante el ciclo de vida del composable.
+
+### `rememberCoroutineScope`
+- Obtiene un **_scope de corrutinas consciente de la composición_** para lanzar corrutinas **_fuera del cuerpo de un composable_**, pero aún **_atadas al ciclo de vida de la composición_**.
+- Las corrutinas lanzadas con este _scope_ se cancelan automáticamente cuando el composable sale de composición.
+- **Ejemplo común** :arrow_right: Disparar corrutinas desde _callbacks_ de UI (por ejemplo, dentro de `onClick`), donde no se puede usar `LaunchedEffect`.
+
+### `rememberUpdatedState`
+- Permite **_capturar el valor más reciente_** dentro de un efecto **_sin provocar que dicho efecto se reinicie_** cuando ese valor cambia.
+- Internamente, mantiene una referencia estable cuyo `.value` siempre refleja el último valor recibido.
+- **Ejemplo común** :arrow_right: Útil cuando un `LaunchedEffect`, `DisposableEffect` u otro efecto necesita usar un valor actualizado, pero **_no se quiere que ese efecto se vuelva a ejecutar_** cada vez que ese valor cambie.
+
+### `produceState`
+> Ver también [`produceState`](#la-función-producestate)
+
+- Convierte **_estado externo a Compose_** en **_estado observable por Compose_**.
+- Inicia una **_coroutine vinculada a la composición_**, que se ejecuta mientras el composable esté en composición y se cancela al salir.
+- Permite **_emitir valores hacia un `State`_** usando `value` dentro del `ProduceStateScope`.
+- Es ideal para **_adaptar fuentes de datos externas_** (suscripciones, `Flow`, `LiveData`, _callbacks_, etc.) al modelo de estado de Compose sin necesidad de `collectAsState()` o equivalentes.
+- **Ejemplo común** :arrow_right: **_Convertir un flujo de datos manual, un callback o una API externa en estado Compose_**, pudiendo además ejecutar lógica suspendida.
+
+### `derivedStateOf`
+> Ver también [`derivedStateOf`](#la-función-derivedstateof)
+
+- Permite **_derivar un nuevo estado_** a partir de **_uno o varios estados existentes_**.
+- Es útil cuando ciertas variables cambian **_más frecuentemente de lo que la UI realmente necesita recomponerse_**, evitando recomposiciones innecesarias.
+- El resultado derivado se **_recalcula solo cuando sus dependencias cambian_**, y además **_cachea el valor_** para evitar cálculos repetidos en la misma composición.
+- Funciona de forma similar a operadores como `distinctUntilChanged()` de Flow, pero a nivel de Compose.
+- **Ejemplo común** :arrow_right: Derivar valores que cambian frecuentemente, como **_mostrar u ocultar un botón según la posición de scroll_**, evitando recomponer en cada pixel de movimiento.
+
+### `snapshotFlow`
+- Convierte **_cambios en el estado de Compose_** (`State`, `derivedStateOf`, etc.) en un **_Flow_**.
+- Observa lecturas dentro de su _lambda_ y **emite un valor cada vez que alguno de esos estados cambie**.
+- Es útil cuando se necesita **_integrar lógica basada en Flows_** con estado propio de Compose.
+- Solo emite cuando el valor observado **_cambia realmente_** (**_usa comparación por igualdad_**).
+- **Ejemplo común** :arrow_right: Convertir el **_estado de scroll_** o el **_valor de un campo de texto_** en un `Flow` para procesarlo con operadores de `kotlinx.coroutines.flow` (por ejemplo `debounce`, `map`, etc.).
+
+## Algunas comparativas útiles
+### ``MutableState`` vs ``StateFlow``
+
+| ***Característica***    | `MutableState`                                                                                                                                                                                                  | `StateFlow`                                                                                                                                                                       |
+|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Propósito               | Manejo de estado _**sincrónico**_ que dispara recomposición                                                                                                                                                     | Manejo de estado _**asincrónico**_ y observable                                                                                                                                   |
+| Mutabilidad             | _**Directamente mutable**_. Se puede cambiar su valor usando su propiedad `value`                                                                                                                               | _**Solo lectura**_ (requiere `MutableStateFlow` para actualizarse)                                                                                                                |
+| Asincronía              | No                                                                                                                                                                                                              | Sí                                                                                                                                                                                |
+| Backing Property        | No es habitual                                                                                                                                                                                                  | Es común (usando `.asStateFlow()`)                                                                                                                                                |
+| Valor inicial           | Requerido                                                                                                                                                                                                       | Requerido                                                                                                                                                                         |
+| Ciclo de vida           | Ligado de forma inherente al ciclo de vida del composable. Si el composable se recompone, el `MutableState` (si fue recordado correctamente) conserva su valor                                                  | No es consciente del ciclo de vida por sí mismo. En Compose se necesita usar funciones como `collectAsStateWithLifecycle()` para un manejo adecuado del ciclo de vida             |
+| Integración con Compose | Recomposición automática cuando cambia el valor                                                                                                                                                                 | Requiere `collectAsStateWithLifecycle()` (o `collectAsState()`)                                                                                                                   |
+| **_Casos de uso_**      | _**Estado local de composables, valores de elementos de UI como el input de un TextField, estados de checkboxes, flags de visibilidad y otros valores que afectan directamente el renderizado del composable**_ | _**Estado del ViewModel, flujos de datos asincrónicos (ej. peticiones de red, consultas de base de datos), interacciones del usuario u otros eventos que cambian con el tiempo**_ |
+
+<br>
+
+### `remember` vs `rememberSaveable`
 
 ```kotlin
-  @Composable
-  inline fun <T : Any?> remember(
+@Composable
+inline fun <T : Any?> remember(
     vararg keys: Any?,
     crossinline calculation: @DisallowComposableCalls () -> T
-  ): T
-```
+): T
 
-**Code snippet example**:
-
-```kotlin
-  import android.graphics.Color
-  import android.widget.Button
-  
-  var isVisible by remember { mutableStateOf(true) }
-  
-  Column(Modifier.fillMaxSize()) {
-    Button(onClick = { isVisible = !isVisible }) {
-      _root_ide_package_.org.w3c.dom.Text("Show/Hide")
-    }
-  
-    Spacer(modifier = Modifier.size(50.dp))
-  
-    AnimatedVisibility(
-      isVisible,
-      enter = slideInHorizontally(),
-      exit = slideOutHorizontally()
-    ) {
-      Box(
-        Modifier
-          .size(150.dp)
-          .background(Color.Red)
-      )
-    }
-  }
-```
-
-The [`rememberSaveable`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/saveable/package-summary#rememberSaveable(kotlin.Array,androidx.compose.runtime.saveable.Saver,kotlin.String,kotlin.Function0)) API behaves similarly to `remember` because it retains state across recompositions, and also across activity or process recreation using the saved instance state mechanism. For example, this happens, when the screen is rotated.  
-`rememberSaveable` automatically saves any value that can be saved in a `Bundle`. For other values, you can pass in a **custom saver** object, for example, a parcelable object, a MapSaver or a ListSaver (ref [here](https://developer.android.com/develop/ui/compose/state#ways-to-store)).  
-`rememberSaveable` receives `input` parameters for the same purpose that `remember` receives `keys`. ***The cache is invalidated when any of the inputs change***. The next time the function recomposes, `rememberSaveable` re-executes the calculation lambda block.
-
-```kotlin
-  @Composable
-  fun <T : Any> rememberSaveable(
+@Composable
+fun <T : Any> rememberSaveable(
     vararg inputs: Any?,
     saver: Saver<T, Any> = autoSaver(),
     key: String? = null,
     init: () -> T
-  ): T
+): T
 ```
 
-**Code snippet example**:
+Las funciones composables pueden usar la API [`remember`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#remember(kotlin.Function0)) para **_almacenar un objeto en memoria mientras el composable permanezca en la composición_**. Puede almacenar tanto objetos mutables como inmutables. Y el valor recordado puede usarse como **_parámetro de otros composables_** o incluso como parte de la lógica que determina **_qué UI se muestra_**.
+
+Se usa frecuentemente junto con `MutableState` (ver sección previa sobre estados). En términos generales, `remember` recibe una _lambda_ `calculation` por parámetro. La primera vez que se ejecuta, invoca esa _lambda_ y almacena su resultado. Y durante recomposiciones posteriores, devuelve el valor almacenado previamente.
+
+`remember` conserva el valor hasta que el composable sale de la composición. Sin embargo, existe una forma de invalidar ese valor en _cache_, ya que también acepta una o varias **_keys_** por parámetro. ***Si cualquiera de esos keys cambia, en la próxima recomposición `remember` invalidará el valor almacenado en cache y volverá a ejecutar la lambda de `calculation`.***
+
+Ejemplo:
 
 ```kotlin
-  // rememberSaveable stores userTypedQuery until typedQuery changes
-  var userTypedQuery by rememberSaveable(typedQuery, stateSaver = TextFieldValue.Saver) {
-    mutableStateOf(
-      TextFieldValue(text = typedQuery, selection = TextRange(typedQuery.length))
-    )
-  }
+var isVisible by remember { mutableStateOf(true) }
+
+Column(Modifier.fillMaxSize()) {
+    Button(onClick = { isVisible = !isVisible }) {
+        _root_ide_package_.org.w3c.dom.Text("Show/Hide")
+    }
+
+    Spacer(modifier = Modifier.size(50.dp))
+
+    AnimatedVisibility(
+        isVisible,
+        enter = slideInHorizontally(),
+        exit = slideOutHorizontally()
+    ) {
+        Box(
+            Modifier
+                .size(150.dp)
+                .background(Color.Red)
+        )
+    }
+}
 ```
 
-#### `remember` with a `key` vs `remember` in conjunction with `derivedStateOf`
-They both tend to do the same: **_listen for changes in another state and then derive a state off of that_**.
+La API [`rememberSaveable`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/saveable/package-summary#rememberSaveable(kotlin.Array,androidx.compose.runtime.saveable.Saver,kotlin.String,kotlin.Function0)) se comporta de forma similar a `remember` porque conserva el estado durante las recomposiciones, y además lo mantiene a través de la recreación de la actividad o del proceso utilizando el mecanismo de *saved instance state*. Esto sucede, por ejemplo, cuando se rota la pantalla. `rememberSaveable` guarda automáticamente cualquier valor que pueda almacenarse en un `Bundle`. Para otros valores, se puede proporcionar un *saver* personalizado, por ejemplo un objeto parcelable, un `MapSaver` o un `ListSaver` (ver [acá](https://developer.android.com/develop/ui/compose/state#ways-to-store)).  
+`rememberSaveable` recibe parámetros `input` con el mismo propósito que las `keys` usadas por `remember`. **_La cache se invalida cuando cualquiera de estos ``inputs`` cambia_**. La próxima vez que la función se recompone, `rememberSaveable` vuelve a ejecutar la _lambda_ `calculation`.
 
-| `val something = remember(key = someKey) {…}`                                                                                                                                                                                                               | `val something = remember { derivedStateOf {…} }`                                                                                                                                                                                                                                                                                                |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `remember` is a ***Composable* function** → Compose will take a look at the parameters that we pass (the `keys`) and **_as soon as any of those parameters (keys) change, then Compose will recompose the composable_** in which `remember` is implemented. | `derivedStateOf` is a ***non-Composable* function** → Only will update the resulting state (of `something`) if the end result of the calculation (`derivedStateOf` block) actually changed. And this ***end result*** changes pretty infrequently. That means, **_Compose will recompose when the end result changes, not just the parameter_**. |
+Ejemplo:
 
-### [*Side Effects*](https://developer.android.com/develop/ui/compose/side-effects)
-A **side-effect** is a **_change to the state of the app that happens outside the scope of a composable function_**. Examples include network requests, database operations, updating a ViewModel, etc.  
-Sometimes side-effects are necessary, for example, to trigger a one-off event such as showing a snackbar or navigate to another screen given a certain state condition. These actions should be called from a controlled environment that is aware of the lifecycle of the composable.  
-**_An effect is a composable function that doesn't emit UI and causes side effects to run when a composition completes._**
+```kotlin
+// rememberSaveable almacena userTypedQuery hasta que typedQuery cambie
+var userTypedQuery by rememberSaveable(typedQuery, stateSaver = TextFieldValue.Saver) {
+    mutableStateOf(
+        TextFieldValue(text = typedQuery, selection = TextRange(typedQuery.length))
+    )
+}
+```
 
-- **`LaunchedEffect`:** composable function that **_runs suspend functions_** in the scope of a composable. It is **_triggered when it enters the composition and will be restarted if any of its key parameters change_**. If no keys are provided, it will be restarted on every recomposition. It's primarily used for side effects that need to be **_tied to the lifecycle of a composable_** and potentially need to be re-executed when certain state changes occur. Examples include launching a coroutine to fetch data when a screen is displayed or starting an animation that should restart when a specific value changes.  
-- **`SideEffect`:** composable function that **_runs a block of code after every successful recomposition_**. It is **_not tied to any specific state changes within the composable_**. It simply executes its code block after the UI has been updated and is stable. It's typically used for side effects that need to be synchronized with the Compose runtime but don't necessarily need to be re-executed when specific state changes happen. A common use case is to publish Compose state to non-Compose code, ensuring that the external code always has the latest UI state.  
-- **`DisposableEffect`:** effects that require cleanup.  
-- **`rememberCoroutineScope`:** obtain a composition-aware scope to launch a coroutine outside a composable.  
-- **`rememberUpdatedState`:** reference a value in an effect that shouldn't restart if the value changes.  
-- **`produceState`:** convert non-Compose state into Compose state (also, refer to [`produceState`](#producestate).  
-- **`derivedStateOf`:** convert one or multiple state objects into another state (also, refer to [`derivedStateOf`](#derivedstateof).  
-- **`snapshotFlow`:** convert Compose's State into Flows.
+#### `remember` con `key` vs `remember` junto con `derivedStateOf`
+Ambos tienden a hacer lo mismo: **_escuchar cambios en otro estado y luego derivar un estado a partir de él_**.
 
-**Key differences between `LaunchedEffect` and `SideEffect`:**
+| `val something = remember(key = someKey) { … }`                                                                                                                                                                                                  | `val something = remember { derivedStateOf { … } }`                                                                                                                                                                                                                                                                                                                                                      |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `remember` es una **función *Composable*** :arrow_right: Compose analiza los parámetros que le pasamos (las `keys`) y **_en cuanto alguno de esos parámetros cambie, Compose recompondrá el composable_** donde está implementado el `remember`. | `derivedStateOf` es una **función *no-Composable*** :arrow_right: Solo actualizará el estado resultante (el de `something`) si el resultado final de `calculation` (el bloque de `derivedStateOf`) realmente cambió. Y ese **resultado final** cambia muy poco frecuentemente. Esto significa que **_Compose recompondrá cuando cambie el resultado final, no simplemente cuando cambie el parámetro_**. |
 
-| ***Feature*** | `LaunchedEffect`                                                | `SideEffect`                                                                                                                   |
-|---------------|-----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| Trigger       | Enters composition, restarts on key changes                     | After every successful recomposition                                                                                           |
-| Recomposition | Restarted if keys change (or on every recomposition if no keys) | Runs after every recomposition, not tied to specific state changes                                                             |
-| Use Case      | Side effects tied to specific state changes                     | Side effects synchronized with the Compose runtime                                                                             |
-| Example       | Fetching data on screen load, restarting animation              | Publishing Compose state to non-Compose code, i. e. making Compose state changes visible or accessible to the non-Compose code |
+<br>
 
-## Animaciones
+### `LaunchedEffect` vs `SideEffect`
 
-### *Tween*
-`Tween` viene de "in-betweening", un término usado en animación tradicional para referirse a los cuadros intermedios entre dos estados clave (_keyframes_).  
+| **Característica** | `LaunchedEffect`                                                      | `SideEffect`                                                                                                                               |
+|--------------------|-----------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| **Disparador**     | Entra en la composición; se reinicia cuando cambian las *keys*        | Se ejecuta después de cada recomposición exitosa                                                                                           |
+| **Recomposición**  | Se reinicia si cambian las *keys* (o en cada recomposición si no hay) | Se ejecuta después de cada recomposición; no está atado a cambios de estado específicos                                                    |
+| **Caso de uso**    | *Side effects* ligados a cambios de estado específicos                | *Side effects* sincronizados con el _runtime_ de Compose                                                                                   |
+| **Ejemplo**        | Obtener datos al cargar la pantalla; reiniciar una animación          | Publicar estado de Compose hacia código no-Compose; por ejemplo, hacer que un estado de Compose sea visible/accesible desde código externo |
+
+## Animaciones en *Compose*
+
+### Qué es *Tween*
+`Tween` viene de "in-betweening", un término usado en animación tradicional para referirse a los **cuadros intermedios entre dos estados clave (_keyframes_)**.  
 En Jetpack Compose, un **`tween`** es una especificación de animación que define:
 
-- **Duración**: Cuánto tiempo tarda la animación.  
-- **Easing** (curva de aceleración): Cómo cambia el valor a lo largo del tiempo (lineal, aceleración, desaceleración, etc.).  
+- **Duración**: Cuánto tiempo tarda la animación.
+- **Easing** (curva de aceleración): Cómo cambia el valor a lo largo del tiempo (lineal, aceleración, desaceleración, etc.).
 - **Delay** (opcional): Espera antes de que comience la animación.
 
-**Code snippet example**:
+Ejemplo:
 
 ```kotlin
-  // Anima el valor de opacidad (alpha) de 0f a 1f o viceversa.
-  // Usa un tween con:
-  //  - Duración de 1 segundo (1000 ms);
-  //  - Retardo de 300 ms antes de comenzar;
-  //  - Y una curva de desaceleración (acelera rápido y se desacelera al final).
-  val animatedAlpha by animateFloatAsState(
+// Anima el valor de opacidad (alpha) de 0f a 1f o viceversa.
+// Usa un tween con:
+//  - Duración de 1 segundo (1000 ms);
+//  - Retardo de 300 ms antes de comenzar;
+//  - Y una curva de desaceleración (acelera rápido y se desacelera al final).
+val animatedAlpha by animateFloatAsState(
     targetValue = if (isVisible) 1f else 0f,
     animationSpec = tween(
-      durationMillis = 1000,
-      easing = LinearOutSlowInEasing,
-      delayMillis = 300
+        durationMillis = 1000,
+        easing = LinearOutSlowInEasing,
+        delayMillis = 300
     )
-  )
+)
 ```
+
+### Animaciones *as state*
+> 🔍 Ver componente en el [catálogo](https://github.com/javier-tapia/JetpackComposeCatalog/blob/master/app/src/main/java/com/cursokotlin/jetpackcomponentscatalog/animations/AnimateAsState.kt)
+
+La función ``animateColorAsState`` recibe **un color** (``targetValue``), **una animación** que se utilizará para cambiar el valor a través del tiempo (``animationSpec``), **un _listener_ opcional** que se ejecutará cuando finalice la animación (``finishedListener``) y **un ``label`` opcional** para diferenciarla de otras animaciones en Android Studio.
+Como animación se puede utilizar por ejemplo la función ``tween`` (ver [acá](#qué-es-tween)).
+
+Cuando se cambia el ``targetValue`` proporcionado, la animación se ejecutará automáticamente. Si ya hay una animación en curso cuando cambia el color, la animación en curso se ajustará para animarse hacia el nuevo _target_.  
+``animateColorAsState`` devuelve un objeto ``State``. La animación actualizará continuamente el valor de dicho objeto hasta que finalice.
+
+Si para las animaciones de color existe la función ``animateColorAsState``, para las animaciones de tamaño está ``animateDpAsState``. Recibe los mismos parámetros, con la salvedad de que el _target_ será un tamaño en vez de un color.
+A modo informativo, también existen las funciones ``animateOffsetAsState`` y ``animateFloatAsState``.
+
+### Animaciones de visibilidad
+> 🔍 Ver componente en el [catálogo](https://github.com/javier-tapia/JetpackComposeCatalog/blob/master/app/src/main/java/com/cursokotlin/jetpackcomponentscatalog/animations/AnimatedVisibility.kt)
+
+La función ``AnimatedVisibility`` permite realizar animaciones de aparición/desaparición de un componente de forma simple y rápida.  
+Entre los parámetros que recibe, tiene un ``enter`` y un ``exit``, que pueden sobreescribirse a gusto para lograr el efecto de animación deseado. Y en ``content``, irá el objeto que se quiere mostrar/ocultar.
+
+### Animaciones de cambio de componentes (*crossfade*)
+> 🔍 Ver componente en el [catálogo](https://github.com/javier-tapia/JetpackComposeCatalog/blob/master/app/src/main/java/com/cursokotlin/jetpackcomponentscatalog/animations/Crossfade.kt)
+
+La función ``Crossfade`` permite cambiar entre dos componentes con una animación de fundido encadenado. Cada vez que cambia el estado del argumento ``targetState``, se dispara la animación, ocultando el componente "viejo" y mostrando el componente "nuevo".
+
+### Animaciones de contenido
+> 🔍 Ver componente en el [catálogo](https://github.com/javier-tapia/JetpackComposeCatalog/blob/master/app/src/main/java/com/cursokotlin/jetpackcomponentscatalog/animations/AnimatedContent.kt)
+
+En este apartado se pueden mencionar al componente ``AnimatedContent`` y al modificador ``animateContentSize``:
+- ``AnimatedContent``: Un contenedor que anima automáticamente su contenido cuando cambia ``targetState``. Su ``content`` para diferentes _target states_ se define en un mapeo entre un _target state_ y una función ``Composable``.
+- ``animateContentSize``: Anima su propio tamaño cuando su modificador hijo (o el elemento ``Composable`` hijo si ya está al final de la cadena) cambia de tamaño. Esto permite que el modificador padre observe un cambio de tamaño suave, lo que resulta en un cambio visual continuo.
+
+### *InfiniteTransition*
+> 🔍 Ver componente en el [catálogo](https://github.com/javier-tapia/JetpackComposeCatalog/blob/master/app/src/main/java/com/cursokotlin/jetpackcomponentscatalog/animations/InfiniteTransition.kt)
+
+La función ``rememberInfiniteTransition()`` permite obtener un objeto de tipo ``InfiniteTransition``, el cual se encarga de ejecutar las animaciones secundarias o hijas. Estas animaciones se pueden agregar mediante ``InfiniteTransition.animateColor``, ``InfiniteTransition.animateFloat`` o ``InfiniteTransition.animateValue``. Las animaciones secundarias comenzarán a ejecutarse en cuanto entren en la composición y no se detendrán hasta que se eliminen de ella.
 
 ## Previews
 
-### Live Template → `prevCol`
+### Live Template :arrow_right: `prevCol`
 
 ```kotlin
-  // Creates a CollectionPreviewParameterProvider
-  
-  class $NAME$: PreviewParameterProvider < $TYPE$> {
+// Description: Creates a CollectionPreviewParameterProvider
+
+class $NAME$: PreviewParameterProvider < $TYPE$> {
     override val values = sequenceOf(
-      $END$
+        $END$
     )
-  }
+}
 ```
 
-### Using `PreviewParameterProvider`
+### Usando `PreviewParameterProvider`
 
 ```kotlin
-  // ExampleParameterProvider.kt
-  
-  data class ExampleParameters(
+// ExampleParameterProvider.kt
+
+data class ExampleParameters(
     val name: String?,
     val lastName: String?,
     val onTextFieldValueChange: (String) -> Unit
-  )
-  
-  class ExamplePreviewParameterProvider : PreviewParameterProvider<ExampleParameters> {
+)
+
+class ExamplePreviewParameterProvider : PreviewParameterProvider<ExampleParameters> {
     override val values = sequenceOf(
-      ExampleParameters(
-        name = "Javi",
-        lastName = "Fulanito",
-        onTextFieldValueChange = { }
-      ),
-      ExampleParameters(
-        name = "Juan",
-        lastName = "Polainas",
-        onTextFieldValueChange = { }
-      ),
-      ExampleParameters(
-        name = "Jhon",
-        lastName = "Connor",
-        onTextFieldValueChange = { }
-      )
+        ExampleParameters(
+            name = "Javi",
+            lastName = "Fulanito",
+            onTextFieldValueChange = { }
+        ),
+        ExampleParameters(
+            name = "Juan",
+            lastName = "Polainas",
+            onTextFieldValueChange = { }
+        ),
+        ExampleParameters(
+            name = "John",
+            lastName = "Connor",
+            onTextFieldValueChange = { }
+        )
     )
-  }
-  
--------------
-  
-  // Example.kt
-  
-  @Composable
-  fun Example(
+}
+
+// --------------------------------------------------------------------------------
+
+// Example.kt
+
+@Composable
+fun Example(
     name: String?,
     lastName: String?,
     val onTextFieldValueChange: (String) -> Unit
-  ) {
+) {
     // Do something
-  }
-  
-  @Preview
-  @Composable
-  private fun ExamplePreview(
+}
+
+@Preview
+@Composable
+private fun ExamplePreview(
     @PreviewParameter(ExamplePreviewParameterProvider::class)
     exampleParameters: ExampleParameters
-  ) {
+) {
     Example(
-      name = exampleParameters.name,
-      lastName = exampleParameters.lastName,
-      onTextFieldValueChange = exampleParameters.onTextFieldValueChange
+        name = exampleParameters.name,
+        lastName = exampleParameters.lastName,
+        onTextFieldValueChange = exampleParameters.onTextFieldValueChange
     )
-  }
+}
 ```
