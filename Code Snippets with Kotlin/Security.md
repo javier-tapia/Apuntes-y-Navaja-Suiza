@@ -1,6 +1,6 @@
 <h1>Security</h1>
 
-> 🔍 Reference:  
+> 🔍 Referencia:  
 > https://developer.android.com/security
 > 
 

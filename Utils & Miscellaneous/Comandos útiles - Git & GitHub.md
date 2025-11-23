@@ -129,6 +129,6 @@ git rm -r --cached .
 
 - ``git rm``: Es el comando para eliminar archivos.
 - ``-r``: Significa "recursivo", para que actúe sobre directorios enteros.
-- ``--cached``: ¡Esta es la parte más importante! Le dice a Git que solo elimine los archivos del área de seguimiento (el "índice" o "caché" de Git). NO los borrará del disco duro.
+- ``--cached``: ¡Esta es la parte más importante! Le dice a Git que solo elimine los archivos del área de seguimiento (el "índice" o "_cache_" de Git). NO los borrará del disco duro.
 - ``.``: Es una abreviatura para "el directorio actual y todo lo que contiene".
 

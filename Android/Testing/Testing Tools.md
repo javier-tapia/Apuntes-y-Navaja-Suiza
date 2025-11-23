@@ -124,7 +124,7 @@ TODO...
 
 - Uso de un ***spy*** (permite que una clase, en vez de estar *mockeada*, funcione totalmente y se pueda monitorear el comportamiento):
 
-> 🔍 Reference:   
+> 🔍 Referencia:   
 > https://stackoverflow.com/questions/28295625/mockito-spy-vs-mock
 > 
 

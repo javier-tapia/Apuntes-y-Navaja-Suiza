@@ -1,6 +1,6 @@
 <h1><i>Scope functions</i></h1>
 
-> 🔍 Reference:  
+> 🔍 Referencia:  
 > https://kotlinlang.org/docs/scope-functions.html
 
 Su único propósito es ejecutar un bloque de código **dentro del contexto de un objeto**. Cuando se llama a una de estas funciones en un objeto con una expresión *lambda* proporcionada, forma un **ámbito** (***scope***) **temporal**.  En este ámbito, se puede **acceder al objeto sin su nombre**.

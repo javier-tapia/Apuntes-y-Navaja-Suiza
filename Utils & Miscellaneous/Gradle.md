@@ -111,7 +111,7 @@
 
 ## Gradle Build Cache deep dive
 
-> 🔍 References:  
+> 🔍 Referencias:  
 > - [Implementing Custom Tasks](https://docs.gradle.org/current/userguide/implementing_custom_tasks.html)  
 > - [Better reuse via input normalization](https://docs.gradle.org/current/userguide/build_cache_concepts.html#normalization)
 >
@@ -263,7 +263,7 @@ Provides metrics and data to help maintain good performance and help you identif
 
 ### Validation script to identify build caching issues
 
-> 🔍 Reference:  
+> 🔍 Referencia:  
 [Build validation scripts](https://github.com/gradle/develocity-build-validation-scripts)
 >
 

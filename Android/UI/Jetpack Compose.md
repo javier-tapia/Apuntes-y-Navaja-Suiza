@@ -11,8 +11,17 @@
     * [*State hoisting*](#state-hoisting)
     * [``Modifier``](#modifier)
     * [*Slot API* & ``Scaffold``](#slot-api--scaffold)
+    * [*Theme*: Definición de colores, formas y tipografías](#theme-definición-de-colores-formas-y-tipografías)
+      * [``Color.kt``](#colorkt)
+      * [``Shape.kt``](#shapekt)
+      * [``Type.kt``](#typekt)
+      * [``Theme.kt``](#themekt)
     * [Estructura del código](#estructura-del-código)
+  * [Control del ciclo de composición](#control-del-ciclo-de-composición)
+    * [Recomposición & Estabilidad](#recomposición--estabilidad)
+    * [La función `key`](#la-función-key)
   * [El estado en *Compose*](#el-estado-en-compose)
+    * [`remember` & `rememberSaveable`](#remember--remembersaveable)
     * [Compose ``State``](#compose-state)
       * [Primero: qué es `snapshot`](#primero-qué-es-snapshot)
       * [La función `mutableStateOf`](#la-función-mutablestateof)
@@ -35,8 +44,7 @@
     * [`snapshotFlow`](#snapshotflow)
   * [Algunas comparativas útiles](#algunas-comparativas-útiles)
     * [``MutableState`` vs ``StateFlow``](#mutablestate-vs-stateflow)
-    * [`remember` vs `rememberSaveable`](#remember-vs-remembersaveable)
-      * [`remember` con `key` vs `remember` junto con `derivedStateOf`](#remember-con-key-vs-remember-junto-con-derivedstateof)
+    * [`remember` con `key` vs `remember` junto con `derivedStateOf`](#remember-con-key-vs-remember-junto-con-derivedstateof)
     * [`LaunchedEffect` vs `SideEffect`](#launchedeffect-vs-sideeffect)
   * [Animaciones en *Compose*](#animaciones-en-compose)
     * [Qué es *Tween*](#qué-es-tween)
@@ -173,6 +181,170 @@ Scaffold(
 )
 ```
 
+### *Theme*: Definición de colores, formas y tipografías
+Al crear un nuevo proyecto en Compose (llamado ``MyApp`` para el ejemplo), se crean automáticamente tres archivos dentro de ``app/src/main/java/com/example/myapp/ui/theme``, que son ``Color.kt``, ``Theme.kt`` y ``Type.kt``.  
+Estos archivos conforman el **sistema de _theming_ de Material 3 en Compose**, que separa claramente **colores**, **formas** y **tipografías**, y centraliza todo en un único `MyAppTheme` dentro del archivo ``Theme.kt``. También se pueden crear otros archivos para definir otras características del _theme_, como puede ser el archivo ``Shape.kt``.  
+Dicho _theme_ se puede aplicar a toda la app:
+
+```kotlin
+MyAppTheme {
+    AppContent()
+}
+```
+
+#### ``Color.kt``
+Define y expone la **paleta de colores** que son consumidos por el archivo ``Theme.kt``.  
+En Compose + Material 3, esto suele incluir:
+
+- **LightColorScheme** :arrow_right: Colores usados en modo claro.
+- **DarkColorScheme** :arrow_right: Colores usados en modo oscuro.
+- Definiciones de colores personalizados con `Color(0xFFxxxxxx)`.
+
+```kotlin
+val Purple80 = Color(0xFFD0BCFF)
+val PurpleGrey80 = Color(0xFFCCC2DC)
+val Pink80 = Color(0xFFEFB8C8)
+
+val Purple40 = Color(0xFF6650a4)
+val PurpleGrey40 = Color(0xFF625b71)
+val Pink40 = Color(0xFF7D5260)
+```
+
+#### ``Shape.kt``
+Define las **formas globales** que seguirá la app: radios, esquinas redondeadas y estilos de contenedores.  
+Material 3 usa estas formas en componentes como botones, tarjetas, diálogos, etc.
+
+```kotlin
+val shapes = Shapes(
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(48.dp)
+)
+```
+
+#### ``Type.kt``
+Define la **tipografía global** de la app, es decir, los estilos de texto que usarán todos los componentes de Material 3: títulos, _body_, _labels_, _displays_, etc. De esta forma, toda la tipografía de la app se vuelve consistente y centralizada dentro del sistema de _theming_.  
+Material 3 utiliza una estructura llamada `Typography` que agrupa todos estos estilos y permite personalizar:
+
+- **Fuente** :arrow_right: `FontFamily`
+- **Peso** :arrow_right: `FontWeight`
+- **Tamaño** :arrow_right: `fontSize`
+- **Interlineado** :arrow_right: `lineHeight`
+- **Tracking** (ajuste uniforme del espacio entre todas las letras de un texto) :arrow_right: `letterSpacing`
+
+En un proyecto recién creado, el archivo puede verse así:
+
+```kotlin
+val Typography = Typography(
+    labelMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    )
+)
+```
+
+Todos estos estilos se consumen automáticamente al usar componentes de Material:
+
+```kotlin
+Text("Some text", style = MaterialTheme.typography.labelMedium)
+```
+
+También es el lugar donde se agregan **fuentes personalizadas**. Por ejemplo, asumiendo que se quiere agregar una nueva fuente llamada ``tirra``, se debe hacer lo siguiente:
+
+1. Entrar al sitio de [Google Fonts](https://fonts.google.com/).
+2. Elegir la **familia de la fuente** (**_Font Family_**) ``tirra`` y hacer click para entrar al detalle (acá también permite previsualizar los distintos estilos en caso de que tenga varios).
+3. Hacer click en el botón **_Get Font_** y luego descargarla (usualmente, se guarda un archivo ``.zip`` que contiene un archivo ``.txt`` con la licencia y otros ``.ttf`` con los diferentes estilos de la fuente).
+4. Crear un nuevo directorio dentro de ``/res`` llamado ``/font`` y mover el archivo (o los archivos, en caso de que sean varios estilos) ``.ttf`` dentro (se debe cambiar el nombre original de ser necesario, ya que no puede tener espacios ni mayúsculas).
+5. Se crea una nueva propiedad de tipo ``FontFamily`` que recibe uno o más objetos de tipo ``Font``, los cuales esperan el ``resId`` (la ubicación de los archivos ``.ttf`` importados en el paso previo) y el ``weight`` (el cual debe corresponderse con el tipo de fuente especificada por el archivo ``.ttf``).
+
+```kotlin
+val tirra = FontFamily(
+    Font(resId = R.font.tirra_regular, weight = FontWeight.Normal),
+    Font(resId = R.font.tirra_black, weight = FontWeight.Black),
+    Font(resId = R.font.tirra_bold, weight = FontWeight.Bold),
+    Font(resId = R.font.tirra_extra_bold, weight = FontWeight.ExtraBold),
+    Font(resId = R.font.tirra_medium, weight = FontWeight.Medium),
+    Font(resId = R.font.tirra_semi_bold, weight = FontWeight.SemiBold)
+)
+```
+
+6. Finalmente, se puede aplicar esa nueva fuente en donde se quiera.
+
+```kotlin
+val Typography = Typography(
+    labelMedium = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+    bodyLarge = TextStyle(
+        fontFamily = tirra,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = tirra,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 2.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = tirra,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 2.sp
+    )
+)
+```
+
+#### ``Theme.kt``
+Es el **archivo central**, responsable de:
+
+1. Elegir entre _light_ y _dark theme_ (según configuración del sistema).
+2. Proveer:
+   - ``colorScheme``
+   - ``typography``
+   - ``shapes``
+3. Aplicar el tema a toda la UI:
+
+```kotlin
+@Composable
+fun MyAppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    // Dynamic color is available on Android 12+
+    dynamicColor: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        shapes = shapes,
+        content = content
+    )
+}
+```
+
 ### Estructura del código
 
 Algunas recomendaciones a tener en cuenta a la hora de estructurar el código en *Jetpack Compose*:
@@ -182,10 +354,184 @@ Algunas recomendaciones a tener en cuenta a la hora de estructurar el código en
 - **Estructurar los paquetes de UI por pantallas** :arrow_right: El código queda más ordenado, puede crecer de forma más extensible y se podrán crear tanto *features* como ``Composables`` sin que se vuelva un desorden.
 - **Extraer las dimensiones** :arrow_right: *Hardcodear* las dimensiones va a representar un problema si se quiere **configurar la aplicación para distintos tamaños de pantalla (dispositivos diferentes)**. Para eso, es preferible extraerlos al archivo ***dimens*** y obtenerlos con el método ``dimensionResource``.
 
+## Control del ciclo de composición
+
+> 🔍 Referencia:  
+> https://developer.android.com/develop/ui/compose/lifecycle
+
+### Recomposición & Estabilidad
+La **recomposición** es el proceso mediante el cual Compose **vuelve a ejecutar funciones composables** para actualizar la UI cuando un estado cambia.  
+No toda la UI se vuelve a pintar: Compose es **inteligente** y solo recompondrá las partes que **dependen del estado modificado**.
+
+Un objeto o función se considera **estable** cuando Compose puede confiar en que:
+- No cambiará su **_identidad_** de manera inesperada.
+- Sus lecturas de estado pueden detectarse eficientemente.
+- Su comparación (`equals`) es confiable para determinar si debe recomponerse.
+
+La estabilidad permite a Compose:
+- Evitar recomposiciones innecesarias.
+- Memorizar composables sin invalidar la _cache_.
+- Optimizar la ejecución enviando menos trabajo al *runtime*.
+
+**En resumen**:
+> 🔄 La **_recomposición_** vuelve a pintar la UI cuando el estado cambia.  
+> 🧱 La **_estabilidad_** evita recomposiciones cuando el estado no ha cambiado.
+
+### La función [`key`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#key(kotlin.Array,kotlin.Function0))
+
+```kotlin
+@Composable
+inline fun <T : Any?> key(vararg keys: Any?, block: @Composable () -> T): T
+```
+
+Permite **asignar una clave (_key_) estable** a un bloque de composición para **_controlar su identidad_**. Esa _key_ le indica a Compose **cómo identificar ese bloque entre recomposiciones**, lo cual determina cómo se **preserva (o descarta) el estado** interno de los composables dentro del bloque.
+
+Puntos clave de su utilización:
+- Para cualquier caso :arrow_right: Si la _key_ cambia, Compose se ve obligado a **_descartar y recrear ese bloque de UI_**, invalidando su estado previo.
+- Para **estructuras dinámicas** (listas, bucles, ramas `if/else` o `when`) :arrow_right: Permite que Compose **preserve correctamente el estado de cada elemento**, evitando que confunda un composable con otro cuando cambia el **orden**, la **cantidad** o los **valores** (sin `key`, Compose asigna el estado **_por posición_**, NO por contenido).
+
+Funcionamiento:
+- Todos los composables dentro de `key(...) { ... }` se agrupan bajo **_una identidad única_**. Esa clave **_solo necesita ser única entre los composables hermanos generados en el mismo nivel_**, no en toda la pantalla ni globalmente.
+- Si la _key_ **_permanece igual_**, Compose **_reutiliza el estado_** asociado a ese bloque.
+- Si la _key_ **_cambia_**, Compose **_invalida ese estado_** y **_reconstruye todo el contenido desde cero_**.
+
+Ejemplo:
+
+```kotlin
+sealed interface Screen {
+    data object Home : Screen
+    data object Profile : Screen
+    data object Settings : Screen
+}
+
+@Composable
+fun HomeScreen() {
+    var counter by remember { mutableStateOf(0) }
+    Button(onClick = { counter++ }) {
+        Text("Home: $counter")
+    }
+}
+
+@Composable
+fun ProfileScreen() {
+    var name by remember { mutableStateOf("") }
+    TextField(value = name, onValueChange = { name = it })
+}
+
+@Composable
+fun SettingsScreen() {
+    var darkMode by remember { mutableStateOf(false) }
+    Switch(checked = darkMode, onCheckedChange = { darkMode = it })
+}
+
+@Composable
+fun ScreenContent(selected: Screen) {
+    Column(Modifier.fillMaxSize()) {
+
+        // Controles para cambiar la pantalla
+        Row(Modifier.padding(16.dp)) {
+            Button(onClick = { /* cambiar a Home */ }) { Text("Home") }
+            Button(onClick = { /* cambiar a Profile */ }) { Text("Profile") }
+            Button(onClick = { /* cambiar a Settings */ }) { Text("Settings") }
+        }
+
+        // --- PUNTO CRÍTICO: Cambio de pantallas ---
+
+        // ❌ Sin key(selected::class)
+        //    Compose puede intentar REUSAR el estado entre pantallas.
+        //    Ejemplos de problemas:
+        //    - El contador de Home aparece en Profile.
+        //    - El texto de Profile aparece cuando se va a Settings.
+        //    - El estado de Switch en Settings se mantiene al volver a Profile.
+        //
+        //    Esto ocurre porque Compose ve solo un "bloque" en la composición
+        //    y no sabe que debe descartar el estado al cambiar de pantalla.
+
+        // ✅ Con key(selected::class)
+        //    - Cada pantalla tiene una identidad estable distinta.
+        //    - Cambiar de pantalla invalida el estado previo y crea uno nuevo.
+        //    - Home, Profile y Settings conservan su propio estado sin "contaminarse" entre sí.
+        //    - Es la forma correcta de manejar pantallas dinámicas sin navigation-compose.
+
+        key(selected::class) {   // <---- La clave identifica qué pantalla es
+            when (selected) {
+                Screen.Home -> HomeScreen()
+                Screen.Profile -> ProfileScreen()
+                Screen.Settings -> SettingsScreen()
+            }
+        }
+    }
+}
+```
+
 ## El estado en *Compose*
 
-> 🔍 Reference:  
+> 🔍 Referencia:  
 > https://developer.android.com/develop/ui/compose/state
+
+### `remember` & `rememberSaveable`
+
+```kotlin
+@Composable
+inline fun <T : Any?> remember(
+    vararg keys: Any?,
+    crossinline calculation: @DisallowComposableCalls () -> T
+): T
+
+@Composable
+fun <T : Any> rememberSaveable(
+    vararg inputs: Any?,
+    saver: Saver<T, Any> = autoSaver(),
+    key: String? = null,
+    init: () -> T
+): T
+```
+
+Las funciones composables pueden usar la API [`remember`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#remember(kotlin.Function0)) para **_almacenar un objeto en memoria mientras el composable permanezca en la composición_**. Puede almacenar tanto objetos mutables como inmutables. Y el valor recordado puede usarse como **_parámetro de otros composables_** o incluso como parte de la lógica que determina **_qué UI se muestra_**.
+
+Se usa frecuentemente junto con `MutableState` (ver sección previa sobre estados). En términos generales, `remember` recibe una _lambda_ `calculation` por parámetro. La primera vez que se ejecuta, invoca esa _lambda_ y almacena su resultado. Y durante recomposiciones posteriores, devuelve el valor almacenado previamente.
+
+`remember` conserva el valor hasta que el composable sale de la composición. Sin embargo, existe una forma de invalidar ese valor en _cache_, ya que también acepta una o varias **_keys_** por parámetro. ***Si cualquiera de esos keys cambia, en la próxima recomposición `remember` invalidará el valor almacenado en cache y volverá a ejecutar la lambda de `calculation`.***
+
+Ejemplo:
+
+```kotlin
+var isVisible by remember { mutableStateOf(true) }
+
+Column(Modifier.fillMaxSize()) {
+    Button(onClick = { isVisible = !isVisible }) {
+        _root_ide_package_.org.w3c.dom.Text("Show/Hide")
+    }
+
+    Spacer(modifier = Modifier.size(50.dp))
+
+    AnimatedVisibility(
+        isVisible,
+        enter = slideInHorizontally(),
+        exit = slideOutHorizontally()
+    ) {
+        Box(
+            Modifier
+                .size(150.dp)
+                .background(Color.Red)
+        )
+    }
+}
+```
+
+La API [`rememberSaveable`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/saveable/package-summary#rememberSaveable(kotlin.Array,androidx.compose.runtime.saveable.Saver,kotlin.String,kotlin.Function0)) se comporta de forma similar a `remember` porque conserva el estado durante las recomposiciones, y además lo mantiene a través de la recreación de la actividad o del proceso utilizando el mecanismo de *saved instance state*. Esto sucede, por ejemplo, cuando se rota la pantalla. `rememberSaveable` guarda automáticamente cualquier valor que pueda almacenarse en un `Bundle`. Para otros valores, se puede proporcionar un *saver* personalizado, por ejemplo un objeto parcelable, un `MapSaver` o un `ListSaver` (ver [acá](https://developer.android.com/develop/ui/compose/state#ways-to-store)).  
+`rememberSaveable` recibe parámetros `input` con el mismo propósito que las `keys` usadas por `remember`. **_La cache se invalida cuando cualquiera de estos ``inputs`` cambia_**. La próxima vez que la función se recompone, `rememberSaveable` vuelve a ejecutar la _lambda_ `calculation`.
+
+Ejemplo:
+
+```kotlin
+// rememberSaveable almacena userTypedQuery hasta que typedQuery cambie
+var userTypedQuery by rememberSaveable(typedQuery, stateSaver = TextFieldValue.Saver) {
+    mutableStateOf(
+        TextFieldValue(text = typedQuery, selection = TextRange(typedQuery.length))
+    )
+}
+```
 
 ### Compose ``State``
 #### Primero: qué es [`snapshot`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/snapshots/Snapshot)
@@ -471,7 +817,7 @@ A veces los _side-effects_ son necesarios, por ejemplo, para **_ejecutar un even
 
 ### `SideEffect`
 - Ejecuta un **_bloque de código después de cada recomposición exitosa_**. 
-- No está **_atada a cambios de estado específicos_** dentro del composable: simplemente corre su bloque una vez que la UI se ha actualizado y es estable.
+- No está **_atada a cambios de estado específicos_** dentro del composable: simplemente corre su bloque una vez que la UI se ha actualizado y es estable (ver [Recomposición & Estabilidad](#recomposición--estabilidad)).
 - Se usa típicamente para _side effects_ que deben mantenerse **sincronizados con el runtime de Compose**, pero que no necesitan re-ejecutarse en función del cambio de un estado particular.
 - **Ejemplo común** :arrow_right: **_Publicar estado de Compose hacia código externo que no es de Compose_**, asegurando que ese código externo siempre reciba la **_versión más reciente del estado de la UI_**.
 
@@ -531,71 +877,7 @@ A veces los _side-effects_ son necesarios, por ejemplo, para **_ejecutar un even
 
 <br>
 
-### `remember` vs `rememberSaveable`
-
-```kotlin
-@Composable
-inline fun <T : Any?> remember(
-    vararg keys: Any?,
-    crossinline calculation: @DisallowComposableCalls () -> T
-): T
-
-@Composable
-fun <T : Any> rememberSaveable(
-    vararg inputs: Any?,
-    saver: Saver<T, Any> = autoSaver(),
-    key: String? = null,
-    init: () -> T
-): T
-```
-
-Las funciones composables pueden usar la API [`remember`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/package-summary#remember(kotlin.Function0)) para **_almacenar un objeto en memoria mientras el composable permanezca en la composición_**. Puede almacenar tanto objetos mutables como inmutables. Y el valor recordado puede usarse como **_parámetro de otros composables_** o incluso como parte de la lógica que determina **_qué UI se muestra_**.
-
-Se usa frecuentemente junto con `MutableState` (ver sección previa sobre estados). En términos generales, `remember` recibe una _lambda_ `calculation` por parámetro. La primera vez que se ejecuta, invoca esa _lambda_ y almacena su resultado. Y durante recomposiciones posteriores, devuelve el valor almacenado previamente.
-
-`remember` conserva el valor hasta que el composable sale de la composición. Sin embargo, existe una forma de invalidar ese valor en _cache_, ya que también acepta una o varias **_keys_** por parámetro. ***Si cualquiera de esos keys cambia, en la próxima recomposición `remember` invalidará el valor almacenado en cache y volverá a ejecutar la lambda de `calculation`.***
-
-Ejemplo:
-
-```kotlin
-var isVisible by remember { mutableStateOf(true) }
-
-Column(Modifier.fillMaxSize()) {
-    Button(onClick = { isVisible = !isVisible }) {
-        _root_ide_package_.org.w3c.dom.Text("Show/Hide")
-    }
-
-    Spacer(modifier = Modifier.size(50.dp))
-
-    AnimatedVisibility(
-        isVisible,
-        enter = slideInHorizontally(),
-        exit = slideOutHorizontally()
-    ) {
-        Box(
-            Modifier
-                .size(150.dp)
-                .background(Color.Red)
-        )
-    }
-}
-```
-
-La API [`rememberSaveable`](https://developer.android.com/reference/kotlin/androidx/compose/runtime/saveable/package-summary#rememberSaveable(kotlin.Array,androidx.compose.runtime.saveable.Saver,kotlin.String,kotlin.Function0)) se comporta de forma similar a `remember` porque conserva el estado durante las recomposiciones, y además lo mantiene a través de la recreación de la actividad o del proceso utilizando el mecanismo de *saved instance state*. Esto sucede, por ejemplo, cuando se rota la pantalla. `rememberSaveable` guarda automáticamente cualquier valor que pueda almacenarse en un `Bundle`. Para otros valores, se puede proporcionar un *saver* personalizado, por ejemplo un objeto parcelable, un `MapSaver` o un `ListSaver` (ver [acá](https://developer.android.com/develop/ui/compose/state#ways-to-store)).  
-`rememberSaveable` recibe parámetros `input` con el mismo propósito que las `keys` usadas por `remember`. **_La cache se invalida cuando cualquiera de estos ``inputs`` cambia_**. La próxima vez que la función se recompone, `rememberSaveable` vuelve a ejecutar la _lambda_ `calculation`.
-
-Ejemplo:
-
-```kotlin
-// rememberSaveable almacena userTypedQuery hasta que typedQuery cambie
-var userTypedQuery by rememberSaveable(typedQuery, stateSaver = TextFieldValue.Saver) {
-    mutableStateOf(
-        TextFieldValue(text = typedQuery, selection = TextRange(typedQuery.length))
-    )
-}
-```
-
-#### `remember` con `key` vs `remember` junto con `derivedStateOf`
+### `remember` con `key` vs `remember` junto con `derivedStateOf`
 Ambos tienden a hacer lo mismo: **_escuchar cambios en otro estado y luego derivar un estado a partir de él_**.
 
 | `val something = remember(key = someKey) { … }`                                                                                                                                                                                                  | `val something = remember { derivedStateOf { … } }`                                                                                                                                                                                                                                                                                                                                                      |

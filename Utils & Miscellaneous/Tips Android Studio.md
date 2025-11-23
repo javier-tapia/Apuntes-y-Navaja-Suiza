@@ -18,7 +18,7 @@
 
 ## Transferir *settings* de AS a IntelliJ y viceversa
 
-> 🔍 Reference:  
+> 🔍 Referencia:  
 > https://stackoverflow.com/a/25416163/12935412
 > 
 

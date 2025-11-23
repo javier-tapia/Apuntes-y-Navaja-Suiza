@@ -396,7 +396,7 @@ Ambos son *dispatchers* utilizados en pruebas de corrutinas en Kotlin, pero tien
 ### [`@Volatile`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.concurrent/-volatile/)
 
 - **Descripción**: Indica que ***el valor de una variable puede ser modificado por varios hilos (threads)*** y que la visibilidad de esa variable debe ser consistente entre ellos. También evita el cacheo de la variable para asegurar que siempre se lea el valor más reciente.
-- **Uso**: Al marcar una variable como **`@Volatile`**, Kotlin asegura que cualquier operación de lectura/escritura en esa variable se refleje inmediatamente en todos los hilos, eliminando posibles problemas de caché de CPU.
+- **Uso**: Al marcar una variable como **`@Volatile`**, Kotlin asegura que cualquier operación de lectura/escritura en esa variable se refleje inmediatamente en todos los hilos, eliminando posibles problemas de _cache_ de CPU.
 
   **Ejemplo**:
 

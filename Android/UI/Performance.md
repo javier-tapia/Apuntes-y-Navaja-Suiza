@@ -82,7 +82,7 @@ El *overdraw* es cuando una app pinta un pixel más de una vez dentro de un úni
 
 ### Análisis
 
-> 🔍 Reference:  
+> 🔍 Referencia:  
 > https://developer.android.com/topic/performance/rendering/inspect-gpu-rendering#debug_overdraw
 >
 
@@ -353,7 +353,7 @@ Con Android Studio, se pueden convertir imágenes GIF estáticas o BMP, JPG o PN
 
 ## *Android Vitals*
 
-> 🔍 Reference:  
+> 🔍 Referencia:  
 > https://developer.android.com/topic/performance/vitals
 
 Resumen de factores que considera el panel de _Android Vitals_:
