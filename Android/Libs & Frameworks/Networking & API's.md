@@ -7,7 +7,9 @@
     * [Modelo de Respuesta](#modelo-de-respuesta)
     * [*Interface API service*](#interface-api-service)
     * [Cliente OkHttp](#cliente-okhttp)
-      * [Interceptores de OkHttp: diferencias y usos recomendados](#interceptores-de-okhttp-diferencias-y-usos-recomendados)
+    * [Interceptores de OkHttp: diferencias y usos recomendados](#interceptores-de-okhttp-diferencias-y-usos-recomendados)
+      * [🛂 *Interceptor (Application Interceptor)*](#-interceptor-application-interceptor)
+      * [🌐 *Network Interceptor*](#-network-interceptor)
     * [Instancia de Retrofit](#instancia-de-retrofit)
     * [Manejo de respuestas y errores en Retrofit](#manejo-de-respuestas-y-errores-en-retrofit)
   * [*Ktor*](#ktor)
@@ -19,9 +21,9 @@
 
 ## *Retrofit*
 > 🔍 Referencias:  
-> https://square.github.io/retrofit/
-> https://github.com/square/retrofit
-> https://square.github.io/okhttp/
+> https://square.github.io/retrofit/  
+> https://github.com/square/retrofit  
+> https://square.github.io/okhttp/  
 
 Es una librería con **seguridad de tipo** (_type-safe_) para **_realizar solicitudes HTTP_** y **_mapear las respuestas_** a objetos previamente modelados (con _data class_ en Kotlin).  
 No tiene injerencia sobre _cache_, _retries_ ni _logging_. Estas responsabilidades recaen completamente en [OkHttp](#cliente-okhttp), no en Retrofit.
@@ -108,8 +110,12 @@ interface SampleApiService {
 ```
 
 ### Cliente OkHttp
+> ⚠️ Importante:  Para poder utilizar ``BuildConfig``, se debe agregar la _flag_ ``buildConfig = true`` dentro del bloque ``android.buildFeatures`` en el archivo ``build.gradle.kts(:app)``
+
 Retrofit usa OkHttp internamente como cliente HTTP, NO lo reemplaza. Por eso es posible personalizarlo antes de pasárselo a Retrofit.  
 Permite configurar el comportamiento real de las conexiones HTTP, incluyendo interceptores, _timeouts_, _logging_, políticas de reintento, _cache_ y _headers_ globales (ver apartado siguiente sobre [interceptores](#interceptores-de-okhttp-diferencias-y-usos-recomendados)).
+
+Ejemplo:
 
 ```kotlin
 val okHttpClient = OkHttpClient.Builder()
@@ -117,15 +123,19 @@ val okHttpClient = OkHttpClient.Builder()
     .readTimeout(20, TimeUnit.SECONDS)
     .writeTimeout(20, TimeUnit.SECONDS)
     .addInterceptor(HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
     })
     .build()
 ```
 
-#### Interceptores de OkHttp: diferencias y usos recomendados
+### Interceptores de OkHttp: diferencias y usos recomendados
 OkHttp permite agregar dos tipos de interceptores, que se ejecutan en distintos momentos del ciclo de una _request_.
 
-1. **Interceptor (_Application Interceptor_)**
+#### 🛂 *Interceptor (Application Interceptor)*
 
 Se ejecuta **_antes de que la request "le pegue" a la red_**.  
 Ideal para:
@@ -155,7 +165,7 @@ val okHttpClient = OkHttpClient.Builder()
     }
 ```
 
-2. **_Network Interceptor_**
+#### 🌐 *Network Interceptor*
 
 Se ejecuta **_después de que OkHttp "le pega" a la red_**.  
 Ideal para:
