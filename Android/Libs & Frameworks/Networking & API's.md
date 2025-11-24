@@ -3,16 +3,23 @@
 ***Index***:
 <!-- TOC -->
   * [*Retrofit*](#retrofit)
+    * [🚀 Cheatsheet Retrofit](#-cheatsheet-retrofit)
     * [Dependencias y permisos](#dependencias-y-permisos)
     * [Modelo de Respuesta](#modelo-de-respuesta)
     * [*Interface API service*](#interface-api-service)
     * [Cliente OkHttp](#cliente-okhttp)
     * [Interceptores de OkHttp: diferencias y usos recomendados](#interceptores-de-okhttp-diferencias-y-usos-recomendados)
-      * [🛂 *Interceptor (Application Interceptor)*](#-interceptor-application-interceptor)
+      * [🛂 *Application Interceptor*](#-application-interceptor)
       * [🌐 *Network Interceptor*](#-network-interceptor)
     * [Instancia de Retrofit](#instancia-de-retrofit)
-    * [Manejo de respuestas y errores en Retrofit](#manejo-de-respuestas-y-errores-en-retrofit)
-  * [*Ktor*](#ktor)
+    * [Manejo de respuestas y errores](#manejo-de-respuestas-y-errores)
+  * [*Ktor* (cliente)](#ktor-cliente)
+    * [🚀 Cheatsheet Ktor Client](#-cheatsheet-ktor-client)
+    * [Dependencias y permisos](#dependencias-y-permisos-1)
+    * [Modelo de respuesta con KotlinX Serialization](#modelo-de-respuesta-con-kotlinx-serialization)
+    * [Configuración del cliente HTTP](#configuración-del-cliente-http)
+    * [Realizar solicitudes](#realizar-solicitudes)
+    * [Manejo de respuestas y errores](#manejo-de-respuestas-y-errores-1)
   * [*OAuth: Facebook, Twitter, Google+*](#oauth-facebook-twitter-google)
   * [*Frameworks y SDK's: Firebase, Fabric, Sentry, Segment, Facebook*](#frameworks-y-sdks-firebase-fabric-sentry-segment-facebook)
 <!-- TOC -->
@@ -24,9 +31,61 @@
 > https://square.github.io/retrofit/  
 > https://github.com/square/retrofit  
 > https://square.github.io/okhttp/  
+> https://johncodeos.com/how-to-make-post-get-put-and-delete-requests-with-retrofit-using-kotlin/
 
 Es una librería con **seguridad de tipo** (_type-safe_) para **_realizar solicitudes HTTP_** y **_mapear las respuestas_** a objetos previamente modelados (con _data class_ en Kotlin).  
 No tiene injerencia sobre _cache_, _retries_ ni _logging_. Estas responsabilidades recaen completamente en [OkHttp](#cliente-okhttp), no en Retrofit.
+
+### 🚀 Cheatsheet Retrofit
+1. **Definir el modelo de datos**
+
+```kotlin
+data class UserDto(
+    val id: String,
+    val name: String
+)
+```
+
+2. **Definir interfaz del servicio**
+
+```kotlin
+interface UserApi {
+    @GET("users/{id}")
+    suspend fun fetchUser(
+        @Path("id") id: String
+    ): Response<UserDto>
+}
+```
+
+3. **Crear instancia de Retrofit**
+
+```kotlin
+val retrofit = Retrofit.Builder()
+    .baseUrl("https://api.example.com/")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build()
+```
+
+4. **Crear implementación del servicio (una por cada interfaz en caso de haber más)**
+
+```kotlin
+val api = retrofit.create(UserApi::class.java)
+```
+
+5. **Ejecutar _request_ + Manejo de respuesta y errores**
+
+```kotlin
+suspend fun getUser(id: String): Result<UserDto> {
+    return try {
+        // Solicitud a la red
+        val response = api.fetchUser(id)
+
+        // Otras operaciones
+    } catch (e: Exception) {
+        // Gestionar errores
+    }
+}
+```
 
 ### Dependencias y permisos
 Agregar las dependencias necesarias en el archivo ``libs.versions.toml``:
@@ -71,7 +130,7 @@ Además, en caso de usar el ``Converter`` propio de KotlinX Serialization, se de
 
 ```kotlin
 @Serializable
-data class UserResponse(
+data class UserDto(
     @SerialName("user_id")
     val userId: String,
     @SerialName("name")
@@ -88,7 +147,7 @@ data class UserResponse(
 ```
 
 ### *Interface API service*
-Crear una interfaz que declare los métodos para realizar las solicitudes HTTP y el tipo de retorno, el cual puede estar encapsulado en un ``Response<T>`` (ver [Manejo de respuestas y errores en Retrofit](#manejo-de-respuestas-y-errores-en-retrofit)). Esto es opcional y se podría usar un tipo definido por el desarrollador directamente, pero ``Response`` sirve para leer _headers_, verificar si la respuesta fue exitosa con ``isSuccessful``, acceder al código de respuesta con ``code()`` y manejar errores de forma más controlada.  
+Crear una interfaz que declare los métodos para realizar las solicitudes HTTP y el tipo de retorno, el cual puede estar encapsulado en un ``Response<T>`` (ver [Manejo de respuestas y errores](#manejo-de-respuestas-y-errores)). Esto es opcional y se podría usar un tipo definido por el desarrollador directamente, pero ``Response`` sirve para leer _headers_, verificar si la respuesta fue exitosa con ``isSuccessful``, acceder al código de respuesta con ``code()`` y manejar errores de forma más controlada.  
 Se anotan con el verbo de la llamada y, opcionalmente, se pueden pasar parámetros como _headers_, _query params_, _body_ (para los ``POST``, ``PUT`` o ``PATCH``), entre otros.
 
 ```kotlin
@@ -135,21 +194,34 @@ val okHttpClient = OkHttpClient.Builder()
 ### Interceptores de OkHttp: diferencias y usos recomendados
 OkHttp permite agregar dos tipos de interceptores, que se ejecutan en distintos momentos del ciclo de una _request_.
 
-#### 🛂 *Interceptor (Application Interceptor)*
+| Característica                | 🛂 **Application Interceptor**                                                                            | 🌐 **Network Interceptor**                                                                                       |
+|-------------------------------|-----------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| **Cuándo se ejecuta**         | Antes de cualquier acceso a red                                                                           | Justo antes y después de tocar la red (socket)                                                                   |
+| **Redirecciones**             | ❌ Se ejecuta **una sola vez**                                                                             | ✔️ Se ejecuta **por cada redirección**                                                                           |
+| **Cache**                     | ✔️ Puede ver respuestas de cache                                                                          | ❌ **No** se ejecuta **cuando OkHttp responde desde el cache** (**sin tocar la red**)                             |
+| **Logging**                   | Logging "lógico" (lo que el código envía)                                                                 | Logging "real" (lo que realmente se envió/recibió en red)                                                        |
+| **Modificación de request**   | ✔️ Ideal para agregar headers o reescribir requests                                                       | ✔️ Puede modificar request pero ya "casi finalizada"                                                             |
+| **Modificación de respuesta** | ✔️ Puede modificarla (incluyendo respuestas cacheadas), pero no es lo habitual                            | ✔️ Puede modificarla (solo cuando viene de red)                                                                  |
+| **Casos ideales**             | - Headers globales<br>- Auth tokens<br>- Retries lógicos<br>- Logging de negocio<br>- Reescritura general | - TLS / Certificado<br>- Logging de red real<br>- Inspección de proxies/servidor<br>- Manejo específico de cache |
+| **Acceso al socket**          | ❌ No                                                                                                      | ✔️ Sí                                                                                                            |
+| **Uso más común**             | Interceptor general de la app                                                                             | Interceptor para debugging, inspección y validaciones profundas de red                                           |
+| **Ejecutado sobre**           | La **request original**                                                                                   | La **request final** (después de compresión, headers automáticos, etc.)                                          |
 
-Se ejecuta **_antes de que la request "le pegue" a la red_**.  
-Ideal para:
+#### 🛂 *Application Interceptor*
+Se ejecuta **_antes de que la request llegue a la red_**, actuando en la capa más externa del OkHttpClient. En resumen: es el **_interceptor a usar para lógica de la aplicación_**, sin preocuparte por detalles de transporte o red.
 
-- Agregar _headers_ globales 
-- Autenticación (_Tokens_, API _Keys_)
-- _Logging_ general 
-- _Retries_ personalizados 
-- Reescritura de _requests_ o respuestas
+Es ideal para:
+- Agregar **_headers_ globales** 
+- Manejar **autenticación** (_Tokens_, API _Keys_, _Bearer_, etc.)
+- **_Logging_ general** que no dependa de la red
+- **_Retries_ personalizados** que se quieran controlar manualmente
+- Reescritura de **_requests_ y respuestas** a nivel de aplicación
 
-Además:
-
-- Se ejecuta **_una sola vez_**, incluso si hay redirecciones. 
-- No ve respuestas del _cache_ (solo se vería un “_cache hit_” si el desarrollador implementa una respuesta manual, pero OkHttp no lo hace automáticamente).
+Comportamiento clave:
+- Se ejecuta **una sola vez por _request_**, incluso si hay _redirects_ o _retries_ internos de OkHttp.
+- **Ve respuestas provenientes del _cache_**, porque OkHttp puede resolver una _request_ desde disco antes de tocar la red. 
+- **No puede modificar la política del _cache_** (qué se guarda, cuándo expira, cómo se revalida), solo puede ver el resultado final. 
+- No ve la versión final de la _request_ tal como OkHttp la enviaría por red, porque no participa en las transformaciones de bajo nivel (compresión, _headers_ automáticos, etc.).
 
 Ejemplo:
 
@@ -166,19 +238,19 @@ val okHttpClient = OkHttpClient.Builder()
 ```
 
 #### 🌐 *Network Interceptor*
+Se ejecuta dos veces por ciclo de red: **_una al enviar la request al servidor_** y **_otra al recibir la respuesta desde la red_**. En resumen: es el **_interceptor para lógica estrictamente de red_**, no para lógica de aplicación.
 
-Se ejecuta **_después de que OkHttp "le pega" a la red_**.  
-Ideal para:
+Es ideal para:
+- **_Logging_ real de red** (lo que realmente se envió y lo que realmente llegó)
+- Inspeccionar **_headers_ generados por el servidor, _proxies_ o _gateways_** 
+- Manipular _headers_ relacionados con **_cache_** (_Cache-Control_, _ETag_, _If-Modified-Since_)
+- Operaciones que requieren acceso directo a la **conexión** (certificados, TLS, tamaño real de payload, etc.)
 
-- _Logging_ de _requests_/_responses_ tal como fueron enviadas/recibidas 
-- Inspección de _headers_ agregados por el servidor o _proxies_ 
-- Manipular recursos _cacheados_ 
-- Verificar certificados u operaciones que requieren acceso al _socket_
-
-Además:
-
-- Se ejecuta **_en cada redirección_**. 
-- Se ejecuta **_siempre_**, incluso con _cache_.
+Comportamiento clave:
+- Se ejecuta **en cada redirección**, porque cada salto reenvía la _request_ al servidor.
+- **No se ejecuta cuando la respuesta proviene del _cache_** :arrow_right: Solo corre cuando hay un acceso real a la red.
+- Ve la _request_ **después** de que OkHttp aplicó todas las transformaciones finales (como compresión o _headers_ automáticos).
+- Puede modificar la respuesta **antes de que llegue a la capa superior**, lo cual es útil para casos muy específicos (no recomendado para lógica general).
 
 Ejemplo:
 
@@ -214,13 +286,13 @@ Retrofit
     )
     .client(okHttpClient) // Cliente OkHttp creado en el paso previo
     .build()
-    .create(SampleApiService::class.java)
+    .create(SampleApiService::class.java) // Implementación del servicio
 ```
 
-### Manejo de respuestas y errores en Retrofit
+### Manejo de respuestas y errores
 > ⚠️ Importante:  
-> Retrofit **NO lanza excepción** en errores HTTP (4xx/5xx).  
-> Retrofit **SÍ lanza excepción** en errores de red (_timeout_, DNS, desconexión, SSL) o serialización.
+> Retrofit **NO lanza excepción** en errores HTTP (4xx/5xx) al usar ``Response<T>``. Solo lanza ``HttpException`` en errores HTTP si el método NO devuelve ``Response<T>``.  
+> Retrofit **SÍ lanza excepción** en errores de red (_timeout_, DNS, desconexión, SSL) o serialización (JSON mal formado).
 
 El manejo completo implica distinguir tres niveles:
 
@@ -229,12 +301,18 @@ Ocurre antes de recibir respuesta (conectividad, timeout, SSL…).
 
 ```kotlin
 return try {
-    val response = api.fetchUser(...)
+    val response = api.fetchUser()
     // Pasa al punto 2
     handleResponse(response)
-} catch (e: Exception) {
-    // Error de red o serialización
+} catch (e: IOException) {
+    // Errores de red
     Result.Error("Network error: ${e.localizedMessage}")
+} catch (e: MalformedJsonException) {
+    // Errores de JSON
+    Result.Error("Serialization error: ${e.localizedMessage}")
+} catch (e: Exception) {
+    // Errores inesperados
+    Result.Error("Unexpected error: ${e.localizedMessage}")
 }
 ```
 
@@ -261,7 +339,7 @@ fun handleResponse(response: Response<SampleFetchResponse>): Result<SampleFetchR
 ```
 
 3. **Mapeo final a un modelo de dominio**
-Se puede estandarizar. Revisar también el uso de [``Either``](../../Code%20Snippets%20with%20Kotlin/JSON%20operations%20&%20Error%20handling%20with%20Either.md#sealed-class-either-left-and-right)
+Se puede estandarizar con un _wrapper_ propio, como puede ser ``Result``. Revisar también el uso de [``Either``](../../Code%20Snippets%20with%20Kotlin/JSON%20operations%20&%20Error%20handling%20with%20Either.md#sealed-class-either-left-and-right)
 
 ```kotlin
 sealed class Result<out T> {
@@ -270,8 +348,239 @@ sealed class Result<out T> {
 }
 ```
 
-## *Ktor*
-TODO...
+## *Ktor* (cliente)
+> 🔍 Referencias:  
+> https://ktor.io/  
+> https://www.slf4j.org/  
+> https://logback.qos.ch/  
+> https://logging.apache.org/log4j/2.x/index.html
+
+Ktor es un _framework_ para crear aplicaciones asincrónicas **del lado del servidor y del lado del cliente** con facilidad.  
+Incluye un cliente HTTP asincrónico multiplataforma, que permite realizar solicitudes, manejar respuestas y ampliar su funcionalidad con _plugins_, como autenticación, serialización JSON y más.  
+A diferencia de Retrofit, Ktor **no usa anotaciones ni interfaces**: se trabaja directamente con un cliente configurado y se realiza cada solicitud mediante la función `client.request{}`.
+
+Para utilizar el cliente HTTP de Ktor en un proyecto Android, se deben configurar los repositorios y agregar las dependencias mandatorias y opcionales en caso de requerirlas.
+
+### 🚀 Cheatsheet Ktor Client
+1. **Definir el modelo de datos**
+
+```kotlin
+@kotlinx.serialization.Serializable
+data class UserDto(
+    val id: String,
+    val name: String
+)
+```
+
+2. **Crear instancia de Ktor Client**
+
+```kotlin
+val client = HttpClient {
+    install(ContentNegotiation) {
+        json() // kotlinx.serialization
+    }
+    install(HttpTimeout) {
+        requestTimeoutMillis = 15_000
+    }
+    install(DefaultRequest) {
+        url("https://myapi.com/")
+        headers.appendIfNameAbsent("X-Custom-Header", "Hello")
+    }
+}
+```
+
+3. **Crear “servicio” (una clase por cada conjunto de _endpoints_)**
+
+```kotlin
+class UserApi(private val client: HttpClient) {
+    suspend fun fetchUser(id: String): HttpResponse {
+        return client.get("users/$id")
+    }
+}
+```
+
+4. **Instanciar el servicio**
+
+```kotlin
+val api = UserApi(client)
+```
+
+5. **Ejecutar _request_ + Manejo de respuesta y errores**
+
+```kotlin
+suspend fun getUser(id: String): Result<UserDto> {
+    return try {
+        val response = api.fetchUser(id)
+
+        if (response.status.isSuccess()) {
+            val body = response.body<UserDto>()
+            Result.success(body)
+        } else {
+            Result.failure(
+                Exception("HTTP ${response.status.value}: ${response.status.description}")
+            )
+        }
+
+    } catch (e: Exception) {
+        Result.failure(Exception("Network/serialization error: ${e.localizedMessage}"))
+    }
+}
+```
+
+### Dependencias y permisos
+Luego de asegurarse que está agregado el repositorio ``mavenCentral()``, se pueden agregar las dependencias en el archivo ``libs.versions.toml``:
+
+```toml
+[versions]
+ktor = "{VERSION}"
+slf4j = "{VERSION}"
+
+[libraries]
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+slf4j-android = { module = "org.slf4j:slf4j-android", version.ref = "slf4j" }
+```
+
+**A tener en cuenta**:
+
+- La funcionalidad principal del cliente está disponible en el artefacto ``ktor-client-core``.
+- Un **motor** (**_engine_**) se encarga de **procesar las solicitudes de red**. Existen diferentes motores de cliente disponibles para diversas plataformas, como Apache, CIO, Android, iOS, etc.
+- Muchas aplicaciones requieren **funciones comunes que escapan a la lógica de la aplicación**. Estas pueden ser funciones como el _logging_, la serialización o la autorización. Todas estas funciones se proporcionan en Ktor mediante **_plugins_**.
+- En JVM, Ktor utiliza **_Simple Logging Facade for Java_** (**_SLF4J_**) como una capa de abstracción para el _logging_. SLF4J desacopla la API de _logging_ de la implementación de _logging_ subyacente, lo que permite integrar el _framework_ de _logging_ que mejor se adapte a los requisitos de la aplicación. Las opciones más comunes incluyen **_Logback_** o **_Log4j_**. Si no se proporciona ningún _framework_, SLF4J utilizará por defecto una implementación sin operación (NOP), que básicamente deshabilita el _logging_.
+
+Implementar las dependencias en el archivo ``build.gradle.kts`` del módulo que corresponda:
+
+```kotlin
+// Ktor
+implementation(libs.ktor.client.core)
+implementation(libs.ktor.client.okhttp)
+implementation(libs.ktor.client.logging)
+implementation(libs.ktor.client.content.negotiation)
+implementation(libs.ktor.serialization.kotlinx.json)
+implementation(libs.slf4j.android)
+```
+
+Agregar el permiso de internet en el ``Manifest``:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+### Modelo de respuesta con KotlinX Serialization
+Ktor sí depende de KotlinX Serialization para el manejo de JSONs, por lo cual se requiere anotar los modelos con ``@Serializable``.
+
+```kotlin
+@Serializable
+data class UserDto(
+    @SerialName("user_id")
+    val userId: String,
+    @SerialName("name")
+    val name: String,
+    @SerialName("nickname")
+    val nickname: String,
+    @SerialName("followers")
+    val followers: Int,
+    @SerialName("following")
+    val following: List<String>,
+    @SerialName("user_type")
+    val userType: Int,
+)
+```
+
+### Configuración del cliente HTTP
+> ⚠️ Importante:  A diferencia de Retrofit, el cliente de Ktor sí debe cerrarse cuando ya no va a utilizarse.  
+> Para eso, se llama a ``client.close()``.
+> Si se usa DI esto no hace falta, ya que el cliente **se cierra automáticamente** al liberar el contenedor.
+
+Ktor requiere configurar un **_engine_**: para Android/JVM, el más común es **OkHttp**. En KMP, se suele usar CIO.  
+Además, toda la funcionalidad extra se incorpora mediante **_plugins_**, los cuales se agregan con ``install``:
+
+- ``ContentNegotiation`` :arrow_right: JSON via _KotlinX Serialization_
+- ``Logging`` :arrow_right: _Logging_ configurable (dependiendo del backend SLF4J)
+- ``DefaultRequest`` :arrow_right: URL base, _headers_ comunes, etc.
+
+Ejemplo:
+
+```kotlin
+val client = HttpClient(engineFactory = OkHttp) {
+    install(plugin = ContentNegotiation) {
+        json(
+            Json {
+                ignoreUnknownKeys = true
+                isLenient = false
+            }
+        )
+    }
+
+    if (BuildConfig.DEBUG) {
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = LogLevel.BODY
+        }
+    }
+
+    install(plugin = DefaultRequest) {
+        url("https://api.miservicio.com/")
+        header("User-Agent", "My-App/1.0")
+        headers.appendIfNameAbsent("X-Custom-Header", "Hello")
+    }
+}
+```
+
+### Realizar solicitudes
+Ktor no utiliza interfaces como Retrofit: se usa la función ``client.request``.
+
+La clase ``HttpRequestBuilder`` ofrece:
+
+- Método HTTP (``method = HttpMethod.Get``)
+- URL (``url("users/1")``)
+- Headers (``headers.append``)
+- Body (``setBody()``)
+
+Ejemplo:
+
+```kotlin
+suspend fun fetchUser(client: HttpClient): SampleResponse {
+    val response: HttpResponse = client.request {
+        method = HttpMethod.Get
+        url("users/1")
+        header("Journey-Id", "12345")
+    }
+
+    return response.body()
+}
+```
+
+### Manejo de respuestas y errores
+> ⚠️ Importante:  
+> Ktor **SÍ lanza excepción** en errores HTTP por defecto (``ClientRequestException`` para los 4xx, ``ServerResponseException`` para los 5xx). Se puede configurar manualmente el ``HttpResponseValidator`` para que no lance excepciones.  
+> Ktor **SÍ lanza excepción** en errores de red (_timeout_, DNS, desconexión, SSL) o serialización.
+
+El tipo de respuesta que devuelve es un ``HttpResponse``.
+
+Ejemplo:
+
+```kotlin
+suspend fun safeCall(client: HttpClient): Result<SampleResponse> {
+    return try {
+        val response: HttpResponse = client.request {
+            url("users/1")
+        }
+
+        if (response.status.isSuccess()) {
+            Result.Success(response.body())
+        } else {
+            Result.Error("HTTP ${response.status.value}: ${response.bodyAsText()}")
+        }
+
+    } catch (e: Exception) {
+        Result.Error("Network error: ${e.localizedMessage}")
+    }
+}
+```
 
 ## *OAuth: Facebook, Twitter, Google+*
 TODO...

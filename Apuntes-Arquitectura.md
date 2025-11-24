@@ -40,8 +40,9 @@
       * [Guía de Arquitectura (Google/Android)](#guía-de-arquitectura-googleandroid)
       * [*Clean Architecture*](#clean-architecture)
     * [Diferencia entre Modelos de Datos y Modelos de Dominio](#diferencia-entre-modelos-de-datos-y-modelos-de-dominio)
-      * [Modelos de Datos (DTOs - Data Transfer Objects)](#modelos-de-datos-dtos---data-transfer-objects)
+      * [Modelos de Datos](#modelos-de-datos)
       * [Modelos de Dominio](#modelos-de-dominio)
+      * [Transformación entre capas](#transformación-entre-capas)
     * [Ejemplo estructura](#ejemplo-estructura)
 <!-- TOC -->
 
@@ -754,27 +755,29 @@ Cada capa en estas arquitecturas tiene un propósito específico y ayuda a mante
 <br>
 
 ### Diferencia entre Modelos de Datos y Modelos de Dominio
-
-#### Modelos de Datos (DTOs - Data Transfer Objects)
-
-- **Propósito**: **_Representar la estructura de datos tal como viene de fuentes externas (API, base de datos)_**
+#### Modelos de Datos
+- **Propósito**: **_Representar la estructura de datos tal como viene de fuentes externas (APIs) o como se almacena internamente (Base de Datos)_** :arrow_right: **_Son modelos dependientes de la infraestructura, porque reflejan la estructura de la API o de la base de datos_**
 - **Características**:
-    - Suelen ser clases simples con propiedades y sin lógica de negocio
-    - Sus nombres y estructura reflejan exactamente lo que devuelve la API o lo que requiere la base de datos
-    - Pueden contener anotaciones específicas para serialización/deserialización (como `@SerializedName` en Retrofit)
-    - Ejemplo: `MovieDto` con campos exactamente como los devuelve la API
+    - Son clases simples **_orientadas a transporte/almacenamiento, sin lógica de negocio_**
+    - Sus nombres y estructura reflejan exactamente lo que devuelve la API o lo que necesita la base de datos
+    - Suelen tener anotaciones externas (Retrofit/Moshi/Gson/Room)
+    - Pueden variar cuando cambia la API o el esquema de la BBDD
+    - **Ejemplos**: `MovieDto`, que representa la respuesta JSON del servidor; `MovieEntity`, que representa el formato en el que la base de datos (Room/SQLDelight/ObjectBox) necesita almacenar los datos
 
 #### Modelos de Dominio
-
-- **Propósito**: **_Representar Entidades de Negocio independientes de la infraestructura externa_**
+- **Propósito**: **_Representar Entidades de Negocio independientes de la infraestructura_** :arrow_right: **_Son el “corazón” de la aplicación, independientes de frameworks y librerías externas_**
 - **Características**:
-    - Contienen la lógica de negocio relevante para la entidad
-    - Su estructura está diseñada para las necesidades de la aplicación, no para adaptarse a fuentes externas
-    - Son independientes de frameworks y librerías externas
-    - No tienen anotaciones específicas de infraestructura
-    - Ejemplo: `Movie` con solo los campos relevantes para la lógica de la aplicación
+    - Pueden contener reglas de negocio, aunque en muchos proyectos se mantienen como **_modelos simples sin lógica compleja_**
+    - Su estructura responde a las **necesidades de la aplicación**, no a las limitaciones externas
+    - No tienen anotaciones de librerías externas
+    - **Ejemplo**: `Movie`, que solo tiene los campos relevantes para la lógica de la aplicación
 
-En la práctica, los repositorios suelen transformar los modelos de datos (DTOs) en modelos de dominio al obtener información, y viceversa al guardarla, manteniendo así la capa de dominio aislada de los detalles de implementación de las fuentes de datos.
+#### Transformación entre capas
+En la práctica, los Repositorios se apoyan en **_mappers_** para transformar los Modelos de Datos en Modelos de Dominio al obtener información, y viceversa al guardarla, manteniendo así la **_capa de Dominio aislada de los detalles de implementación de las fuentes de datos (capa de Data)_**.
+
+- API → ``MovieDto`` → **_mapper_** → ``Movie`` 
+- DB → ``MovieEntity`` → **_mapper_** → ``Movie`` 
+- Dominio → **_mapper_** → ``MovieEntity`` (si se guarda localmente)
 
 ### Ejemplo estructura
 Estructura de paquetes para una supuesta app destinada a mostrar una lista de películas, ver el detalle de una película, agregar una película a favoritos, etc.
