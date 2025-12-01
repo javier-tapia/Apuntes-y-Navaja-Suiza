@@ -10,6 +10,7 @@
   * [*Callback*](#callback)
   * [*Casting* (*cast*)](#casting-cast)
   * [CDN (*Content Delivery Network*)](#cdn-content-delivery-network)
+  * [*Claims* (reclamos)](#claims-reclamos)
   * [Código binario](#código-binario)
   * [Código máquina](#código-máquina)
   * [Compatibilidad binaria](#compatibilidad-binaria)
@@ -21,6 +22,7 @@
   * [Expresión (*expression*)](#expresión-expression)
   * [Funciones vs Métodos](#funciones-vs-métodos)
   * [HTTP (*HyperText Transfer Protocol*)](#http-hypertext-transfer-protocol)
+  * [JWT (*JSON Web Token*)](#jwt-json-web-token)
   * [Latencia](#latencia)
   * [Objeto compuesto](#objeto-compuesto)
   * [Parseo (*parsing*)](#parseo-parsing)
@@ -85,6 +87,16 @@ Conversión explícita de un tipo de dato a otro. Es decir, se le avisa al compi
 Red distribuida de servidores que **almacena, replica y entrega contenido** (como videos, imágenes o archivos estáticos) desde ubicaciones geográficas cercanas al usuario.  
 Su objetivo es **reducir la [latencia](#latencia)** y **optimizar la entrega de recursos** a través del protocolo [HTTP (o HTTPS)](#http-hypertext-transfer-protocol), mejorando la velocidad, estabilidad y escalabilidad del servicio.
 
+## *Claims* (reclamos)
+Son simplemente **_pares clave-valor incluidos dentro de un token_** (generalmente un [JWT](#jwt-json-web-token)) que describen propiedades verificadas sobre el usuario o sobre el _token_ mismo.
+
+Ejemplos de _claims_:
+
+- ``sub``: ID único del usuario. 
+- ``email``: Correo. 
+- ``iss``: Quién emitió el _token_. 
+- ``exp``: Cuándo expira el _token_.
+
 ## Código binario
 Cualquier ***representación de datos que pueda ser entendida directamente por una computadora***, que típicamente es en forma de ***ceros y unos***. Esto incluye, entre otras cosas:
 
@@ -135,6 +147,19 @@ Las *extension functions* se utilizan como si fueran métodos y proporcionan una
 ## HTTP (*HyperText Transfer Protocol*)
 Protocolo que define cómo se **transfieren y solicitan datos** entre un cliente (por ejemplo, un navegador o aplicación móvil) y un servidor web.  
 **HTTPS** (***HTTP Secure***) es su versión segura, la cual utiliza [**_TLS/SSL_**](#tlsssl) para **cifrar la comunicación** y garantizar la **confidencialidad, integridad y autenticación** de los datos transmitidos.
+
+## JWT (*JSON Web Token*)
+Es un formato estándar de _token_, compuesto por tres partes codificadas en Base64:
+
+1. **_Header_** :arrow_right: Metadatos (algoritmo, tipo de _token_)
+2. **_Payload_** :arrow_right: Los _claims_ ([reclamos](#claims-reclamos)) 
+3. **_Signature_** :arrow_right: Firma digital para verificar autenticidad
+
+Ventajas:
+
+- Portable 
+- Firmado digitalmente 
+- No requiere consultar al servidor para validar su integridad (solo la firma)
 
 ## Latencia
 Tiempo que transcurre entre que se envía una señal o dato y el momento en que se recibe o procesa la respuesta. En el contexto de un _streaming_, representa el retraso entre la captura del contenido y su visualización en el dispositivo del usuario.
