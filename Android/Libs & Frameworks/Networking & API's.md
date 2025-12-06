@@ -55,6 +55,23 @@
       * [10. Errores comunes](#10-errores-comunes)
       * [Diagrama de Secuencia de ejemplo](#diagrama-de-secuencia-de-ejemplo)
   * [Firebase](#firebase)
+  * [Sentry](#sentry)
+    * [Características Principales](#características-principales)
+    * [Cómo se integra con Android](#cómo-se-integra-con-android)
+      * [1. Configuración en la Plataforma Sentry](#1-configuración-en-la-plataforma-sentry)
+      * [2. Adición de Dependencias Gradle](#2-adición-de-dependencias-gradle)
+      * [3. Inicialización del SDK](#3-inicialización-del-sdk)
+      * [4. Integración con *Gradle Plugin*](#4-integración-con-gradle-plugin)
+      * [5. Monitorización NDK (Opcional)](#5-monitorización-ndk-opcional)
+      * [6. Uso del Asistente (*Sentry Wizard*)](#6-uso-del-asistente-sentry-wizard)
+  * [Segment](#segment)
+    * [Características Principales](#características-principales-1)
+    * [Cómo se integra con Android](#cómo-se-integra-con-android-1)
+      * [1. Configuración del Origen (*Source*) en Segment](#1-configuración-del-origen-source-en-segment)
+      * [2. Integración del SDK en Gradle](#2-integración-del-sdk-en-gradle)
+      * [3. Inicialización en la App](#3-inicialización-en-la-app)
+      * [4. Implementación de Seguimiento (*Tracking*)](#4-implementación-de-seguimiento-tracking)
+      * [5. Activación de Destinos (*Destinations*)](#5-activación-de-destinos-destinations)
 <!-- TOC -->
 
 ---
@@ -1210,3 +1227,201 @@ sequenceDiagram
 
 ## Firebase
 
+
+## Sentry
+> 🔍 Referencia:  
+> https://sentry.io/welcome/
+
+Es una plataforma de _software_ de **código abierto** y un **servicio alojado (SaaS)** diseñado para ayudar a los desarrolladores a **rastrear, monitorear y resolver errores y problemas de rendimiento en sus aplicaciones en tiempo real**.
+
+### Características Principales
+- **Monitorización de Errores (_Error Tracking_):** Captura automáticamente excepciones no controladas (*uncaught exceptions*), fallos (*crashes*) y otros errores a medida que ocurren en la aplicación.
+- **Monitorización del Rendimiento (APM):** Permite medir métricas clave, identificar cuellos de botella y analizar transacciones lentas (como cargas de página o llamadas a API), proporcionando un seguimiento distribuido a través de todo el *stack* de la aplicación.
+- **Contexto Detallado:** Adjunta información valiosa a cada error o evento de rendimiento, incluyendo *stack traces* completos, estado del dispositivo (OS, memoria, batería), acciones del usuario ("*breadcrumbs*" o "migas de pan"), y el *commit* exacto que pudo introducir el error.
+- **Alertas en Tiempo Real:** Notifica a los equipos de desarrollo instantáneamente a través de herramientas de colaboración como Slack, GitHub o Jira cuando surgen nuevos problemas o regresiones.
+
+### Cómo se integra con Android
+La integración de Sentry con una aplicación Android se logra principalmente a través del uso de su **SDK nativo para Android** (compatible con Kotlin y Java), el cual se integra en el sistema de construcción de la aplicación (Gradle).  
+Una vez integrado, el SDK escucha automáticamente los fallos y errores, y los reporta al _dashboard_ centralizado de Sentry, proporcionando un contexto completo para identificar y resolver el problema rápidamente.
+
+#### 1. Configuración en la Plataforma Sentry
+Se crea un proyecto de tipo Android en la interfaz de Sentry. Esto genera una clave de cliente única llamada **DSN** (**_Data Source Name_**), que es esencial para conectar la app con el servidor de Sentry.
+
+#### 2. Adición de Dependencias Gradle
+Se añaden las dependencias del SDK de Sentry al archivo `build.gradle` (o `build.gradle.kts`) de la aplicación Android.
+
+📌 Ejemplo:
+
+```kotlin
+dependencies {
+    implementation("io.sentry:sentry-android:7.15.0")
+}
+```
+
+#### 3. Inicialización del SDK
+El SDK se inicializa con el DSN en el código de la aplicación, generalmente en la clase `Application` o la actividad principal.
+
+📌 Ejemplo:
+
+1. En la clase que hereda de ``Application``
+```kotlin
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+
+        Sentry.init { options ->
+            options.dsn = "https://TU_DSN_AQUI.ingest.sentry.io/123456"
+            options.tracesSampleRate = 1.0  // (Opcional) habilita performance monitoring
+        }
+    }
+}
+```
+
+2. En el ``Manifest``
+```xml
+<application
+    android:name=".MyApp"
+    ... >
+</application>
+```
+
+#### 4. Integración con *Gradle Plugin*
+Para aplicaciones Android ofuscadas con **_ProGuard o R8_**, Sentry proporciona un *plugin* de Gradle que automatiza la carga de los archivos de mapeo (*mapping files*) al servidor de Sentry durante el proceso de CI/CD. Esto es crucial para **desofuscar** los *stack traces* y hacerlos legibles para los desarrolladores.  
+Este plugin se agrega en el archivo ``build.gradle.kts(root)``.
+
+📌 Ejemplo:
+
+```kotlin
+plugins {
+    id("io.sentry.android.gradle") version "4.9.0"
+}
+```
+
+#### 5. Monitorización NDK (Opcional)
+Sentry también ofrece integración **NDK** (**_Native Development Kit_**) para capturar fallos que ocurren en código C/C++ nativo utilizado en la aplicación.
+
+#### 6. Uso del Asistente (*Sentry Wizard*)
+Para simplificar el proceso, Sentry ofrece una herramienta de línea de comandos (`sentry-wizard`) que puede automatizar la mayoría de estos cambios de configuración en el proyecto Android.
+
+## Segment
+> 🔍 Referencia:  
+> https://segment.com/
+
+Es una **Plataforma de Datos de Clientes** (**CDP**, por sus siglas en inglés) cuyo propósito principal es **_recopilar, unificar, gobernar y enrutar datos de clientes de múltiples fuentes_** (sitios web, aplicaciones móviles, servidores _backend_, etc.) a cientos de herramientas de análisis, _marketing_ y almacenamiento de datos, todo con una única implementación de código.
+
+En esencia, Segment **_resuelve el problema de los "silos de datos"_**, permitiendo a las empresas tener una "vista única y completa del cliente" (perfil de cliente 360 grados) para potenciar la personalización, la segmentación de audiencia y la toma de decisiones basada en datos. Esta arquitectura permite a los equipos de ingeniería implementar el seguimiento de datos **_una sola vez_**, mientras que los equipos de negocio pueden experimentar y añadir nuevas herramientas de análisis o _marketing_ libremente.
+
+### Características Principales
+- **Recopilación Centralizada:** Utiliza una API o SDKs para capturar datos de eventos (acciones del usuario, rasgos de usuario, etc.) de manera uniforme en todas las plataformas.
+- **Unificación de Identidades (_Identity Resolution_):** Combina datos de un mismo usuario provenientes de diferentes puntos de contacto (por ejemplo, su actividad en la web y su actividad en la app Android) en un solo perfil coherente.
+- **Gestión de Esquemas (_Schema Management_):** Ayuda a los equipos a definir y gobernar la estructura de los datos que están rastreando, asegurando la consistencia y calidad de los datos.
+- **Activación de Datos (_Data Activation_):** Envía los datos unificados a más de 200 herramientas asociadas (_Google Analytics_, _Mixpanel_, _Salesforce_, _Sentry_, plataformas publicitarias, etc.) con solo "pulsar un interruptor", sin necesidad de escribir código adicional para cada integración individual.
+
+### Cómo se integra con Android
+El proceso se realiza mediante el uso del **SDK nativo de Segment para Android** (actualmente, el [**Analytics-Kotlin SDK**](https://segment.com/docs/connections/sources/catalog/libraries/mobile/kotlin-android/) es el recomendado para nuevos proyectos).
+
+#### 1. Configuración del Origen (*Source*) en Segment
+En el panel de control de _Twilio Segment_, se configura una nueva "**Fuente**" (**_Source_**) de tipo "**_Kotlin (Android)_**". Esto proporciona una clave de escritura (`Write Key`) única para la aplicación.
+
+#### 2. Integración del SDK en Gradle
+El SDK se añade como una dependencia en el archivo `build.gradle` o `build.gradle.kts` del proyecto Android, la cual se descarga desde _Maven Central_.
+
+📌 Ejemplo:
+
+```kotlin
+dependencies {
+    implementation("com.segment.analytics.kotlin:android:1.11.7")
+}
+```
+
+#### 3. Inicialización en la App
+El SDK se inicializa en la aplicación Android con la `Write Key` obtenida en el paso 1.
+
+📌 Ejemplo:
+
+1. En la clase que hereda de ``Application``
+```kotlin
+import android.app.Application
+import com.segment.analytics.kotlin.android.Analytics
+import com.segment.analytics.kotlin.core.Analytics as AnalyticsCore
+
+class MyApp : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+
+        Analytics(this) {
+            writeKey = "YOUR_WRITE_KEY"
+            trackApplicationLifecycleEvents = true
+            collectDeviceId = true
+        }
+
+        // Opcional, útil para desarrollo
+        AnalyticsCore.debug = true
+    }
+}
+```
+
+2. En el ``Manifest``
+```xml
+<application
+    android:name=".MyApp"
+    ... >
+</application>
+```
+
+#### 4. Implementación de Seguimiento (*Tracking*)
+Se añaden llamadas específicas a la API de Segment en puntos clave de la aplicación para rastrear eventos y propiedades del usuario. Los tres métodos principales son:
+- `track()`: Para registrar acciones que el usuario realiza (ej. "Producto Visto", "Pedido Completado").
+- `identify()`: Para asociar acciones con un usuario específico y registrar sus rasgos (ej. nombre, correo electrónico, plan de suscripción).
+- `screen()`: Para registrar qué pantallas ha visitado el usuario dentro de la app.
+
+📌 Ejemplos:
+
+1. ``track()`` — Registrar acciones del usuario
+```kotlin
+import com.segment.analytics.kotlin.android.Analytics
+
+fun onProductViewed(productId: String, productName: String) {
+    Analytics.track(
+        event = "Producto Visto",
+        properties = buildJsonObject {
+            put("id", productId)
+            put("nombre", productName)
+        }
+    )
+}
+```
+
+2. ``identify()`` — Identificar al usuario + rasgos
+```kotlin
+import com.segment.analytics.kotlin.android.Analytics
+
+fun identifyUser(userId: String, email: String, name: String) {
+    Analytics.identify(
+        userId = userId,
+        traits = buildJsonObject {
+            put("email", email)
+            put("name", name)
+            put("plan", "premium")
+        }
+    )
+}
+```
+
+3. ``screen()`` — Registrar pantallas visitadas
+```kotlin
+import com.segment.analytics.kotlin.android.Analytics
+
+fun trackScreenHome() {
+    Analytics.screen(
+        screenName = "Home",
+        properties = buildJsonObject {
+            put("seccion_destacada", true)
+        }
+    )
+}
+```
+
+#### 5. Activación de Destinos (*Destinations*)
+Una vez que los datos fluyen de la app a Segment, el equipo de _marketing_ o producto puede activar integraciones con otras herramientas (ej. enviar todos los eventos de "Pedido Completado" a _Google Ads_ o a un *data warehouse*) simplemente configurándolo en la interfaz web de Segment, sin cambios en el código de la app.
