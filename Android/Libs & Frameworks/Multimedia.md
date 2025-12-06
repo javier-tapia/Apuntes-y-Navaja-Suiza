@@ -2,9 +2,11 @@
 
 ***Index***:
 <!-- TOC -->
-  * [*Players: ExoPlayer* y *JW Player*](#players-exoplayer-y-jw-player)
+  * [*Players: ExoPlayer*, *JW Player* y *Bitmovin*](#players-exoplayer-jw-player-y-bitmovin)
+    * [DRM (*Digital Rights Management*)](#drm-digital-rights-management)
     * [🎬 *ExoPlayer*](#-exoplayer)
     * [🎥 *JW Player*](#-jw-player)
+    * [🎞️ *Bitmovin Player*](#-bitmovin-player)
     * [🧭 Comparativa general](#-comparativa-general)
     * [📚 Recursos recomendados](#-recursos-recomendados)
   * [Grabación y captura multimedia: *CameraX* y *MediaRecorder*](#grabación-y-captura-multimedia-camerax-y-mediarecorder)
@@ -48,9 +50,22 @@
 
 ---
 
-## *Players: ExoPlayer* y *JW Player*
+## *Players: ExoPlayer*, *JW Player* y *Bitmovin*
+> 💡 **Recomendación:** Para la mayoría de los proyectos modernos en Kotlin/Android, **ExoPlayer** es la opción ideal, salvo que se requiera un sistema comercial de _streaming_ con publicidad y analíticas integradas (caso en el que **JW Player** o **Bitmoving** puede ser más conveniente).
 
-> 💡 **Recomendación:** Para la mayoría de los proyectos modernos en Kotlin/Android, **ExoPlayer** es la opción ideal, salvo que se requiera un sistema comercial de _streaming_ con publicidad y analíticas integradas (caso en el que **JW Player** puede ser más conveniente).
+### DRM (*Digital Rights Management*)
+Es un conjunto de tecnologías utilizadas para **_proteger contenido audiovisual y controlar su uso_** dentro de una aplicación.  
+Cuando un recurso está protegido por DRM, **_el video se distribuye cifrado_**, y solo puede ser descifrado por un módulo autorizado en el dispositivo. Esto **_evita la copia, extracción o reproducción no autorizada del contenido_**.
+
+En entornos móviles y de _streaming_, los sistemas DRM más utilizados son:
+
+- **_Widevine_** (Google)
+- **_FairPlay_** (Apple)
+- **_PlayReady_** (Microsoft)
+
+A nivel conceptual, todos cumplen el mismo propósito :arrow_right: Asegurar que el contenido solo pueda ser reproducido por usuarios y dispositivos autorizados.
+
+En reproductores como ExoPlayer, JW Player o Bitmovin, la compatibilidad con estos sistemas permite la **_reproducción segura de contenidos premium o licenciados_**.
 
 ### 🎬 *ExoPlayer*
 Es una librería de reproducción multimedia de código abierto desarrollada y mantenida por Google.  
@@ -117,24 +132,104 @@ val jwPlayerView = JWPlayerView(this, playerConfig)
 setContentView(jwPlayerView)
 ```
 
+### 🎞️ *Bitmovin Player*
+Es un reproductor multimedia multiplataforma, altamente configurable y orientado a escenarios profesionales de _streaming_ donde se requieren métricas avanzadas, optimización para múltiples dispositivos y compatibilidad con los principales estándares de video adaptativo (DASH, HLS) y DRM.  
+Se integra fácilmente en Android (nativo y Compose), iOS, Web y Smart TVs, y ofrece un SDK con API extensible, analíticas integradas y soporte de _low-latency_.
+
+**Características principales:**
+- Compatibilidad con **protocolos adaptativos**: MPEG-DASH, HLS, _Smooth Streaming_. 
+- Soporte DRM avanzado: _Widevine_, _FairPlay_, _PlayReady_, CPIX. 
+- Reproducción de **baja latencia**: _Low Latency_ HLS y _Low Latency_ DASH. 
+- API modular: amplia capacidad de personalización, configuración y escucha de eventos. 
+- Analíticas integradas: métricas de _startup time_, _rebuffering_, _bitrate switching_, calidad, errores, sesiones, entre otros. 
+- **Publicidad**: Compatible con VAST, VMAP, VPAID, Google IMA. 
+- Amplio soporte **multiplataforma**: Android, iOS, Web, Roku, Tizen, WebOS, tvOS, FireTV. 
+- ABR avanzado: algoritmos optimizados para seleccionar la mejor calidad con mínima latencia y sin cortes.
+
+**Ventajas:**
+- Alta calidad profesional: ideal para servicios OTT, _broadcasters_ o apps con requisitos estrictos. 
+- Gran flexibilidad: permite controlar casi todos los aspectos del _pipeline_ de reproducción. 
+- SDK muy completo: _callbacks_ detallados, configuración granular y herramientas de depuración. 
+- Integración nativa con **_Bitmovin Analytics_** sin necesidad de instrumentación adicional. 
+- Excelente soporte de DRM y estándares de la industria.
+
+**Limitaciones:**
+- Es un **servicio pago**, por lo que puede no ajustarse a proyectos personales o presupuestos limitados. 
+- Mayor **complejidad de configuración** en comparación con otros _players_ más _plug-and-play_. 
+- **Documentación amplia pero dispersa**, requiere cierta familiaridad para aprovechar todo su potencial. 
+- **Tamaño del SDK** superior al de soluciones más livianas como _ExoPlayer_ o _Media3_.
+
+**Ejemplo:**
+
+```kotlin
+// build.gradle
+dependencies {
+    implementation("com.bitmovin.player:player:3.31.0")
+}
+
+// Activity o Fragment
+class MainActivity : AppCompatActivity() {
+    private lateinit var player: BitmovinPlayer
+    private lateinit var playerView: PlayerView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // 1. Configuración básica del Player
+        val config = PlayerConfig(
+            licenseKey = "YOUR_BITMOVIN_LICENSE_KEY"
+        )
+
+        // 2. Inicialización
+        player = BitmovinPlayerFactory.create(this, config)
+
+        // 3. Obtención de la vista del Player
+        playerView = findViewById(R.id.bitmovinPlayerView)
+        playerView.player = player
+
+        // 4. Fuente de contenido
+        val sourceConfig = SourceConfig.fromUrl("https://example.com/stream.mpd")
+
+        // 5. Carga del contenido
+        player.load(sourceConfig)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        player.play()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        player.pause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        player.destroy()
+    }
+}
+```
+
 ### 🧭 Comparativa general
 
-| Característica          | ExoPlayer                | JW Player      |
-|-------------------------|--------------------------|----------------|
-| Licencia                | Apache 2.0 (gratis)      | Comercial      |
-| Soporte oficial         | Google                   | JW Player Inc. |
-| Personalización         | Muy alta                 | Media          |
-| DRM                     | Sí (Widevine, PlayReady) | Sí             |
-| Monetización            | No nativa                | Incluida       |
-| Analytics               | Personalizable           | Incluido       |
-| Integración con Compose | Sí                       | No (usa Views) |
-| Comunidad / Open Source | Amplia                   | Cerrada        |
+| Característica          | ExoPlayer                | JW Player      | Bitmovin Player                    |
+|-------------------------|--------------------------|----------------|------------------------------------|
+| Licencia                | Apache 2.0 (gratis)      | Comercial      | Comercial                          |
+| Soporte oficial         | Google                   | JW Player Inc. | Bitmovin GmbH                      |
+| Personalización         | Muy alta                 | Media          | Muy alta                           |
+| DRM                     | Sí (Widevine, PlayReady) | Sí             | Sí (Widevine, FairPlay, PlayReady) |
+| Monetización            | No nativa                | Incluida       | Incluida (Ads, IMA, VAST/VMAP)     |
+| Analytics               | Personalizable           | Incluido       | Incluido (Bitmovin Analytics)      |
+| Integración con Compose | Sí                       | No (usa Views) | Sí (vía AndroidView)               |
+| Comunidad / Open Source | Amplia                   | Cerrada        | Cerrada                            |
 
 ### 📚 Recursos recomendados
-- [Guía oficial de ExoPlayer](https://developer.android.com/guide/topics/media/exoplayer)
-- [JW Player Android SDK](https://developer.jwplayer.com/sdk/android/)
+- [Guía oficial de Media3 ExoPlayer](https://developer.android.com/media/media3/exoplayer)
+- [Documentación JW Player](https://docs.jwplayer.com/platform/docs/platform-welcome)
+- [Documentación SDK Bitmovin para Android](https://bitmovin.com/video-player/android-sdk/)
 - [Repo de AndroidX Media](https://github.com/androidx/media)
-
 
 ## Grabación y captura multimedia: *CameraX* y *MediaRecorder*
 
