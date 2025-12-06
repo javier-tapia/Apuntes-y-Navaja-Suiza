@@ -45,6 +45,11 @@ private fun setupSampleFragment() {
         showFragment(fragmentTag)
     } else {
         val sampleFragment = SampleFragment.newInstance()
+        val bundle = Bundle().apply {
+            putString("some_query_key", someJson.encodeUrl())
+            putString("other_query_key", otherJson.encodeUrl())
+        }
+        sampleFragment.arguments = bundle
         addFragment(sampleFragment, fragmentTag)
     }
 }
