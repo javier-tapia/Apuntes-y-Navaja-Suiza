@@ -17,13 +17,26 @@
 Transformar características del lenguaje Java moderno (como _lambdas_ o API’s de `java.time`) en código compatible con versiones antiguas de Android, cuyos entornos de ejecución (ART/Dalvik) no las soportan de forma nativa. Ver también la definición para el [_Software_ en general](Software%20in%20general.md#desugaring)
 
 ## *Insets*
-Insets describe **_how much the content of your app needs to be padded to avoid overlapping with parts of the system UI or physical device features_**. Because there are different parts of the system UI that may be visible at any given time, there are also different types of insets. **_These include the status bars, the navigations bars, the software keyboard, and more_**.  
-System UI is dynamic, and therefore, insets are dynamic as well. How big they are, where they are, and how they change dependes on the system configuration and windowing environment.
-
-> 🔍 Referencias:  
+> 🔍 Referencias:
 > - https://proandroiddev.com/understanding-window-insets-in-jetpack-compose-46245b9ceffa
 > - https://developer.android.com/develop/ui/compose/quick-guides/content/video/insets-in-compose
-> 
+
+Describen **_las áreas que la app debe respetar para evitar superponerse con partes de la UI del Sistema (System UI) o con características físicas del dispositivo_**.  
+
+Como **_la UI del Sistema es dinámica_** (sus componentes pueden aparecer o desaparecer en distintos momentos), **_los insets también cambian en función de las áreas que esta genera_**. Entre ellas se encuentran las zonas asociadas a **_la barra de estado (status bar), la barra de navegación (navigation bar), el teclado en pantalla (software keyboard) y otros componentes del sistema_**.  
+El tamaño, la posición y la manera en que varían los _insets_ dependen de la configuración del dispositivo y del entorno de ventanas (_windowing environment_).
+
+```kotlin
+Column(
+    modifier = Modifier
+        .fillMaxSize()
+        .padding(paddingValues)
+        .consumeWindowInsets(paddingValues)
+) { ... }
+```
+
+1. `padding(paddingValues)`: Este modificador aplica el espaciado recibido. En el contexto de un `Scaffold`, `paddingValues` contiene los valores necesarios para evitar que el contenido quede oculto detrás de las barras del sistema. Al aplicarlo, "se empuja" el contenido del composable para que sea visible.
+2. `consumeWindowInsets(paddingValues)`: Después de haber aplicado el `padding`, este modificador **_"consume" esos _insets_ y evita su propagación hacia los hijos_**. Indica a los composables internos que ya se encargó de aplicar un espaciado para las barras del sistema, por lo cual no necesitan volver a hacerlo. Básicamente, **_evita que se aplique un espaciado doble_**.
 
 ## `MessageQueue`, `Looper` and `Handler`
 TODO...
