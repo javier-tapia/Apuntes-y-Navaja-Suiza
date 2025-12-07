@@ -24,6 +24,7 @@ En el mundo Android, estas características hacen de *Flow* una excelente altern
   * [*Cold Flow* vs *Hot Flow*](#cold-flow-vs-hot-flow)
   * [*`StateFlow` vs `SharedFlow`*](#stateflow-vs-sharedflow)
   * [`tryEmit` comparado con `emit`](#tryemit-comparado-con-emit)
+  * [La función ``combine``](#la-función-combine)
   * [Anotaciones y funciones usuales](#anotaciones-y-funciones-usuales)
     * [`@Transient`](#transient)
     * [`@Volatile`](#volatile)
@@ -379,6 +380,21 @@ Ambos son *dispatchers* utilizados en pruebas de corrutinas en Kotlin, pero tien
 
 - **`emit`**: Es una **_función suspendida que espera hasta que el evento pueda ser emitido_** (si hay un _collector_ disponible y espacio en el _buffer_).
 - **`tryEmit`**: Es una **_función no suspendida que intenta emitir el evento inmediatamente_**. Si el evento fue emitido con éxito (haya o no haya _collectors_), devuelve **`true`**. Si el evento no pudo ser emitido (porque el _buffer_ está lleno y se está usando la estrategia de _overflow_ ``BufferOverflow.SUSPEND``), los eventos adicionales simplemente se descartan (retornando **`false`**), sin suspender ni esperar. Esta es la principal diferencia con ``emit`` y la razón por la que **_se usa para eventos de alta frecuencia y no críticos_**. La función ofrece una solución de **_"intentar y olvidar" (fire-and-forget)_**, donde no es necesario bloquear el hilo emisor si un evento no se puede entregar de inmediato.
+
+## La función [``combine``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/combine.html)
+Retorna un ``Flow`` cuyos valores se generan con la función ``transform`` (la _lambda_), **combinando los valores emitidos más recientemente por cada _flow_**.
+
+**Ejemplo**:
+```kotlin
+val flow = flowOf(1, 2).onEach { delay(10) }
+val flow2 = flowOf("a", "b", "c").onEach { delay(15) }
+
+combine(flow, flow2) { i, s ->
+    i.toString() + s
+}.collect { combinedValue ->
+    println(combinedValue) // 1a 2a 2b 2c
+}
+```
 
 ## Anotaciones y funciones usuales
 ### [`@Transient`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-transient/)
