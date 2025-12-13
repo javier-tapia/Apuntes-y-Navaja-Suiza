@@ -2,7 +2,7 @@
 
 ***Index***:
 <!-- TOC -->
-  * [*Players: ExoPlayer*, *JW Player* y *Bitmovin*](#players-exoplayer-jw-player-y-bitmovin)
+  * [*Video Players: ExoPlayer*, *JW Player* y *Bitmovin*](#video-players-exoplayer-jw-player-y-bitmovin)
     * [DRM (*Digital Rights Management*)](#drm-digital-rights-management)
     * [🎬 *ExoPlayer*](#-exoplayer)
     * [🎥 *JW Player*](#-jw-player)
@@ -50,7 +50,7 @@
 
 ---
 
-## *Players: ExoPlayer*, *JW Player* y *Bitmovin*
+## *Video Players: ExoPlayer*, *JW Player* y *Bitmovin*
 > 💡 **Recomendación:** Para la mayoría de los proyectos modernos en Kotlin/Android, **ExoPlayer** es la opción ideal, salvo que se requiera un sistema comercial de _streaming_ con publicidad y analíticas integradas (caso en el que **JW Player** o **Bitmoving** puede ser más conveniente).
 
 ### DRM (*Digital Rights Management*)
@@ -68,8 +68,17 @@ A nivel conceptual, todos cumplen el mismo propósito :arrow_right: Asegurar que
 En reproductores como ExoPlayer, JW Player o Bitmovin, la compatibilidad con estos sistemas permite la **_reproducción segura de contenidos premium o licenciados_**.
 
 ### 🎬 *ExoPlayer*
-Es una librería de reproducción multimedia de código abierto desarrollada y mantenida por Google.  
+Originalmente, fue una librería independiente de Google para reproducción de medios en Android. A partir de 2022, Google migró _ExoPlayer_ a la librería **_AndroidX Media3_** (``androidx.media3``).  
 Es el reproductor recomendado oficialmente para Android y Android TV, y reemplaza gradualmente al reproductor nativo `MediaPlayer`, ofreciendo mayor flexibilidad y soporte para formatos modernos.
+
+**Estructura *AndroidX Media3***:  
+androidx.media3  
+├── media3-common          # Clases comunes  
+├── media3-exoplayer       # ExoPlayer (motor de reproducción)  
+├── media3-ui              # Componentes UI (PlayerView)  
+├── media3-dash            # Soporte DASH  
+├── media3-hls             # Soporte HLS  
+└── media3-session         # Media session
 
 **Características principales:**
 - Soporte extendido para formatos: MP4, MP3, AAC, FLAC, DASH, HLS, _SmoothStreaming_, etc.
