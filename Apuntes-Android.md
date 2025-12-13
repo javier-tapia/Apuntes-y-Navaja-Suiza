@@ -67,9 +67,11 @@
   * [Navegación](#navegación)
   * [Accesibilidad (*a11y*)](#accesibilidad-a11y)
   * [*Background & System*](#background--system)
-  * [Persistencia de datos](#persistencia-de-datos)
-  * [*Networking & APIs*](#networking--apis)
+  * [*Firebase*](#firebase)
   * [Multimedia](#multimedia)
+  * [*Networking & Monitoring*](#networking--monitoring)
+  * [Persistencia de datos](#persistencia-de-datos)
+  * [*Security*](#security)
   * [*Testing*](#testing)
     * [Consideraciones sobre los *tests*](#consideraciones-sobre-los-tests)
   * [Referencias y Fuentes](#referencias-y-fuentes)
@@ -1830,25 +1832,37 @@ Existen tres tipos fundamentales de presentaciones de menús o acciones en todas
 
 ## *Background & System*
 
-- Ver [*Background & System*](Android/Libs%20&%20Frameworks/Background%20&%20System.md)
+- Ver [*Background & System*](Android/Libs,%20APIs%20&%20Frameworks/Background%20&%20System.md)
 
 ---
 
-## Persistencia de datos
+## *Firebase*
 
-- Ver [Persistencia de datos](Android/Libs%20&%20Frameworks/Persistencia%20de%20datos.md)
-
----
-
-## *Networking & APIs*
-
-- Ver [*Networking & APIs*](Android/Libs%20&%20Frameworks/Networking%20&%20APIs.md)
+- Ver [*Firebase*](Android/Libs,%20APIs%20&%20Frameworks/Firebase.md)
 
 ---
 
 ## Multimedia
 
-- Ver [Multimedia](Android/Libs%20&%20Frameworks/Multimedia.md)
+- Ver [Multimedia](Android/Libs,%20APIs%20&%20Frameworks/Multimedia.md)
+
+---
+
+## *Networking & Monitoring*
+
+- Ver [*Networking & Monitoring*](Android/Libs,%20APIs%20&%20Frameworks/Networking%20&%20Monitoring.md)
+
+---
+
+## Persistencia de datos
+
+- Ver [Persistencia de datos](Android/Libs,%20APIs%20&%20Frameworks/Persistencia%20de%20datos.md)
+
+---
+
+## *Security*
+
+- Ver [*Security*](Android/Libs,%20APIs%20&%20Frameworks/Security.md)
 
 ---
 

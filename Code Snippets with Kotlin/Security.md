@@ -1,8 +1,5 @@
 <h1>Security</h1>
 
-> 🔍 Referencia:  
-> https://developer.android.com/security
-
 ***Index***: 
 <!-- TOC -->
   * [Integración con Google - OAuth + PKCE](#integración-con-google---oauth--pkce)

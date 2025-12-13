@@ -94,7 +94,7 @@ plugins {
 
 ## Inicialización de *Firebase*
 > ℹ️ Nota:  
-> **Usar solamente si la app requiere forzar la inicialización** (ver [acá](/Android/Libs%20&%20Frameworks/Networking%20&%20API's.md#sobre-la-inicialización-de-firebase)).
+> **Usar solamente si la app requiere forzar la inicialización** (ver [acá](/Android/Libs,%20APIs%20&%20Frameworks/Firebase.md#sobre-la-inicialización-de-firebase)).
 
 ### Implementación: ``FirebaseInit``
 ```text
