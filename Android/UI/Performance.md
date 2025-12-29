@@ -356,16 +356,18 @@ Con Android Studio, se pueden convertir imágenes GIF estáticas o BMP, JPG o PN
 > 🔍 Referencia:  
 > https://developer.android.com/topic/performance/vitals
 
-Resumen de factores que considera el panel de _Android Vitals_:
-- **_Estabilidad_**: Tasa de bloqueos y errores ANR.
-- **_Tiempo de procesamiento_**: Renderizado lento y pantallas congeladas.
-- **_Consumo de batería_**: **_wake locks_** (proceso que funciona en segundo plano y evita que el dispositivo entre en modo de ahorro de energía o apague la pantalla) y **_wake ups_** (llamadas al ``AlarmManager`` de Android para "despertar" al dispositivo) **_excesivos_**.
-- **_Tiempo de inicio_** de la aplicación
-- **_Denegación de Permisos_**
+Panel de métricas de _Google Play_ que afecta directamente el posicionamiento (ASO). Superar los umbrales de "mal comportamiento" conlleva penalizaciones de visibilidad:
+- **Estabilidad**: Tasa de errores ANR y _Crashes_ percibidos por el usuario (umbral crítico: <1.09% y <0.47% respectivamente).
+- **Consumo de batería**:
+  - **_Stuck Wakelocks_**: Penalización por **_Partial Wake Locks_** de **más de 2 horas continuas** (CPU activa innecesariamente).
+  - **_Excessive Wakeups_**: Más de 10 despertares por hora mediante ``AlarmManager`` con _flags_ ``WAKEUP``.
+- **Rendimiento de UI**: Renderizado lento (más del 50% de frames >16ms) y **_Frozen Frames_** (frames >700ms).
+- **Tiempo de inicio**: Medición de latencia en inicios en frío (**_Cold start_**), cálido y caliente.
+- **Permisos**: Tasa de **denegación de permisos** por parte del usuario (mide la relevancia de la solicitud).
 
 ## ``StrictMode``: Libres de ANR
 
-> 🔍 Reference:
+> 🔍 Referencia:
 > https://developer.android.com/reference/kotlin/android/os/StrictMode
 
 Realizar cualquier tipo de operaciones de bloqueo prolongado u operaciones de Entrada y Salida de disco en el hilo principal de Android puede causar problemas de ANR (_Application Not Responding_). Es posible que nosotros como programadores, ni siquiera nos demos cuenta de que tenemos un ANR potencial hasta que sea demasiado tarde y ya esté en produccion la app, para uso de los usuarios.

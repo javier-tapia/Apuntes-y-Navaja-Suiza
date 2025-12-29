@@ -31,6 +31,7 @@
     * [Paso por Referencia](#paso-por-referencia)
   * [*Polymorphism*](#polymorphism)
   * [Predicado (*predicate*)](#predicado-predicate)
+  * [*Principle of Least Privilege* (PoLP)](#principle-of-least-privilege-polp)
   * [Punteros](#punteros)
   * [*Receiver*](#receiver)
   * [Sentencia (*statement*)](#sentencia-statement)
@@ -237,6 +238,9 @@ Concepto fundamental en la **Programación Orientada a Objetos** que permite que
 
 ## Predicado (*predicate*)
 Representan funciones de argumento único que devuelven un valor booleano.
+
+## *Principle of Least Privilege* (PoLP)
+Principio general de seguridad que implica que un componente, proceso o app solo debe tener los **permisos mínimos necesarios**, **durante el menor tiempo posible**, para cumplir su función.
 
 ## Punteros
 Un **puntero** (o **referencia**) es una variable que almacena la dirección de memoria de otra variable. En lugar de contener un valor directamente, un puntero apunta a la ubicación en memoria donde se encuentra ese valor. Ver [Paso por Valor vs Paso por Referencia](https://www.notion.so/Paso-por-Valor-vs-Paso-por-Referencia-27205e8a20bc805fbc9be97fc3160141?pvs=21)

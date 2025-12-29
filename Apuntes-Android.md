@@ -70,7 +70,7 @@
   * [*Firebase*](#firebase)
   * [Multimedia](#multimedia)
   * [*Networking & Monitoring*](#networking--monitoring)
-  * [Persistencia de datos](#persistencia-de-datos)
+  * [*Persistence & Sharing*](#persistence--sharing)
   * [*Security*](#security)
   * [*Testing*](#testing)
     * [Consideraciones sobre los *tests*](#consideraciones-sobre-los-tests)
@@ -1854,9 +1854,9 @@ Existen tres tipos fundamentales de presentaciones de menús o acciones en todas
 
 ---
 
-## Persistencia de datos
+## *Persistence & Sharing*
 
-- Ver [Persistencia de datos](Android/Libs,%20APIs%20&%20Frameworks/Persistencia%20de%20datos.md)
+- Ver [*Persistence & Sharing*](Android/Libs,%20APIs%20&%20Frameworks/Persistence%20&%20Sharing.md)
 
 ---
 
