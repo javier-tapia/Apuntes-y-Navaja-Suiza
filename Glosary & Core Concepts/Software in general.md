@@ -5,7 +5,7 @@
   * [*Abstraction*](#abstraction)
   * [ABI (*Application Binary Interface*)](#abi-application-binary-interface)
   * [🛠 API vs Librería vs *Framework*](#-api-vs-librería-vs-framework)
-  * [Asincronía (Asynchrony)](#asincronía-asynchrony)
+  * [Asincronía (*Asynchrony*)](#asincronía-asynchrony)
   * [*Atomicity*](#atomicity)
   * [*Build*](#build)
   * [*Bytecode*](#bytecode)
@@ -17,7 +17,7 @@
   * [Código máquina](#código-máquina)
   * [Compatibilidad binaria](#compatibilidad-binaria)
   * [Compilación](#compilación)
-  * [Concurrencia (Concurrency)](#concurrencia-concurrency)
+  * [Concurrencia (*Concurrency*)](#concurrencia-concurrency)
   * [Copia profunda (*deep copy*)](#copia-profunda-deep-copy)
   * [Copia superficial (*shallow copy*)](#copia-superficial-shallow-copy)
   * [Deserializar (*deserialize*)](#deserializar-deserialize)
@@ -28,7 +28,7 @@
   * [JWT (*JSON Web Token*)](#jwt-json-web-token)
   * [Latencia](#latencia)
   * [Objeto compuesto](#objeto-compuesto)
-  * [Paralelismo (Parallelism)](#paralelismo-parallelism)
+  * [Paralelismo (*Parallelism*)](#paralelismo-parallelism)
   * [Parseo (*parsing*)](#parseo-parsing)
   * [Paso por Valor vs Paso por Referencia](#paso-por-valor-vs-paso-por-referencia)
     * [Paso por Valor](#paso-por-valor)
@@ -72,7 +72,7 @@ Se puede pensar **como una API, pero para el código binario**. Mientras que una
   ⚡ **Relación:** Integra librerías internas o externas y expone APIs; el desarrollador adapta su código al marco definido.  
   📌 **Ejemplos:** Jetpack Compose, Spring, Django, Angular.
 
-## Asincronía (Asynchrony)
+## Asincronía (*Asynchrony*)
 Modelo de ejecución donde una operación inicia y **no bloquea** al llamador mientras espera su resultado. El trabajo continúa “en segundo plano” y la finalización se notifica más tarde (por _callbacks_, promesas/futuros, eventos o reanudación de una corrutina). Se usa especialmente **para I/O y tareas de larga duración**.  
 Ver [Concurrencia](#concurrencia-concurrency)
 
@@ -130,7 +130,7 @@ Capacidad de un programa o componente de software para interactuar con otro en s
 ## Compilación
 Proceso que implica transformar código fuente (como el escrito en un lenguaje de programación de alto nivel) en código máquina que la CPU puede ejecutar.
 
-## Concurrencia (Concurrency)
+## Concurrencia (*Concurrency*)
 Capacidad de un sistema para **gestionar varias tareas en progreso** durante el mismo intervalo de tiempo. Las tareas pueden ejecutarse **intercaladas** (_time-slicing_) en un solo hilo o repartidas entre múltiples hilos/procesos. Es principalmente un concepto de **estructura y coordinación** (composición, sincronización, comunicación, control de acceso a recursos).  
 Ver [Paralelismo](#paralelismo-parallelism) y [Asincronía](#asincronía-asynchrony)
 
@@ -188,7 +188,7 @@ Tiempo que transcurre entre que se envía una señal o dato y el momento en que 
 ## Objeto compuesto
 Objetos que contienen otros objetos, como listas o instancias de clase
 
-## Paralelismo (Parallelism)
+## Paralelismo (*Parallelism*)
 Caso particular de concurrencia donde hay **ejecución simultánea real** de múltiples tareas o partes de una tarea, típicamente en **múltiples cores/CPUs** (o unidades de cómputo). Es principalmente un concepto de **rendimiento**: aumentar _throughput_ o reducir el tiempo total de cómputo ejecutando trabajo al mismo tiempo.  
 Ver [Concurrencia](#concurrencia-concurrency)
 
