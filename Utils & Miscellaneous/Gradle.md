@@ -26,6 +26,7 @@
   * [Useful terminal commands](#useful-terminal-commands)
     * [Dependency tree](#dependency-tree)
     * [Specific dependency](#specific-dependency)
+    * [Ver tareas disponibles en un módulo de Android](#ver-tareas-disponibles-en-un-módulo-de-android)
   * [Useful Links](#useful-links)
 <!-- TOC -->
 
@@ -370,7 +371,7 @@ Get the tree of dependencies being resolved. Useful for **`NoSuchMethodError`** 
 Optionally, add `--refresh-dependencies` to refresh the dependencies.
 
 ````bash
-    ./gradlew <MÓDULO>:dependencies --refresh-dependencies
+    ./gradlew <MODULE>:dependencies --refresh-dependencies
 ````
 
 ### Specific dependency
@@ -378,8 +379,28 @@ Get information about a specific dependency (in the example, `something`).
 You can also get information about a module (for example, `com.example.something:example-module`).
 
 ````bash
-  ./gradlew <MÓDULO>:dependencyInsight  --configuration releaseRuntimeClasspath --dependency com.example.something
+  ./gradlew <MODULE>:dependencyInsight  --configuration releaseRuntimeClasspath --dependency com.example.something
 ````
+
+### Ver tareas disponibles en un módulo de Android
+Esto **no compila nada**; solo lista tareas.
+
+```bash
+# Mac
+./gradlew <MODULE>:tasks | grep -i apk
+
+# Ejemmplo:
+./gradlew app:tasks | grep -i apk
+
+# Donde:
+# - `./gradlew` :arrow_right: Ejecuta el *Gradle Wrapper* del proyecto (usa la versión de Gradle del repo).
+# - `:app:tasks` :arrow_right: Lista las **tareas Gradle disponibles** del módulo `app`.
+# - `|` (pipe) :arrow_right: Envía esa lista como entrada al siguiente comando.
+# - `grep -i apk` :arrow_right: Filtra y muestra solo líneas que contengan `apk` (sin distinguir mayúsculas/minúsculas por `i`).
+
+# Windows (PowerShell) equivalente
+./gradlew <MODULE>:tasks | Select-String apk
+```
 
 ## Useful Links
 

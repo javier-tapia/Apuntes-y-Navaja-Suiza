@@ -4,9 +4,10 @@
 <!-- TOC -->
   * [Transferir *settings* de AS a IntelliJ y viceversa](#transferir-settings-de-as-a-intellij-y-viceversa)
   * [Cambiar de ubicación las carpetas `.android`, `.gradle`, `Sdk`](#cambiar-de-ubicación-las-carpetas-android-gradle-sdk)
-  * [Generar un APK](#generar-un-apk)
-    * [Desde AndroidStudio](#desde-androidstudio)
-    * [Con línea de comandos](#con-línea-de-comandos)
+  * [Generar *Bundles* y APKs por terminal (con *Gradle*)](#generar-bundles-y-apks-por-terminal-con-gradle)
+    * [APK “Directo” (sin *Android App Bundle*)](#apk-directo-sin-android-app-bundle)
+    * [APK Universal desde un *Android App Bundle*](#apk-universal-desde-un-android-app-bundle)
+    * [*Android App Bundle* (`.aab`)](#android-app-bundle-aab)
   * [Agregar recursos exportados de Figma a un proyecto](#agregar-recursos-exportados-de-figma-a-un-proyecto)
   * [JaCoCo en AndroidStudio](#jacoco-en-androidstudio)
     * [Agregar paquetes y/o clases al filtro de JaCoCo](#agregar-paquetes-yo-clases-al-filtro-de-jacoco)
@@ -28,15 +29,58 @@ Then in the other IDE you wish to transfer the settings to, select **File** ▶�
 ## Cambiar de ubicación las carpetas `.android`, `.gradle`, `Sdk`
 https://moradiemails.medium.com/relocating-sdk-and-gradle-directories-for-better-usage-of-android-studio-9d4d45e6ef90
 
-## Generar un APK
+## Generar *Bundles* y APKs por terminal (con *Gradle*)
+> 🔍 Ver también:  
+> - [Tipos de módulos](Librería%20-%20Creación%20&%20Uso.md#conceptos-previos-tipos-de-módulos)
+> - [*Android App Bundle* y *Performance*](../Android/UI/Performance.md#aab---android-app-bundle)
 
-### Desde AndroidStudio
-- Ve a "Build" ▶️ "Build Bundle(s) / APK(s)" ▶️ "Build APK(s)".
-- Después de que el _build_ se complete, Android Studio mostrará una notificación con un enlace "locate". Hacer clic en ese enlace para abrir el directorio que contiene el APK (que estará en `*<módulo>/build/outputs/apk/<build_type>*`, donde `*<build_type>*` es "debug" o "release" dependiendo de la configuración del _build_).
+### APK “Directo” (sin *Android App Bundle*)
+Esta forma se considera ***legacy*** y ha sido la forma de construir APKs desde los inicios de Android Studio y _Gradle_. Sigue existiendo por compatibilidad y porque es perfecto para el ciclo de desarrollo rápido (compilar -> instalar en el emulador).
 
-### Con línea de comandos
-- `./gradlew <MODULO>:packageDebugUniversalApk` o `./gradlew <MODULO>:packageReleaseUniversalApk`
-- Se guarda en `*<módulo>/build/outputs/universal_apk/debug/app-debug-universal.apk*` o `*<módulo>/build/outputs/universal_apk/release/app-release-universal.apk`*
+Genera un único APK que puede ser universal o no, dependiendo de la configuración del `build.gradle.kts` (por ejemplo, si se usa `splits`).
+
+**Comandos**:
+1. *Debug*:
+    - `./gradlew <MODULE>:assembleDebug`
+2. *Release*:
+    - `./gradlew <MODULE>:assembleRelease`
+
+**Ubicación típica**:
+- `<MODULE>/build/outputs/apk/<BUILD-TYPE>/<MODULE>-<BUILD-TYPE>.apk`
+    - Ejemplo: con `./gradlew <MODULE>:assembleDebug`, se generaría `app/build/outputs/apk/debug/app-debug.apk`
+
+### APK Universal desde un *Android App Bundle*
+La tarea `package<BUILD-TYPE>UniversalApk` es muy útil porque crea **un único APK universal** a partir de un *Android App Bundle* (`.aab`). Este APK contiene todo el código y todos los recursos (para todas las arquitecturas de CPU, densidades de pantalla, idiomas, etc.) en un solo archivo.
+
+**¿Para qué sirve?** :arrow_right: Es ideal para distribuciones internas, pruebas de QA o para subir a tiendas de aplicaciones de terceros que aún no soportan el formato `.aab`. No está optimizado para el tamaño de descarga como los APKs que genera _Google Play_, pero es muy conveniente por ser **un único archivo autoinstalable**.
+
+**Comandos**:
+1. *Debug*:
+    - `./gradlew <MODULE>:packageDebugUniversalApk`
+2. *Release*:
+  - `./gradlew <MODULE>:packageReleaseUniversalApk`
+
+**Ubicación típica**:
+- `<MODULE>/build/outputs/apk_from_bundle/<BUILD-TYPE>/<MODULE>-<BUILD-TYPE>-universal.apk`
+    - Ejemplo: con `./gradlew app:packageDebugUniversalApk`, se generaría `app/build/outputs/apk_from_bundle/debug/app-debug-universal.apk`
+
+### *Android App Bundle* (`.aab`)
+Cuando se ejecuta la tarea `bundle`, Gradle compila todo el código y agrupa todos los recursos (imágenes para todas las densidades, *strings* para todos los idiomas, código nativo para todas las arquitecturas de CPU, etc.) en un solo archivo: el `.aab`. Este archivo está diseñado para ser una representación completa y modular de la aplicación.
+
+El flujo recomendado para *Google Play* es que primero se genere un `.aab` y luego, si es necesario, se extraigan APKs a partir de él.  
+Desde un `.aab` se pueden obtener:
+- **_Universal APK_** :arrow_right: Un único `*-universal.apk` (ver apartado anterior).
+- **_Split APKs_** :arrow_right: Varios APKs (base + configs por [ABI](../Glosary%20&%20Core%20Concepts/Software%20in%20general.md#abi-application-binary-interface)/_density_/idiomas), típicamente para distribución eficiente.
+
+**Comandos**:
+1. *Debug*:
+    - `./gradlew <MODULE>:bundleDebug`
+2. *Release*:
+    - `./gradlew <MODULE>:bundleRelease`
+
+**Ubicación típica**:
+- `<MODULE>/build/outputs/bundle/<BUILD-TYPE>/<MODULE>-<BUILD-TYPE>.aab`
+    - Ejemplo: con `./gradlew app:bundleDebug`, se generaría `app/build/outputs/bundle/debug/app-debug.aab`
 
 ## Agregar recursos exportados de Figma a un proyecto
 - `1x` -> `/android/mdpi/{RESOURCE-NAME}`
@@ -72,7 +116,7 @@ Classes and packages can be **excluded** using standard **`*`** and **`?`** wild
   3. Ruta del reporte de *coverage*:
 
 ```
-    <MODULO>/build/reports/jacoco/jacocoTestDebugUnitTestReport/html/index.html
+    <MODULE>/build/reports/jacoco/jacocoTestDebugUnitTestReport/html/index.html
 ```
 
 ## Salir del editor VIM integrado en la terminal de AS (Windows)

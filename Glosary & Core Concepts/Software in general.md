@@ -3,6 +3,7 @@
 ***Index***:
 <!-- TOC -->
   * [*Abstraction*](#abstraction)
+  * [ABI (*Application Binary Interface*)](#abi-application-binary-interface)
   * [🛠 API vs Librería vs *Framework*](#-api-vs-librería-vs-framework)
   * [*Atomicity*](#atomicity)
   * [*Build*](#build)
@@ -45,6 +46,14 @@
 Principio fundamental en la **Programación Orientada a Objetos** (**OOP**) que permite ocultar los detalles de implementación y resaltar las características esenciales de un objeto.  
 En el contexto de un sistema, al hablar de **componentes de alto nivel** y **bajo nivel**, nos referimos al **grado de abstracción** que cada componente representa. Los componentes de **alto nivel** suelen estar más alejados de los detalles específicos y operan con conceptos más generales (mayor abstracción). Por ejemplo, una interfaz que define métodos comunes para varias clases es un componente de alto nivel, porque permite a otros componentes interactuar con una amplia gama de objetos sin conocer sus detalles de implementación específicos. Por otro lado, los componentes de **bajo nivel** manejan detalles específicos y son más concretos (menor abstracción), como una clase que implementa funcionalidades particulares de un sistema.  
 En *Clean Architecture*, esta jerarquía de niveles de abstracción se traduce en un esquema de capas circulares donde las capas más internas son más abstractas (alto nivel) y representan la lógica de negocio, mientras que las capas externas manejan los detalles concretos y la implementación (bajo nivel). Este enfoque no solo mejora la organización y la mantenibilidad del código, sino que también facilita la prueba y evolución de cada componente por separado.
+
+## ABI (*Application Binary Interface*)
+Conjunto de reglas que describe cómo una aplicación (por ejemplo, un APK de Android) debe interactuar con el código a nivel de máquina en la CPU de un dispositivo. Es el "contrato" a bajo nivel entre el _software_ y el _hardware_.  
+Se puede pensar **como una API, pero para el código binario**. Mientras que una API define cómo interactuar con el código fuente (nombres de funciones, parámetros, etc.), una ABI define:
+1. **El Conjunto de Instrucciones de la CPU**: Qué "idioma" habla el procesador (por ejemplo, ARM o x86).
+2. **El Orden de los Bytes (_Endianness_)**: Cómo se almacenan los números en la memoria (_little-endian_ o _big-endian_).
+3. **Convenciones de Llamada a Funciones**: Cómo se pasan los parámetros a las funciones y cómo se devuelven los valores a nivel de ensamblador.
+4. **Formato de los Archivos Binarios**: Cómo se estructuran los archivos ejecutables y las librerías compartidas (como los archivos ``.so`` en Android).
 
 ## 🛠 API vs Librería vs *Framework*
 - **API (_Application Programming Interface_)** ➡️ **_Define QUÉ se puede hacer, pero NO CÓMO se hace_**.  
