@@ -16,6 +16,7 @@
       * [🧱 Estructura básica de clases (*data classes*)](#-estructura-básica-de-clases-data-classes)
       * [🧠 *ViewModel* (maneja eventos y emite estados/efectos)](#-viewmodel-maneja-eventos-y-emite-estadosefectos)
       * [🎨 *Fragment* (observa el estado y envía eventos)](#-fragment-observa-el-estado-y-envía-eventos)
+      * [🧮 MVI con *Reducer*](#-mvi-con-reducer)
     * [*Repository*](#repository)
   * [Componentes de Arquitectura](#componentes-de-arquitectura)
     * [*Lifecycle*](#lifecycle)
@@ -294,9 +295,9 @@ En el caso de que se aplique *DataBinding* al mismo ejemplo con MVVM, quedaría 
 ### *MVI (Model View Intent)*
 Es un patrón de arquitectura de presentación que se basa en la **unidireccionalidad de datos**: la UI observa estados y emite eventos.  
 Separa claramente:
-- **Eventos del usuario** → ``Intent`` o ``uiEvent``
-- **Procesamiento lógico** → en el _ViewModel_
-- **Resultado** → ``uiState`` (estado actual) o ``uiEffect`` (efectos puntuales)
+- **Eventos del usuario** :arrow_right: ``Intent`` o ``uiEvent``
+- **Procesamiento lógico** :arrow_right: En el _ViewModel_
+- **Resultado** :arrow_right: ``uiState`` (estado actual) o ``uiEffect`` (efectos puntuales)
 
 #### 🧭 Flujos en el patrón MVI
 
@@ -313,108 +314,214 @@ Separa claramente:
 #### 🧱 Estructura básica de clases (*data classes*)
 
 ```kotlin
-    // Estado de la UI (persistente)
-    data class UiState(
-        val isLoading: Boolean = false,
-        val data: String? = null,
-        val error: String? = null
-    )
-    
-    // Efectos puntuales (eventos de una sola vez)
-    sealed class UiEffect {
-        data class ShowSnackbar(val message: String) : UiEffect()
-        object NavigateToDetail : UiEffect()
-    }
-    
-    // Eventos del usuario (intenciones)
-    sealed class UiEvent {
-        object LoadData : UiEvent()
-        data class OnItemClick(val id: String) : UiEvent()
-    }
+// Estado de la UI (persistente)
+data class UiState(
+    val isLoading: Boolean = false,
+    val data: String? = null,
+    val error: String? = null
+)
+
+// Efectos puntuales (eventos de una sola vez)
+sealed class UiEffect {
+    data class ShowSnackbar(val message: String) : UiEffect()
+    object NavigateToDetail : UiEffect()
+}
+
+// Eventos del usuario (intenciones)
+sealed class UiEvent {
+    object LoadData : UiEvent()
+    data class OnItemClick(val id: String) : UiEvent()
+}
 ```
 
 #### 🧠 *ViewModel* (maneja eventos y emite estados/efectos)
 
 ```kotlin
-    class MyViewModel : ViewModel() {
-    
-        private val _uiState = MutableStateFlow(UiState())
-        val uiState: StateFlow<UiState> = _uiState
-    
-        private val _uiEffect = MutableSharedFlow<UiEffect>()
-        val uiEffect: SharedFlow<UiEffect> = _uiEffect
-    
-        fun onEvent(event: UiEvent) {
-            when (event) {
-                is UiEvent.LoadData -> loadData()
-                is UiEvent.OnItemClick -> {
-                    viewModelScope.launch {
-                        _uiEffect.emit(UiEffect.NavigateToDetail)
-                    }
-                }
-            }
-        }
-    
-        private fun loadData() {
-            viewModelScope.launch {
-                _uiState.value = _uiState.value.copy(isLoading = true)
-                try {
-                    val result = "Resultado de la API"
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        data = result
-                    )
-                } catch (e: Exception) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = "Error al cargar"
-                    )
-                    _uiEffect.emit(UiEffect.ShowSnackbar("Ocurrió un error"))
+class MyViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState
+
+    private val _uiEffect = MutableSharedFlow<UiEffect>()
+    val uiEffect: SharedFlow<UiEffect> = _uiEffect
+
+    fun onEvent(event: UiEvent) {
+        when (event) {
+            is UiEvent.LoadData -> loadData()
+            is UiEvent.OnItemClick -> {
+                viewModelScope.launch {
+                    _uiEffect.emit(UiEffect.NavigateToDetail)
                 }
             }
         }
     }
+
+    private fun loadData() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                val result = "Resultado de la API"
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    data = result
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Error al cargar"
+                )
+                _uiEffect.emit(UiEffect.ShowSnackbar("Ocurrió un error"))
+            }
+        }
+    }
+}
 ```
 
 #### 🎨 *Fragment* (observa el estado y envía eventos)
 
 ```kotlin
-    class MyFragment : Fragment() {
-    
-        private val viewModel: MyViewModel by viewModels()
-    
-        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-            // Recolectar uiState
-            viewLifecycleOwner.lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.uiState.collect { state ->
-                        // Actualizar la UI
-                        if (state.isLoading) showLoading()
-                        else if (state.data != null) showData(state.data)
-                        else if (state.error != null) showError(state.error)
-                    }
+class MyFragment : Fragment() {
+    private val viewModel: MyViewModel by viewModels()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // Recolectar uiState
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    // Actualizar la UI
+                    if (state.isLoading) showLoading()
+                    else if (state.data != null) showData(state.data)
+                    else if (state.error != null) showError(state.error)
                 }
             }
-    
-            // Recolectar uiEffect
-            viewLifecycleOwner.lifecycleScope.launch {
-                viewModel.uiEffect.collect { effect ->
-                    when (effect) {
-                        is UiEffect.ShowSnackbar -> showSnackbar(effect.message)
-                        is UiEffect.NavigateToDetail -> navigateToDetail()
-                    }
-                }
-            }
-    
-            // Enviar evento de usuario
-            button.setOnClickListener {
-                viewModel.onEvent(UiEvent.OnItemClick("123"))
-            }
-    
-            // Cargar datos al inicio
-            viewModel.onEvent(UiEvent.LoadData)
         }
+
+        // Recolectar uiEffect
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiEffect.collect { effect ->
+                when (effect) {
+                    is UiEffect.ShowSnackbar -> showSnackbar(effect.message)
+                    is UiEffect.NavigateToDetail -> navigateToDetail()
+                }
+            }
+        }
+
+        // Enviar evento de usuario
+        button.setOnClickListener {
+            viewModel.onEvent(UiEvent.OnItemClick("123"))
+        }
+
+        // Cargar datos al inicio
+        viewModel.onEvent(UiEvent.LoadData)
     }
+}
+```
+
+#### 🧮 MVI con *Reducer*
+Lo mencionado hasta ahora es la versión “simplificada” de MVI. Pero el patrón “clásico” o "canónico" también presenta otro componente: el **_Reducer_**.
+Este componente es una **función pura** que se encarga de **tomar el estado actual y aplicarle un Cambio** (puede ser llamado de varias formas: _Change_, _Result_, _PartialState_, _Mutation_) **para devolver un nuevo estado**:
+
+```
+Reducer = (State, Change) -> NewState
+```
+
+Que sea “pura” significa que es **determinista** (mismo *input* :arrow_right: mismo *output*) y además NO hace procesos de I/O, NO llama a la red o a Bases de Datos, NO suspende y NO tiene efectos secundarios. Es decir, **solo transforma datos**. Esto hace que el flujo sea predecible y fácil de testear.
+
+En MVI típico, la UI provee **_Intents_/_Events_**; el **_Change_/_Result_** lo genera el _ViewModel_ (o una capa intermedia) como consecuencia de procesar esos eventos (incluyendo I/O).
+
+📌 Ejemplo:
+
+```kotlin
+// ---------- MVI contract ----------
+
+data class CounterState(val count: Int = 0, val isLoading: Boolean = false)
+
+sealed interface CounterIntent {
+    data object IncrementClicked : CounterIntent
+    data object DecrementClicked : CounterIntent
+    data object LoadInitial : CounterIntent
+}
+
+sealed interface CounterChange {
+    data object Loading : CounterChange
+    data class Loaded(val value: Int) : CounterChange
+    data class Delta(val by: Int) : CounterChange
+}
+
+sealed interface CounterEffect {
+    data class Toast(val message: String) : CounterEffect
+}
+
+// ---------- Fake repo ----------
+
+interface CounterRepo { suspend fun initial(): Int }
+
+class FakeCounterRepo : CounterRepo {
+    override suspend fun initial(): Int = 10
+}
+
+// ---------- Reducer (pure) ----------
+
+// Toma el Estado actual y el Cambio (emitido por el ViewModel), aplica el Cambio al Estado y devuelve un nuevo Estado
+fun reduce(state: CounterState, change: CounterChange): CounterState =
+    when (change) {
+        CounterChange.Loading -> state.copy(isLoading = true)
+        is CounterChange.Loaded -> state.copy(count = change.value, isLoading = false)
+        is CounterChange.Delta -> state.copy(count = state.count + change.by)
+    }
+
+// ---------- ViewModel (intent -> change -> state + effects) ----------
+
+class CounterViewModel(
+    private val repo: CounterRepo = FakeCounterRepo()
+) : ViewModel() {
+		private val initialState = CounterState()
+    private val intents = MutableSharedFlow<CounterIntent>(extraBufferCapacity = 64)
+
+    private val _effects = Channel<CounterEffect>(capacity = Channel.BUFFERED)
+    val effects: Flow<CounterEffect> = _effects.receiveAsFlow()
+
+		// Toma el Evento/Intent emitido por dispatch() y emite un stream de Changes. Puede haber I/O.
+		// A su vez, los Efectos se emiten en el mismo when(intent) pero por un canal aparte, 
+		// respetando la regla de emitirlos fuera del reducer
+    private val changes: Flow<CounterChange> =
+        intents.flatMapMerge { intent ->
+            when (intent) {
+                CounterIntent.IncrementClicked -> flow {
+								    _effects.send(CounterEffect.Toast("Increment"))
+								    emit(CounterChange.Delta(+1))
+								}
+								
+                CounterIntent.DecrementClicked -> flow {
+								    _effects.send(CounterEffect.Toast("Decrement"))
+								    emit(CounterChange.Delta(-1))
+								}
+
+                CounterIntent.LoadInitial -> flow {
+                    emit(CounterChange.Loading)
+                    val value = repo.initial()
+                    emit(CounterChange.Loaded(value))
+                }
+            }
+        }
+
+    // Expone el StateFlow que resulta de aplicar scan/reduce sobre el stream de Changes
+    val state: StateFlow<CounterState> =
+        changes
+		        // Aplica el reducer acumulando estado
+            .scan(initialState, ::reduce)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialState)
+
+		// Publica el Intent/Evento que envió la UI en el stream de intents
+    fun dispatch(intent: CounterIntent) {
+        intents.tryEmit(intent)
+    }
+}
+
+// ---------- Uso desde UI (conceptual) ----------
+
+// La UI lanza eventos/intenciones y observa viewModel.state y viewModel.effects
+viewModel.dispatch(CounterIntent.LoadInitial)
+viewModel.dispatch(CounterIntent.IncrementClicked)
 ```
 
 ### *Repository*

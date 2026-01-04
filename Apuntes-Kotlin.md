@@ -9,7 +9,7 @@
     * [1.3. Clases selladas (*sealed class*)](#13-clases-selladas-sealed-class)
     * [1.4. Clases abstractas (*abstract class*)](#14-clases-abstractas-abstract-class)
     * [1.5. Interfaces](#15-interfaces)
-    * [1.6. Tipos genéricos](#16-tipos-genéricos)
+    * [1.6. Tipos genéricos en clases](#16-tipos-genéricos-en-clases)
       * [:clipboard: A modo de resumen:](#clipboard-a-modo-de-resumen)
       * [1.6.1. ``invariant``](#161-invariant)
       * [1.6.2. ``covariant``](#162-covariant)
@@ -43,7 +43,7 @@
     * [3.8. *Closures*](#38-closures)
     * [3.9. *Inline Functions*](#39-inline-functions)
       * [3.9.1. Parámetros de tipo *reified*](#391-parámetros-de-tipo-reified)
-    * [3.10. Tipos genéricos](#310-tipos-genéricos)
+    * [3.10. Tipos genéricos en funciones](#310-tipos-genéricos-en-funciones)
   * [4. Colecciones](#4-colecciones)
     * [4.1. Descripción](#41-descripción)
     * [4.2. ``Collection<T>``](#42-collectiont)
@@ -66,8 +66,8 @@
     * [4.11. Operaciones](#411-operaciones)
       * [4.11.1. Operaciones comunes](#4111-operaciones-comunes)
       * [4.11.2. Operaciones de escritura](#4112-operaciones-de-escritura)
-  * [5. Hilos, Corrutinas (*Coroutines*) y *Flows*](#5-hilos-corrutinas-coroutines-y-flows)
-  * [6. Otros constructos del lenguaje](#6-otros-constructos-del-lenguaje)
+  * [5. Asincronía & Concurrencia](#5-asincronía--concurrencia)
+  * [6. Reglas y mecanismos del lenguaje](#6-reglas-y-mecanismos-del-lenguaje)
     * [6.1. *Operator overloading*](#61-operator-overloading)
     * [6.2. *Destructuring declarations*](#62-destructuring-declarations)
     * [6.3. *Type checks* y *Casts*](#63-type-checks-y-casts)
@@ -76,6 +76,7 @@
     * [6.6. *SAM* (*Single Abstract Method*) *conversions*](#66-sam-single-abstract-method-conversions)
     * [6.7. *Reflection*](#67-reflection)
     * [6.8. *Scope functions*](#68-scope-functions)
+    * [6.9. Jerarquía de resolución de llamadas a funciones](#69-jerarquía-de-resolución-de-llamadas-a-funciones)
   * [Referencias](#referencias)
 <!-- TOC -->
 
@@ -349,7 +350,7 @@ Si una clase implementa dos *interfaces* que tienen un método no abstracto con 
     }
 ```
 
-### 1.6. Tipos genéricos
+### 1.6. Tipos genéricos en clases
 Permiten definir clases, métodos (ver el apartado de genéricos de *Funciones*) y propiedades de manera que se puede **acceder a ellos utilizando diferentes tipos**. Es común utilizarlos en combinación con las **colecciones** para crear estructuras cuyos elementos no están limitados a un tipo determinado.  
 Una clase o un método de tipo genérico se declara con **parámetros de tipo** (o **tipo parametrizado**) entre corchetes angulares, y al crear una instancia de esa clase se debe proporcionar el tipo real del argumento (salvo que pueda ser inferido), por ejemplo:
 
@@ -1043,7 +1044,7 @@ Marcando un tipo como ***``reified``***, se tendrá la capacidad de **utilizar e
      treeNode.findParentOfType<MyTreeNode>()
 ```
 
-### 3.10. Tipos genéricos
+### 3.10. Tipos genéricos en funciones
 Como las clases, las funciones también pueden tener **parámetros de tipo** con la sintaxis ***``fun <T> nombreFuncion(parametro: tipo<T>)``***:
 
 ```kotlin
@@ -1338,13 +1339,13 @@ Para colecciones mutables, hay operaciones de escritura que **cambian el estado 
 
 ---
 
-## 5. Hilos, Corrutinas (*Coroutines*) y *Flows*
+## 5. Asincronía & Concurrencia
 
-- Ver [***Hilos, Coroutines & Flows***](Kotlin/Hilos,%20Coroutines%20&%20Flows.md)
+- Ver [**Asincronía & Concurrencia**](Kotlin/Asincronía%20&%20Concurrencia.md)
 
 ---
 
-## 6. Otros constructos del lenguaje
+## 6. Reglas y mecanismos del lenguaje
 
 ### 6.1. *Operator overloading*
 La sobrecarga de operadores permite asignar comportamientos a los operadores **para que actúen sobre tipos creados por el programador**. Para implementar un operador, se proporciona una **función miembro** o una **función de extensión** con un nombre fijo, para el tipo correspondiente. Las funciones que **sobrecargan** operadores necesitan ser marcadas con el **modificador** ***``operator``***.  
@@ -1535,6 +1536,27 @@ Esta característica sólo funciona para **interoperar con Java**. Las ***functi
 ### 6.8. *Scope functions*
 
 - Ver [*Scope functions*](Kotlin/Scope%20Functions.md)
+
+### 6.9. Jerarquía de resolución de llamadas a funciones
+En Kotlin, cuando se invoca una función **sin calificar explícitamente el receptor**, el compilador debe decidir **a qué función concreta se está refiriendo**.  
+Esto ocurre con frecuencia en _lambdas_ con _receiver_, DSLs, ``apply``, ``with``, ``run``, clases anidadas o cuando conviven _member functions_ y _extension functions_ con el mismo nombre.
+
+Para resolver una llamada como ``metodo()`` (sin ``this.`` ni calificación explícita), Kotlin sigue una **jerarquía bien definida de búsqueda**, priorizando siempre:
+
+- Receptores más cercanos
+- Funciones miembro por sobre extensiones
+- Evitando ambigüedades cuando hay varios ``this`` implícitos en juego
+
+La siguiente lista resume el **orden exacto que utiliza el compilador para resolver llamadas a funciones**:
+
+1. **_Explicit Receiver_** (`x.metodo()`) -> *Si existe, fin de la historia.*
+2. **_Implicit Receiver_ (_Innermost_)**
+    - 2a. _Member Function_
+    - 2b. _Extension Function_
+3. **_Implicit Receiver_ (_Outer_)**
+    - 3a. _Member Function_
+    - 3b. _Extension Function_
+4. **_Top-level functions_** (_Imports_ estáticos / globales)
 
 ---
 

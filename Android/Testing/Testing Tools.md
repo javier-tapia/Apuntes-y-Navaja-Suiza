@@ -307,31 +307,7 @@ Esta función de *JUnit* lanza una excepción. Se utiliza por ejemplo dentro de 
 Se usa para ***testear funciones `suspend`***. Esta función fue ***remplazada por `runTest{}`*** (ver https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-test/MIGRATION.md#replace-runblocking-with-runtest)
 
 ### Uso de la clase `MainCoroutineRule`
-Esta regla se usa para facilitar el *testing* con corrutinas. Ver como ejemplo este [*codelab* de Google](https://github.com/googlecodelabs/kotlin-coroutines/blob/master/coroutines-codelab/finished_code/src/test/java/com/example/android/kotlincoroutines/main/utils/MainCoroutineScopeRule.kt):
-
-```kotlin
-  @ExperimentalCoroutinesApi
-  class MainCoroutineScopeRule(val dispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()) :
-    TestWatcher(),
-    TestCoroutineScope by TestCoroutineScope(dispatcher) {
-    override fun starting(description: Description?) {
-      super.starting(description)
-      // If your codebase allows the injection of other dispatchers like
-      // Dispatchers.Default and Dispatchers.IO, consider injecting all of them here
-      // and renaming this class to `CoroutineScopeRule`
-      //
-      // All injected dispatchers in a test should point to a single instance of
-      // TestCoroutineDispatcher.
-      Dispatchers.setMain(dispatcher)
-    }
-  
-    override fun finished(description: Description?) {
-      super.finished(description)
-      cleanupTestCoroutines()
-      Dispatchers.resetMain()
-    }
-  }
-```
+Esta regla se usa para facilitar el *testing* con corrutinas. Ver también [acá](../../Kotlin/Asincronía%20&%20Concurrencia.md#modelo-de-testdispatcherrule-o-maincoroutinerule)
 
 ### Uso de `LiveDataTestUtil`
 Este archivo provisto por Google, **provee de una función de extensión para poder testear objetos `LievData`**. Ver [ejemplo de Google](https://github.com/google/iosched/blob/main/androidTest-shared/src/main/java/com/google/samples/apps/iosched/androidtest/util/LiveDataTestUtil.kt).

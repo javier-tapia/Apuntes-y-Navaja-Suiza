@@ -76,10 +76,16 @@ dependencies {
 ### *Plugin* de ``google-services``
 - En el ``build.gradle.kts`` del proyecto (_root_):
 ```kotlin
-buildscript {
-    dependencies {
-        // Plugin de Google Services
-        classpath("com.google.gms:google-services:4.4.0")
+plugins {
+    id("com.google.gms.google-services") version "4.4.0" apply false
+    // Alternativa si se usa Version Catalog (libs.version.toml)
+    // alias(libs.plugins.google.services) apply false
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
     }
 }
 ```
@@ -89,6 +95,8 @@ buildscript {
 plugins {
     id("com.android.application")
     id("com.google.gms.google-services")
+    // Alternativa si se usa Version Catalog (libs.version.toml)
+    // alias(libs.plugins.google.services)
 }
 ```
 
