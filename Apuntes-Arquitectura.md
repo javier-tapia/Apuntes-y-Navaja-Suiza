@@ -9,6 +9,19 @@
     * [*Liskov Substitution*](#liskov-substitution)
     * [*Interface Segregation*](#interface-segregation)
     * [*Dependency Inversion*](#dependency-inversion)
+  * [*Clean Architecture* vs Guía de Arquitectura de Android vs MVVM](#clean-architecture-vs-guía-de-arquitectura-de-android-vs-mvvm)
+    * [Resumen General](#resumen-general)
+    * [Desglose de las funciones de cada capa](#desglose-de-las-funciones-de-cada-capa)
+      * [MVVM](#mvvm)
+      * [Guía de Arquitectura (Google/Android)](#guía-de-arquitectura-googleandroid)
+      * [*Clean Architecture*](#clean-architecture)
+    * [Diferencia entre Modelos de Datos y Modelos de Dominio](#diferencia-entre-modelos-de-datos-y-modelos-de-dominio)
+      * [Modelos de Datos](#modelos-de-datos)
+      * [Modelos de Dominio](#modelos-de-dominio)
+      * [Transformación entre capas](#transformación-entre-capas)
+    * [Ejemplo estructura](#ejemplo-estructura)
+  * [Técnicas para analizar código "desconocido"](#técnicas-para-analizar-código-desconocido)
+    * [Estrategias generales](#estrategias-generales)
   * [Patrones de Diseño](#patrones-de-diseño)
     * [Qué es un Patrón de Diseño](#qué-es-un-patrón-de-diseño)
     * [Clasificación de los Patrones](#clasificación-de-los-patrones)
@@ -33,17 +46,6 @@
     * [*State*](#state)
       * [Ejemplo](#ejemplo-9)
     * [Referencias](#referencias)
-  * [*Clean Architecture* vs Guía de Arquitectura de Android vs MVVM](#clean-architecture-vs-guía-de-arquitectura-de-android-vs-mvvm)
-    * [Resumen General](#resumen-general)
-    * [Desglose de las funciones de cada capa](#desglose-de-las-funciones-de-cada-capa)
-      * [MVVM](#mvvm)
-      * [Guía de Arquitectura (Google/Android)](#guía-de-arquitectura-googleandroid)
-      * [*Clean Architecture*](#clean-architecture)
-    * [Diferencia entre Modelos de Datos y Modelos de Dominio](#diferencia-entre-modelos-de-datos-y-modelos-de-dominio)
-      * [Modelos de Datos](#modelos-de-datos)
-      * [Modelos de Dominio](#modelos-de-dominio)
-      * [Transformación entre capas](#transformación-entre-capas)
-    * [Ejemplo estructura](#ejemplo-estructura)
 <!-- TOC -->
 
 ---
@@ -353,6 +355,109 @@ fun main() {
     whatever.communicate() // Hasta nunca. ¡Volveré con mi abogado!
 }
 ```
+
+---
+
+## *Clean Architecture* vs Guía de Arquitectura de Android vs MVVM
+
+### Resumen General
+Cada capa en estas arquitecturas tiene un propósito específico y ayuda a mantener un diseño limpio y organizado que facilita la mantenibilidad y escalabilidad de la aplicación.
+
+- **MVVM** se enfoca en la separación de la lógica de presentación y la UI a través de un *ViewModel*.  
+- **La arquitectura propuesta por Google** introduce una gestión clara de la UI y la lógica de datos, con una opción para incluir una capa de dominio.  
+- ***Clean Architecture*** promueve una estructura altamente desacoplada, donde **_las dependencias fluyen desde las capas exteriores hacia las interiores_**, permitiendo un alto grado de flexibilidad y reutilización. Para evitar que se “crucen los límites” entre las capas, se utiliza el **_Principio de Inversión de Dependencia_** (ver [Dependency Inversion](#dependency-inversion)).
+
+### Desglose de las funciones de cada capa
+
+#### MVVM
+
+| **Capa**      | **Descripción**                                                                                                                                                                   |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Model**     | Se encarga de la **_lógica de negocio y de la gestión de los datos_**. Puede incluir acceso a bases de datos, servicios web y otros recursos de datos.                            |
+| **View**      | Representa la UI. Escucha los cambios en el *ViewModel* y se actualiza en consecuencia. Normalmente consiste en *activities*, *fragments* y *Views*.                              |
+| **ViewModel** | Actúa como intermediario entre las capas de Model y de View. Contiene datos que la vista necesita y maneja la lógica de presentación. También gestiona el ciclo de vida de la UI. |
+
+#### Guía de Arquitectura (Google/Android)
+
+| **Capa**               | **Descripción**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **UI**                 | La función de la capa de UI (o capa de presentación) es mostrar los datos de la aplicación en la pantalla. **_Se compone de dos cosas: elementos de la UI_** que representan los datos en la pantalla (hechos con *Views* o con Compose) **_y state holders (como los ViewModel)_** que contienen datos, los exponen a la UI y manejan la lógica de presentación.                                                                                                                                                                                                                                      |
+| **Data**               | **_Contiene la lógica de negocio_**, la cual está compuesta por reglas que determinan cómo la aplicación crea, almacena y cambia datos. Está formada por **_Repositorios_**, que pueden contener desde cero hasta muchas Fuentes de Datos (***Data Sources***). Se debería crear una clase de Repositorio para cada tipo diferente de dato que se maneja en la aplicación y a su vez, cada clase de Fuente de Datos debe tener la responsabilidad de trabajar con una sola fuente de datos, que puede ser un archivo, una fuente de red (solicitudes a una API en internet) o una Base de Datos local. |
+| **Dominio (opcional)** | Se encarga de encapsular la lógica de negocio compleja, o la lógica de negocio simple que reutilizan varios *ViewModels*. Esta capa es opcional, ya que no todas las aplicaciones cumplen estos requisitos. Se encuentra entre la capa de UI y la capa de Data. Las clases de esta capa se denominan comúnmente **_Casos de Uso o interactors_**. Cada Caso de Uso debe ser **_responsable de una única funcionalidad_**.                                                                                                                                                                              |
+
+#### *Clean Architecture*
+
+| **Capa**                                   | **Descripción**                                                                                                                                                                                                                                                                                                                                                              |
+|--------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Enterprise Business Rules / Entities**   | Contiene las **_Reglas de Negocio de alto nivel (lo más abstracto), encapsulando la lógica que es específica del Dominio del Negocio_**. Es independiente de la tecnología y las librerías externas. Las Entidades podrían ser utilizadas por muchas aplicaciones diferentes en la empresa y ningún cambio operativo en ninguna aplicación en particular debería afectarlas. |
+| **Application Business Rules / Use Cases** | Define la **_lógica específica de la aplicaciónm encapsulando e implementando todos los Casos de Uso del sistema_**. Se encarga de coordinar el flujo de datos entre las capas superiores e inferiores.                                                                                                                                                                      |
+| **Interface Adapters**                     | Esta capa **_convierte datos del formato más conveniente para los Casos de Uso y Entidades, al formato más conveniente para los componentes de la capa más externa (y viceversa)_**. Aquí se encuentran implementaciones de repositorios, APIs y controladores de UI.                                                                                                        |
+| **Frameworks & Drivers / Infrastructure**  | Contiene **_elementos externos como Bases de Datos, frameworks de UI, servicios web, etc_**. Esta capa puede incluir las tecnologías que se utilizan para construir la aplicación. Su objetivo es ser **_reemplazable o intercambiable_**.                                                                                                                                   |
+
+<br>
+
+### Diferencia entre Modelos de Datos y Modelos de Dominio
+#### Modelos de Datos
+- **Propósito**: **_Representar la estructura de datos tal como viene de fuentes externas (APIs) o como se almacena internamente (Base de Datos)_** :arrow_right: **_Son modelos dependientes de la infraestructura, porque reflejan la estructura de la API o de la base de datos_**
+- **Características**:
+    - Son clases simples **_orientadas a transporte/almacenamiento, sin lógica de negocio_**
+    - Sus nombres y estructura reflejan exactamente lo que devuelve la API o lo que necesita la base de datos
+    - Suelen tener anotaciones externas (Retrofit/Moshi/Gson/Room)
+    - Pueden variar cuando cambia la API o el esquema de la BBDD
+    - 📌 **Ejemplos**: `MovieDto`, que representa la respuesta JSON del servidor; `MovieEntity`, que representa el formato en el que la base de datos (Room/SQLDelight/ObjectBox) necesita almacenar los datos
+
+#### Modelos de Dominio
+- **Propósito**: **_Representar Entidades de Negocio independientes de la infraestructura_** :arrow_right: **_Son el “corazón” de la aplicación, independientes de frameworks y librerías externas_**
+- **Características**:
+    - Pueden contener reglas de negocio, aunque en muchos proyectos se mantienen como **_modelos simples sin lógica compleja_**
+    - Su estructura responde a las **necesidades de la aplicación**, no a las limitaciones externas
+    - No tienen anotaciones de librerías externas
+    - 📌 **Ejemplo**: `Movie`, que solo tiene los campos relevantes para la lógica de la aplicación
+
+#### Transformación entre capas
+En la práctica, los Repositorios se apoyan en **_mappers_** para transformar los Modelos de Datos en Modelos de Dominio al obtener información, y viceversa al guardarla, manteniendo así la **_capa de Dominio aislada de los detalles de implementación de las fuentes de datos (capa de Data)_**.
+
+- API → ``MovieDto`` → **_mapper_** → ``Movie`` 
+- DB → ``MovieEntity`` → **_mapper_** → ``Movie`` 
+- Dominio → **_mapper_** → ``MovieEntity`` (si se guarda localmente)
+
+### Ejemplo estructura
+Estructura de paquetes para una supuesta app destinada a mostrar una lista de películas, ver el detalle de una película, agregar una película a favoritos, etc.
+
+```
+com.example.movieapp/
+├── data/
+│   ├── remote/
+│   │   ├── api/
+│   │   └── models/
+│   ├── local/
+│   │   ├── dao/
+│   │   └── entities/
+│   └── repositories/ (implementaciones concretas)
+├── domain/
+│   ├── models/
+│   ├── repositories/ (interfaces)
+│   └── usecases/
+└── presentation/
+    ├── common/
+    │   ├── components/
+    │   └── theme/
+    ├── movielist/
+    ├── moviedetail/
+    └── favorites/
+```
+
+## Técnicas para analizar código "desconocido"
+El objetivo es construir un **modelo mental del flujo**. Es decir, un **mapa simplificado** en el que no se necesita entender cada línea, sino las **conexiones principales entre componentes**.
+
+```
+Entrada → Transformación → Salida
+```
+
+### Estrategias generales
+- ***Top-down*** :arrow_right: Empezar desde el punto de entrada (*Activity*/*Fragment*) y seguir las llamadas.
+- ***Bottom-up*** :arrow_right: Empezar desde donde se necesita entender y rastrear hacia atrás quién lo llama.
+- **Buscar patrones conocidos** :arrow_right: MVP, MVVM, MVI, etc. Una vez identificado, se puede tener una idea de dónde buscar cada cosa.
 
 ---
 
@@ -713,94 +818,3 @@ TODO...
 ### Referencias
 - [Design Patterns In Kotlin](https://medium.com/@michalankiersztajn/list/design-patterns-in-kotlin-12e52466affe)
 - [Refactoring Guru - Patrones de diseño](https://refactoring.guru/es/design-patterns/catalog)
-
----
-
-## *Clean Architecture* vs Guía de Arquitectura de Android vs MVVM
-
-### Resumen General
-Cada capa en estas arquitecturas tiene un propósito específico y ayuda a mantener un diseño limpio y organizado que facilita la mantenibilidad y escalabilidad de la aplicación.
-
-- **MVVM** se enfoca en la separación de la lógica de presentación y la UI a través de un *ViewModel*.  
-- **La arquitectura propuesta por Google** introduce una gestión clara de la UI y la lógica de datos, con una opción para incluir una capa de dominio.  
-- ***Clean Architecture*** promueve una estructura altamente desacoplada, donde **_las dependencias fluyen desde las capas exteriores hacia las interiores_**, permitiendo un alto grado de flexibilidad y reutilización. Para evitar que se “crucen los límites” entre las capas, se utiliza el **_Principio de Inversión de Dependencia_** (ver [Dependency Inversion](#dependency-inversion)).
-
-### Desglose de las funciones de cada capa
-
-#### MVVM
-
-| **Capa**      | **Descripción**                                                                                                                                                                   |
-|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Model**     | Se encarga de la **_lógica de negocio y de la gestión de los datos_**. Puede incluir acceso a bases de datos, servicios web y otros recursos de datos.                            |
-| **View**      | Representa la UI. Escucha los cambios en el *ViewModel* y se actualiza en consecuencia. Normalmente consiste en *activities*, *fragments* y *Views*.                              |
-| **ViewModel** | Actúa como intermediario entre las capas de Model y de View. Contiene datos que la vista necesita y maneja la lógica de presentación. También gestiona el ciclo de vida de la UI. |
-
-#### Guía de Arquitectura (Google/Android)
-
-| **Capa**               | **Descripción**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **UI**                 | La función de la capa de UI (o capa de presentación) es mostrar los datos de la aplicación en la pantalla. **_Se compone de dos cosas: elementos de la UI_** que representan los datos en la pantalla (hechos con *Views* o con Compose) **_y state holders (como los ViewModel)_** que contienen datos, los exponen a la UI y manejan la lógica de presentación.                                                                                                                                                                                                                                      |
-| **Data**               | **_Contiene la lógica de negocio_**, la cual está compuesta por reglas que determinan cómo la aplicación crea, almacena y cambia datos. Está formada por **_Repositorios_**, que pueden contener desde cero hasta muchas Fuentes de Datos (***Data Sources***). Se debería crear una clase de Repositorio para cada tipo diferente de dato que se maneja en la aplicación y a su vez, cada clase de Fuente de Datos debe tener la responsabilidad de trabajar con una sola fuente de datos, que puede ser un archivo, una fuente de red (solicitudes a una API en internet) o una Base de Datos local. |
-| **Dominio (opcional)** | Se encarga de encapsular la lógica de negocio compleja, o la lógica de negocio simple que reutilizan varios *ViewModels*. Esta capa es opcional, ya que no todas las aplicaciones cumplen estos requisitos. Se encuentra entre la capa de UI y la capa de Data. Las clases de esta capa se denominan comúnmente **_Casos de Uso o interactors_**. Cada Caso de Uso debe ser **_responsable de una única funcionalidad_**.                                                                                                                                                                              |
-
-#### *Clean Architecture*
-
-| **Capa**                                   | **Descripción**                                                                                                                                                                                                                                                                                                                                                              |
-|--------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Enterprise Business Rules / Entities**   | Contiene las **_Reglas de Negocio de alto nivel (lo más abstracto), encapsulando la lógica que es específica del Dominio del Negocio_**. Es independiente de la tecnología y las librerías externas. Las Entidades podrían ser utilizadas por muchas aplicaciones diferentes en la empresa y ningún cambio operativo en ninguna aplicación en particular debería afectarlas. |
-| **Application Business Rules / Use Cases** | Define la **_lógica específica de la aplicaciónm encapsulando e implementando todos los Casos de Uso del sistema_**. Se encarga de coordinar el flujo de datos entre las capas superiores e inferiores.                                                                                                                                                                      |
-| **Interface Adapters**                     | Esta capa **_convierte datos del formato más conveniente para los Casos de Uso y Entidades, al formato más conveniente para los componentes de la capa más externa (y viceversa)_**. Aquí se encuentran implementaciones de repositorios, APIs y controladores de UI.                                                                                                        |
-| **Frameworks & Drivers / Infrastructure**  | Contiene **_elementos externos como Bases de Datos, frameworks de UI, servicios web, etc_**. Esta capa puede incluir las tecnologías que se utilizan para construir la aplicación. Su objetivo es ser **_reemplazable o intercambiable_**.                                                                                                                                   |
-
-<br>
-
-### Diferencia entre Modelos de Datos y Modelos de Dominio
-#### Modelos de Datos
-- **Propósito**: **_Representar la estructura de datos tal como viene de fuentes externas (APIs) o como se almacena internamente (Base de Datos)_** :arrow_right: **_Son modelos dependientes de la infraestructura, porque reflejan la estructura de la API o de la base de datos_**
-- **Características**:
-    - Son clases simples **_orientadas a transporte/almacenamiento, sin lógica de negocio_**
-    - Sus nombres y estructura reflejan exactamente lo que devuelve la API o lo que necesita la base de datos
-    - Suelen tener anotaciones externas (Retrofit/Moshi/Gson/Room)
-    - Pueden variar cuando cambia la API o el esquema de la BBDD
-    - **Ejemplos**: `MovieDto`, que representa la respuesta JSON del servidor; `MovieEntity`, que representa el formato en el que la base de datos (Room/SQLDelight/ObjectBox) necesita almacenar los datos
-
-#### Modelos de Dominio
-- **Propósito**: **_Representar Entidades de Negocio independientes de la infraestructura_** :arrow_right: **_Son el “corazón” de la aplicación, independientes de frameworks y librerías externas_**
-- **Características**:
-    - Pueden contener reglas de negocio, aunque en muchos proyectos se mantienen como **_modelos simples sin lógica compleja_**
-    - Su estructura responde a las **necesidades de la aplicación**, no a las limitaciones externas
-    - No tienen anotaciones de librerías externas
-    - **Ejemplo**: `Movie`, que solo tiene los campos relevantes para la lógica de la aplicación
-
-#### Transformación entre capas
-En la práctica, los Repositorios se apoyan en **_mappers_** para transformar los Modelos de Datos en Modelos de Dominio al obtener información, y viceversa al guardarla, manteniendo así la **_capa de Dominio aislada de los detalles de implementación de las fuentes de datos (capa de Data)_**.
-
-- API → ``MovieDto`` → **_mapper_** → ``Movie`` 
-- DB → ``MovieEntity`` → **_mapper_** → ``Movie`` 
-- Dominio → **_mapper_** → ``MovieEntity`` (si se guarda localmente)
-
-### Ejemplo estructura
-Estructura de paquetes para una supuesta app destinada a mostrar una lista de películas, ver el detalle de una película, agregar una película a favoritos, etc.
-
-```
-com.example.movieapp/
-├── data/
-│   ├── remote/
-│   │   ├── api/
-│   │   └── models/
-│   ├── local/
-│   │   ├── dao/
-│   │   └── entities/
-│   └── repositories/
-├── domain/
-│   ├── models/
-│   ├── repositories/
-│   └── usecases/
-└── presentation/
-    ├── common/
-    │   ├── components/
-    │   └── theme/
-    ├── movielist/
-    ├── moviedetail/
-    └── favorites/
-```

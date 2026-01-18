@@ -44,4 +44,4 @@ Los más comunes son:
 
 ## *Memory Churn*
 Se refiere a la creación y liberación rápida de muchos objetos temporales, lo que puede causar problemas de rendimiento al sobrecargar el gestor de memoria.  
-Cuando ocurre, el sistema necesita realizar recolecciones de basura con mayor frecuencia para liberar memoria, lo que puede generar lentitud y otros problemas de rendimiento. Por ejemplo, puede causar _jank_ y aumentar el consumo de batería.
+Cuando ocurre, el sistema necesita realizar recolecciones de basura con mayor frecuencia para liberar memoria, lo que puede generar lentitud y otros problemas de rendimiento. Por ejemplo, puede causar [_jank_](../Android/UI/Performance.md#conceptos-previos) y aumentar el consumo de batería.

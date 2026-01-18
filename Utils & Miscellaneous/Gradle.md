@@ -23,7 +23,7 @@
     * [Common Errors with Gradle](#common-errors-with-gradle)
       * [*Gradle* does not recognize a dependency](#gradle-does-not-recognize-a-dependency)
       * [*Clean cache and restart*, *Sync with Gradle*, *Clean & Rebuild*, *Make project*, `--refresh-dependencies` don't work](#clean-cache-and-restart-sync-with-gradle-clean--rebuild-make-project---refresh-dependencies-dont-work)
-  * [Useful terminal commands](#useful-terminal-commands)
+  * [Comandos útiles](#comandos-útiles)
     * [Dependency tree](#dependency-tree)
     * [Specific dependency](#specific-dependency)
     * [Ver tareas disponibles en un módulo de Android](#ver-tareas-disponibles-en-un-módulo-de-android)
@@ -339,7 +339,7 @@ This means:
 - For errors of the type:
 
 ````bash
-  No cached version of androidx.navigation:navigation-compose:<VERSION> available for offline mode
+No cached version of androidx.navigation:navigation-compose:<VERSION> available for offline mode
 ````
 
 - Validate that `Command-lines Options` is empty:
@@ -364,14 +364,14 @@ This means:
     - Locate your Gradle user home directory (usually `~/.gradle` on Linux/macOS or `C:\Users\<YourUser>\.gradle` on Windows) and delete the `caches` and `daemon` directories.
     - Restart Android Studio, Sync with Gradle, Clean and Rebuild.
 
-## Useful terminal commands
+## Comandos útiles
 
 ### Dependency tree
 Get the tree of dependencies being resolved. Useful for **`NoSuchMethodError`** errors.  
 Optionally, add `--refresh-dependencies` to refresh the dependencies.
 
 ````bash
-    ./gradlew <MODULE>:dependencies --refresh-dependencies
+./gradlew <MODULE>:dependencies --refresh-dependencies
 ````
 
 ### Specific dependency
@@ -379,24 +379,32 @@ Get information about a specific dependency (in the example, `something`).
 You can also get information about a module (for example, `com.example.something:example-module`).
 
 ````bash
-  ./gradlew <MODULE>:dependencyInsight  --configuration releaseRuntimeClasspath --dependency com.example.something
+./gradlew <MODULE>:dependencyInsight  --configuration releaseRuntimeClasspath --dependency com.example.something
 ````
 
 ### Ver tareas disponibles en un módulo de Android
-Esto **no compila nada**; solo lista tareas.
+> ℹ️ **Nota:**  
+> Esto **no compila nada**; solo lista tareas.
+
+- Devolver una lista con **todas las tareas del módulo** (incluidas internas/no agrupadas)
+
+```bash
+./gradlew <MODULE>:tasks --all
+```
+
+- Devolver una lista **solo con las tareas visibles por defecto** (oculta las internas y las que no tienen un ``group`` asignado) y además solo las que contienen ``<SOMETHING>`` en el texto; si no aparecen ahí, ``grep`` no encuentra nada.
+    - Desglose:
+        - `./gradlew` :arrow_right: Ejecuta el *Gradle Wrapper* del proyecto (usa la versión de Gradle del repo).
+        - `<MODULE>:tasks` :arrow_right: Lista las **tareas Gradle disponibles** del módulo que corresponda.
+        - `|` (pipe) :arrow_right: Envía esa lista como entrada al siguiente comando.
+        - `grep -i <SOMETHING>` :arrow_right: Filtra y muestra solo líneas que contienen ``<SOMETHING>`` en el texto (sin distinguir mayúsculas/minúsculas por `i`).
 
 ```bash
 # Mac
-./gradlew <MODULE>:tasks | grep -i apk
+./gradlew <MODULE>:tasks | grep -i <SOMETHING>
 
-# Ejemmplo:
+# Ejemplo:
 ./gradlew app:tasks | grep -i apk
-
-# Donde:
-# - `./gradlew` :arrow_right: Ejecuta el *Gradle Wrapper* del proyecto (usa la versión de Gradle del repo).
-# - `:app:tasks` :arrow_right: Lista las **tareas Gradle disponibles** del módulo `app`.
-# - `|` (pipe) :arrow_right: Envía esa lista como entrada al siguiente comando.
-# - `grep -i apk` :arrow_right: Filtra y muestra solo líneas que contengan `apk` (sin distinguir mayúsculas/minúsculas por `i`).
 
 # Windows (PowerShell) equivalente
 ./gradlew <MODULE>:tasks | Select-String apk

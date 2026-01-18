@@ -3,6 +3,7 @@
 ***Index***:
 <!-- TOC -->
   * [Colores ARGB](#colores-argb)
+  * [*Format Strings*](#format-strings)
   * [*Regex* para *matchear* cualquier *endpoint* que no sea el especificado](#regex-para-matchear-cualquier-endpoint-que-no-sea-el-especificado)
   * [String extensions](#string-extensions)
     * [``String?.nullIfNullOrEmpty``](#stringnullifnullorempty)
@@ -26,6 +27,60 @@ Al hacer `and 0xffffffff`, se asegura que el color final solo retiene los *bits*
             ColorResourceProvider.SOME_SCREEN_BACKGROUND_COLOR_CONTAINER
         ) and 0xffffffff.toInt()
     )
+```
+
+## *Format Strings*
+Se utiliza el símbolo ``%`` como **operador de formato** (o _**format specifier starter**_), el cual sirve para **indicar el inicio de una instrucción de formateo**.  
+Luego, se pueden agregar _placeholders_ con diferentes tipos de datos, como pueden ser _Strings_ (``s``), Números decimales (``f``), Números enteros (``d``), etc. También se pueden definir la cantidad de decimales (si corresponde).  
+
+```text
+%<PARAMETER-NUMBER>$<PARAMETER-TYPE>
+
+%<PARAMETER-NUMBER>$.<NUMBER-OF-DECIMALS><PARAMETER-TYPE>
+```
+
+Es posible utilizar sólo ``%<PARAMETER-TYPE>`` (sin el número de parámetro ni el operador aritmético `$`), pero para eso, **el orden de los argumentos debe coincidir exactamente**.  
+Esta estructura se puede usar tanto con un archivo de recursos (``strings.xml``) como directamente en código.
+
+📌 Ejemplo con ``strings.xml``:
+
+En el archivo ``strings.xml``:
+```xml
+<resources>
+    <string name="app_name">SampleApp</string>
+    <string name="badge_notifications_v1">%s notificaciones, %s sin leer</string>
+    <!-- Alternativa: usar formato con el número y tipo de parámetros -->
+    <string name="badge_notifications_v2">%1$s notificaciones, %2$s sin leer</string>
+    
+    <!-- Y si hubiera que formatear un número con dos decimales -->
+    <string name="price">%1$.2f dólares</string>
+    
+    <!-- Para mostrar el carácter % de forma literal en una format string, se debe escribir %%  -->
+    <string name="progress">Progreso: %s%%</string>
+</resources>
+```
+
+Y en código (ejemplo en Compose):
+```kotlin
+val badgeNumber = "8"
+val otherValue = "4"
+Text(
+    // Equivalente a Context.getString(...) si se trabajara con XML y ViewBinding
+    text = stringResource(R.string.badge_notifications, badgeNumber, otherValue) // 8 notificaciones, 4 sin leer
+)
+
+val price = 2.5F
+Text(text = stringResource(R.string.price, price)) // 2.50 dólares
+
+val progress = 50
+Text(text = stringResource(R.string.progress, progress)) // Progreso: 50%
+```
+
+📌 Ejemplo con ``.format``:
+
+```kotlin
+val numbers = listOf(25.5, 26.1, 24.3, 25.2)
+println("Máximo: %.1f".format(numbers.max())) // Máximo: 26.1
 ```
 
 ## *Regex* para *matchear* cualquier *endpoint* que no sea el especificado

@@ -9,6 +9,7 @@
     * [Componentes Principales](#componentes-principales)
     * [Proceso](#proceso)
     * [Beneficios](#beneficios)
+  * [*Stack Frames*](#stack-frames)
 <!-- TOC -->
 
 ---
@@ -59,3 +60,10 @@ Es el proceso mediante el cual se combinan diferentes fuentes de contenido visua
 - **Eficiencia**: Permite un manejo más eficiente de múltiples elementos visuales al permitir que cada uno se dibuje de manera independiente.
 - **Efectos Visuales**: Facilita la creación de efectos visuales complejos, como sombras, transparencias y animaciones suaves.
 - **Mejor Experiencia de Usuario**: Al permitir que las interfaces sean más dinámicas y responden mejor a las interacciones del usuario.
+
+## *Stack Frames*
+Al colocar un _breakpoint_ y correr la app en modo _debug_, cuando se detiene en dicho _breakpoint_, se pueden visualizar los **_Frames_** del hilo pausado.  
+**Cada _frame_ representa una llamada a una función en la pila de llamadas (_call stack_) que llevó hasta la línea actual**.
+
+- El _frame_ superior suele ser el método/línea donde se detuvo la ejecución.
+- Los _frames_ inferiores son los “llamadores” (la cadena de llamadas) y permiten navegar el *call stack* para ver variables/estado en cada nivel.

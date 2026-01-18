@@ -4,6 +4,11 @@
 <!-- TOC -->
   * [Ciclo de Rendimiento](#ciclo-de-rendimiento)
     * [Developer Options](#developer-options)
+    * [*Android Profiler*: Herramientas](#android-profiler-herramientas)
+      * [Conceptos previos](#conceptos-previos)
+      * [Monitoreo general](#monitoreo-general)
+      * [Memoria](#memoria)
+      * [CPU & Rendimiento](#cpu--rendimiento)
   * [*Overdraw* (redibujado o superposición)](#overdraw-redibujado-o-superposición)
     * [Qué es](#qué-es)
     * [Análisis](#análisis)
@@ -24,7 +29,7 @@
     * [Archivos de Proguard](#archivos-de-proguard)
     * [¿Cómo funcionan juntos?](#cómo-funcionan-juntos)
     * [Problemas con *Reflection*](#problemas-con-reflection)
-  * [**AAB - *Android App Bundle***](#aab---android-app-bundle)
+  * [AAB - *Android App Bundle*](#aab---android-app-bundle)
   * [Algunos consejos para imágenes](#algunos-consejos-para-imágenes)
     * [Procesa los archivos PNG](#procesa-los-archivos-png)
     * [Comprime los archivos PNG y JPEG](#comprime-los-archivos-png-y-jpeg)
@@ -47,7 +52,7 @@ Algunas de las herramientas disponibles para investigar son:
 
 - *Developer Options* (ver [acá](#developer-options))
 - *Layout Inspector*
-- *Android Profiler*
+- *Android Profiler* (ver [acá](#android-profiler-herramientas))
 - *Leak Canary*
 - *Lint*
 - R8
@@ -71,6 +76,29 @@ Algunas de las opciones para desarrolladores más utilizadas:
 - ***Show view updates*** :arrow_right: Hace que las vistas dentro de las ventanas parpadeen cuando son dibujadas.
 - ***Disable HW overlays*** :arrow_right: Fuerza a usar siempre la GPU para la composición de la pantalla (ver [*Screen compositing*](/Glosary%20&%20Core%20Concepts/Android%20specific.md#screen-compositing)).
 - ***Profile HWUI rendering*** :arrow_right: La opción ***On screen as bars***, muestra barras verticales que representan el tiempo que tarda en dibujarse cada *frame* o fotograma.
+
+### *Android Profiler*: Herramientas
+#### Conceptos previos
+- **_Hotspots_** :arrow_right: Partes del código donde se concentra la mayor parte del tiempo de ejecución o uso de CPU.
+- **Perfilado por muestreo** :arrow_right: El _profiler_ toma “fotos” periódicas del _stack_/hilos para estimar dónde se gasta el tiempo, sin registrar cada llamada.
+- **Grabación instrumentada de métodos** :arrow_right: El _profiler_ inserta _hooks_ en entradas/salidas de métodos para medir tiempos y llamadas con alto detalle.
+- **_Overhead_** :arrow_right: Costo extra (tiempo/CPU/memoria) que agrega una herramienta al ejecutarse, pudiendo afectar el rendimiento medido.
+- **_Jank_** :arrow_right: Tironeo o tartamudeo visible en la pantalla
+
+#### Monitoreo general
+- **_View Live Telemetry_** :arrow_right: Panel de métricas en vivo (CPU/memoria/red/energía) para observar tendencias sin capturas profundas.
+
+#### Memoria
+> 🔍 Ver también [_Memory Handling_](../../Utils%20&%20Miscellaneous/Memory%20handling.md)
+
+- **_Analyze Memory Usage_ (_Heap Dump_)** :arrow_right: Genera un _heap dump_ para ver qué objetos están vivos, quién los referencia y detectar _leaks_.
+- **_Track Memory Consumption_ (Java/Kotlin _Allocations_)** :arrow_right: Registra asignaciones en el _heap_ de Java/Kotlin para identificar qué código está creando objetos y cuándo.
+- **_Track Memory Consumption_ (_Native Allocations_)** :arrow_right: Registra asignaciones nativas (C/C++) para analizar memoria fuera del _heap_ de Java (_malloc_/_new_).
+
+#### CPU & Rendimiento
+- **_Find CPU Hotspots_ (_Callstack Sample_)** :arrow_right: Perfilado por muestreo; muestra en qué funciones se está yendo el tiempo de CPU con bajo _overhead_.
+- **_Find CPU Hotspots_ (Java/Kotlin _Method Recording_)** :arrow_right: Grabación instrumentada de métodos con tiempos detallados por llamada; mayor _overhead_ pero más precisión.
+- **_Capture System Activities_ (_System Trace_)** :arrow_right: Traza a nivel sistema (_threads_, _scheduling_, _frames_, I/O) para diagnosticar [_jank_](#conceptos-previos) y cuellos de botella temporales.
 
 ## *Overdraw* (redibujado o superposición)
 
@@ -176,12 +204,16 @@ Luego, durante el proceso de renderizado, cada vista le provee sus dimensiones a
 Para analizar la jerarquía de UI, se puede utilizar el ***Layout Inspector*** (API 29+). En un proceso en ejecución, esta herramienta permite inspeccionar las vistas como capas y ver sus atributos, incluidos los herederos de cada una de ellas. También se puede rotar para visualizar cómo se están dibujando las diferentes vistas/capas.
 
 ### Soluciones comunes y estrategias
+La primera estrategia que hay que dominar es la de ***“aplanar” la jerarquía de las vistas***. La mejor forma de evitar tener muchas vistas anidadas verticalmente es usar `ConstraintLayout`, el cual permite simplificar la jerarquía de vistas y optimizar el uso de la GPU a la hora de renderizar la UI.
 
-La primera estrategia que hay que dominar es la de ***“aplanar” la jerarquía de las vistas***. La mejor forma de evitar tener muchas vistas anidadas verticalmente es usar `ContraintLayout`, el cual permite simplificar la jerarquía de vistas y optimizar el uso de la GPU a la hora de renderizar la UI.
+> ⚠️ **Importante**  
+> En `ConstraintLayout`, para “llenar” un eje normalmente se usa **`0dp` + _constraints_ en ambos extremos**; `match_parent` rara vez se usa.
+> - **`match_parent`** :arrow_right: La vista intenta medir **todo el tamaño del padre** en ese eje (ancho o alto), **ignorando** en gran parte la idea de “ocupar el espacio entre _constraints_”. Suele causar solapamientos o que otras vistas “no entren” si se esperaba que el _layout_ repartiera el espacio.
+> - **`0dp` (_match constraints_)** :arrow_right: El tamaño se calcula **según los _constraints_**. Si se anclan ambos lados (por ej. **`start`** y **`end`**), la vista se expande/contrae para ocupar **exactamente el espacio disponible entre esas restricciones**. Es el equivalente en **`ConstraintLayout`** a **“``match_parent`` pero respetando _constraints_”** (y habilita _chains_, pesos, etc.).
 
-También es recomendable reutilizar layouts comunes para mejorar el rendimiento de la app. Para eso, Android provee algunas herramientas:
+También es recomendable reutilizar _layouts_ comunes para mejorar el rendimiento de la app. Para eso, Android provee algunas herramientas:
 
-- ``<include>`` :arrow_right: Permite reutilizar un layout dentro de otro. Debe incluir el layout_width y layout_height, ya que de otra forma, se produciría un RuntimeException “silencioso”, sin ningún log.
+- ``<include>`` :arrow_right: Permite reutilizar un _layout_ dentro de otro. Debe incluir el ``layout_width`` y ``layout_height``, ya que de otra forma, se produciría un ``RuntimeException`` “silencioso”, sin ningún _log_.
 
     ```xml
     <include android:id="@+id/new_title"
@@ -192,7 +224,7 @@ También es recomendable reutilizar layouts comunes para mejorar el rendimiento 
 
 - ``<merge>`` :arrow_right: Ayuda a quitar los grupos de vistas redundantes en la jerarquía de UI cuando se incluye un diseño dentro de otro. Es un elemento raíz alternativo que no se dibuja en la jerarquía.
 
-  Es útil cuando se sabe que este diseño va a ser colocado en uno que ya contiene la vista principal adecuada con los contenedores de elementos secundarios necesarios. Es decir, cuando no se requiere ningun ViewGroup en particular o diferente.
+  Es útil cuando se sabe que este diseño va a ser colocado en uno que ya contiene la vista principal adecuada con los contenedores de elementos secundarios necesarios. Es decir, cuando no se requiere ningun ``ViewGroup`` en particular o diferente.
 
     ```xml
     <merge xmlns:android="http://schemas.android.com/apk/res/android">
@@ -209,9 +241,9 @@ También es recomendable reutilizar layouts comunes para mejorar el rendimiento 
     </merge>
     ```
 
-- ``<ViewStub>`` :arrow_right: A veces, el diseño puede requerir vistas complejas que rara vez se usan, también conocidas como Vistas Demoradas, como ser detalles de elementos, indicadores de progreso o mensajes de “Deshacer” para el usuario. Se puede mejorar la eficiencia cargando las vistas solo cuando son necesarias (*on demand*), aplazando la carga de los recursos.
+- ``<ViewStub>`` :arrow_right: A veces, el diseño puede requerir vistas complejas que rara vez se usan, también conocidas como **Vistas Demoradas**, como ser detalles de elementos, indicadores de progreso o mensajes de “Deshacer” para el usuario. Se puede mejorar la eficiencia cargando las vistas solo cuando son necesarias (*on demand*), aplazando la carga de los recursos.
 
-  Los ViewStub son vistas livianas, sin dimensiones, que no se dibujan ni participan en el diseño, permitiendo definir un espacio para utilizarlo cuando es poco frecuente (vistas complejas).
+  Los ``ViewStub`` son vistas livianas, sin dimensiones, que no se dibujan ni participan en el diseño, permitiendo definir un espacio para utilizarlo cuando es poco frecuente (vistas complejas).
 
     ```xml
     <ViewStub
@@ -226,7 +258,7 @@ También es recomendable reutilizar layouts comunes para mejorar el rendimiento 
 
 ## *Profile* GPU
 ### Qué es
-Una aplicación debe actualizar la pantalla lo suficientemente rápido para que los usuarios puedan ver movimientos, transiciones y respuestas fluidas. Dicha tasa de refresco es de 60 fps (_frames per second_). Es decir, **_cada frame tiene 16 milisegundos para dibujarse_** (1000 / 60). La pérdida de frames que no llegan a dibujarse en 16 milisegundos producen una experiencia indeseable para el usuario, conocida como _jank_ (tironeo o tartamudeo visible en la pantalla).  
+Una aplicación debe actualizar la pantalla lo suficientemente rápido para que los usuarios puedan ver movimientos, transiciones y respuestas fluidas. Dicha tasa de refresco es de 60 fps (_frames per second_). Es decir, **_cada frame tiene 16 milisegundos para dibujarse_** (1000 / 60). La pérdida de frames que no llegan a dibujarse en 16 milisegundos producen una experiencia indeseable para el usuario, conocida como [_jank_](#conceptos-previos).  
 
 ### Análisis
 Las opciones de desarrollador de un dispositivo Android brindan una herramienta llamada _Profile HWUI rendering_ (puede tener otro nombre, depende la versión de Android y del dispositivo), que sirve para mostrar un histograma que da información sobre el tiempo que le lleva al Sistema Operativo dibujar los _frames_. Cada barra vertical representa un *frame* y su altura, el tiempo que tarda en dibujarse en milisegundos. La línea verde horizontal representa la barrera de 16 milisegundos.  
@@ -250,7 +282,7 @@ A partir de Android API 21, el Android Runtime (ART) y la máquina virtual Dalvi
 
 ### Análisis
 Hay dos grandes herramientas para analizar la memoria de la aplicación:
-- **_Android Profiler_** :arrow_right: Analiza la aplicación de varios aspectos en tiempo real (batería, red, CPU y el manejo de memoria).
+- [**_Android Profiler_**](#android-profiler-herramientas) :arrow_right: Analiza la aplicación de varios aspectos en tiempo real (batería, red, CPU y el manejo de memoria).
 - **_Leak Canary_** :arrow_right: Es una librería (https://square.github.io/leakcanary/) diseñada para detectar pérdidas de memoria en tiempo real.
 
 ### Soluciones comunes y estrategias
@@ -304,7 +336,7 @@ Sobre las reglas ``-keep``, también es importante destacar que se puede usar la
 Cuando la app contiene algún código de reflexión, R8 no va a encontrar referencias al realizar el análisis estático. Entonces, también elimina ese código aunque no debería.  
 Para evitarlo, se deben agregar algunas reglas para indicarle a R8 que mantenga ese código y no lo elimine.
 
-## **AAB - *Android App Bundle***
+## AAB - *Android App Bundle*
 Subir un [_Android App Bundle_](https://developer.android.com/guide/app-bundle) en lugar de un APK tradicional a la Play Store ofrece ventajas significativas, centradas en la **_optimización del tamaño, la flexibilidad y la eficiencia_**.
 
 - **_Entrega dinámica (dynamic delivery)_**: El AAB incluye todos los recursos, código y configuraciones de la aplicación. Google Play genera múltiples APK's optimizados a partir de este AAB para cada configuración de dispositivo (arquitectura, idioma, densidad de pantalla), llamados **_Split APK's_**. De esta forma, el usuario solo descarga los Split APK's necesarios para su dispositivo.

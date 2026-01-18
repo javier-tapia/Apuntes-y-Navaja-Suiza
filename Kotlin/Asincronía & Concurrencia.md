@@ -1,14 +1,8 @@
 <h1>Asincronía & Concurrencia</h1>
 
-**Las corrutinas** están diseñadas para ejecutar **operaciones asíncronas** complejas de forma limpia y **secuencialmente**, lo que significa que el código de la corrutina espera a que regrese lo que invocó antes de continuar. Esto permite, entre otras cosas, **no bloquear el hilo principal**. Para eso, se utilizan **funciones de suspensión** (***suspension functions***), como ***``delay()``***, ***``await()``*** (que se utiliza junto con el *builder ``async{}``*) y ***``withContext()``*** (una práctica recomendada consiste en usar ``withContext()`` a fin de garantizar que todas las funciones sean seguras para el subproceso principal (*main-safe*), lo cual significa que se puede llamar a la función desde el subproceso principal). En esencia, **_la función de suspensión realiza una acción asíncrona, pero para la corrutina que la invoca, se considera síncrona_**.  
-También se puede indicar que una función personalizada es de suspensión anteponiéndole la palabra reservada ***``suspend``*** (pausa la ejecución de la corrutina actual y guarda todas las variables locales) o ***``resume``*** (continúa la ejecución de una corrutina suspendida desde donde se detuvo). A las funciones de suspensión sólo se las puede llamar **desde una corrutina** o **desde otra función de suspensión** y **retornan asincrónicamente un solo valor**.
-
-**Los *Flows*** se utilizan para retornar múltiples valores computados asincrónicamente. Están diseñados explícitamente para manejar **operaciones asíncronas** complejas de forma efectiva y **emitir varias veces según se requiera**.  
-A diferencia de los canales (*channels*), los _flows_ son *cold streams*, al igual que las secuencias (*sequences*) de Kotlin. El código dentro del constructor de un *flow* (*flow builder*), no se ejecuta hasta que el *flow* es recolectado.  
-En el mundo Android, estas características hacen de *Flow* una excelente alternativa a *LiveData*. *Flow* ofrece una funcionalidad similar: *builders*, *cold streams* y auxiliares útiles (por ejemplo, transformación de datos). Y a diferencia de *LiveData*, **no están vinculados al ciclo de vida y brindan más control sobre el contexto de ejecución**.
-
 ***Index***:
 <!-- TOC -->
+  * [TL;DR: Corrutinas y *Flows*](#tldr-corrutinas-y-flows)
   * [Jerarquía conceptual de las corrutinas](#jerarquía-conceptual-de-las-corrutinas)
   * [*CoroutineScope*](#coroutinescope)
   * [*CoroutineContext*](#coroutinecontext)
@@ -17,34 +11,88 @@ En el mundo Android, estas características hacen de *Flow* una excelente altern
   * [*Dispatchers*](#dispatchers)
   * [*CoroutineCancellationException*](#coroutinecancellationexception)
   * [*CoroutineName*](#coroutinename)
-  * [*Cold Flow* vs *Hot Flow*](#cold-flow-vs-hot-flow)
-  * [*`StateFlow` vs `SharedFlow`*](#stateflow-vs-sharedflow)
+  * [Operadores de ``Flow``: Intermedios vs Terminales](#operadores-de-flow-intermedios-vs-terminales)
+  * [Algunas comparativas útiles](#algunas-comparativas-útiles)
+    * [*Cold Flow* vs *Hot Flow*](#cold-flow-vs-hot-flow)
+    * [`StateFlow` vs `SharedFlow`](#stateflow-vs-sharedflow)
+    * [``Channel`` vs ``SharedFlow``](#channel-vs-sharedflow)
   * [Anotaciones & Funciones](#anotaciones--funciones)
-    * [``combine``](#combine)
-    * [`emit` & `tryEmit`](#emit--tryemit)
-    * [`Mutex`](#mutex)
-    * [`synchronized()`](#synchronized)
-    * [`@Synchronized`](#synchronized-1)
-    * [`@ThreadLocal`](#threadlocal)
-    * [`@Transient`](#transient)
-    * [`@Volatile`](#volatile)
+    * [Operadores de creación y ejecución de ``Flow``](#operadores-de-creación-y-ejecución-de-flow)
+      * [``asFlow``](#asflow)
+      * [``collect``](#collect)
+      * [``flow``](#flow)
+      * [``flowOf``](#flowof)
+    * [Emisión y *Backpressure*](#emisión-y-backpressure)
+      * [`emit` & `tryEmit`](#emit--tryemit)
+    * [Transformación y combinación de flujos](#transformación-y-combinación-de-flujos)
+      * [``combine``](#combine)
+      * [`scan`](#scan)
+    * [Concurrencia y desacople en ``Flow``](#concurrencia-y-desacople-en-flow)
+      * [``buffer``](#buffer)
+      * [``conflate``](#conflate)
+      * [``flatMapMerge``](#flatmapmerge)
+      * [``flowOn``](#flowon)
+      * [``merge``](#merge)
+    * [Operadores de *side-effects*, *lifecycle* y errores](#operadores-de-side-effects-lifecycle-y-errores)
+      * [``cancellable``](#cancellable)
+      * [``catch``](#catch)
+      * [``onCompletion``](#oncompletion)
+      * [``onEach``](#oneach)
+      * [``onStart``](#onstart)
+    * [Control de ritmo (*time-based*)](#control-de-ritmo-time-based)
+      * [``debounce``](#debounce)
+      * [``sample``](#sample)
+      * [``throttle``](#throttle)
+    * [Operadores terminales de obtención de valor](#operadores-terminales-de-obtención-de-valor)
+      * [``first``](#first)
+      * [``single``](#single)
+    * [Lanzamiento, *scopes* y cancelación](#lanzamiento-scopes-y-cancelación)
+      * [``cancel``](#cancel)
+      * [``launch``](#launch)
+      * [``launchIn``](#launchin)
+    * [Sincronización y concurrencia](#sincronización-y-concurrencia)
+      * [`Mutex`](#mutex)
+      * [`synchronized()`](#synchronized)
+      * [`@Synchronized`](#synchronized-1)
+      * [`@ThreadLocal`](#threadlocal)
+      * [`@Volatile`](#volatile)
+    * [Serialización y modelo de datos](#serialización-y-modelo-de-datos)
+      * [`@Transient`](#transient)
+    * [Primitivas de suspensión y cooperación](#primitivas-de-suspensión-y-cooperación)
+      * [``delay``](#delay)
+      * [``yield``](#yield)
+      * [``async`` & ``await``](#async--await)
+      * [``withContext``](#withcontext)
+      * [``join``](#join)
+      * [``suspend`` & ``resume``](#suspend--resume)
   * [*Testing* en corrutinas: ``StandardTestDispatcher`` y ``UnconfinedTestDispatcher``](#testing-en-corrutinas-standardtestdispatcher-y-unconfinedtestdispatcher)
     * [``StandardTestDispatcher``](#standardtestdispatcher)
     * [``UnconfinedTestDispatcher``](#unconfinedtestdispatcher)
     * [Modelo de ``TestDispatcherRule`` (o ``MainCoroutineRule``)](#modelo-de-testdispatcherrule-o-maincoroutinerule)
+  * [Referencias y Fuentes](#referencias-y-fuentes)
 <!-- TOC -->
 
 ---
 
+## TL;DR: Corrutinas y *Flows*
+> 🔍 Ver también [Manejo de *Flows* en la UI](../Apuntes-Android.md#manejo-de-flows-en-la-ui)
+
+**Las Corrutinas** están diseñadas para ejecutar **operaciones asíncronas** complejas de forma limpia y **secuencialmente**, lo que significa que el código de la corrutina espera a que regrese lo que invocó antes de continuar. Esto permite, entre otras cosas, **no bloquear el hilo principal**. Para eso, se utilizan **funciones de suspensión** (***suspension functions***), como ``delay()``, ``await()`` (que se utiliza junto con el *builder ``async{}``*) y ``withContext()`` (una práctica recomendada consiste en usar ``withContext()`` a fin de garantizar que todas las funciones sean seguras para el subproceso principal (*main-safe*), lo cual significa que se puede llamar a la función desde el subproceso principal). En esencia, **la función de suspensión realiza una acción asíncrona, pero para la corrutina que la invoca, se considera síncrona**.  
+También se puede indicar que una función personalizada es de suspensión anteponiéndole la palabra reservada ``suspend`` (pausa la ejecución de la corrutina actual y guarda todas las variables locales) o ``resume`` (continúa la ejecución de una corrutina suspendida desde donde se detuvo). A las funciones de suspensión sólo se las puede llamar **desde una corrutina** o **desde otra función de suspensión** y **retornan asincrónicamente un solo valor**.
+
+**Los *Flows***, a diferencia de las funciones de suspensión que devuelven solo un único valor, se utilizan para **emitir múltiples valores secuencialmente, computados asincrónicamente**. Están diseñados explícitamente para manejar **operaciones asíncronas** complejas de forma efectiva y **emitir varias veces según se requiera**.  
+Los _Flows_ son ***cold streams***, al igual que las [Secuencias (*Sequences*)](../Apuntes-Kotlin.md#410-sequencet). El código dentro del constructor de un *flow* (*flow builder*), no se ejecuta hasta que el *flow* es recolectado.  
+En el mundo Android, estas características hacen de *Flow* una excelente alternativa a *LiveData*, ya que ofrece una funcionalidad similar: *builders*, *cold streams* y auxiliares útiles (por ejemplo, transformación de datos). Y a diferencia de *LiveData*, **no están vinculados al ciclo de vida y brindan más control sobre el contexto de ejecución**.
+
 ## Jerarquía conceptual de las corrutinas
 
-1. **CoroutineScope**: Es un concepto de nivel superior que proporciona un ámbito para lanzar corrutinas.
+1. **_CoroutineScope_** :arrow_right: Es un concepto de nivel superior que proporciona un ámbito para lanzar corrutinas.
     - Tiene métodos como **`launch`**, **`async`**, etc.
     - Contiene un _CoroutineContext_ que define cómo se comportarán las corrutinas lanzadas.
-2. **CoroutineContext**: Es un conjunto de elementos que definen el comportamiento de las corrutinas.
+2. **_CoroutineContext_** :arrow_right: Es un conjunto de elementos que definen el comportamiento de las corrutinas.
     - Es parte de un _CoroutineScope_.
     - Contiene elementos como _Job_, _Dispatcher_, etc.
-3. **Elementos del CoroutineContext** (_Job_, _Dispatcher_, etc.): Son componentes individuales que definen aspectos específicos del comportamiento de las corrutinas.
+3. **Elementos del _CoroutineContext_ (_Job_, _Dispatcher_, etc.)** :arrow_right: Son componentes individuales que definen aspectos específicos del comportamiento de las corrutinas.
     - Son parte de un _CoroutineContext_.
 
 ```
@@ -293,7 +341,23 @@ scope.launch(CoroutineName("CargarDatos")) {
 }
 ```
 
-## *Cold Flow* vs *Hot Flow*
+## Operadores de ``Flow``: Intermedios vs Terminales
+
+- **Intermedios** :arrow_right: Transforman el ``Flow`` y retornan otro ``Flow`` (``Flow<T>``).
+- **Terminales** :arrow_right: Consumen el ``Flow`` y disparan la ejecución (devuelve ``Unit``, ``T`` o lanza una corrutina)
+
+> ℹ️ **Nota:**  
+> El siguiente cuadro agrupa los operadores principales. Algunos operadores tienen variantes (``mapNotNull``, ``filterIsInstance``, etc.).  
+> Los operadores marcados con (``⇉``) introducen un **_concurrency boundary_**: **corrutinas separadas** + **_buffer_** + **desacople** entre producción y consumo.
+
+| Tipo            | Operadores                                                                                                                                                                                                                                                                               |
+|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Intermedios** | `buffer` (``⇉``), `cancellable`, `catch`, `combine`, `conflate` (``⇉``), `debounce`, `distinctUntilChanged`, `filter`, `flatMapMerge` (``⇉``), `flowOn` (``⇉``), `map`, `merge` (``⇉``), `onCompletion`, `onEach`, `onStart`, `retry`, `retryWhen`, `sample`, `scan`, `transform`, `zip` |
+| **Terminales**  | `all`, `any`, `collect`, `collectLatest`, `count`, `first`, `firstOrNull`, `fold`, `last`, `lastOrNull`, `launchIn`, `none`, `produceIn`, `reduce`, `single`, `singleOrNull`, `toList`, `toSet`                                                                                          |
+
+## Algunas comparativas útiles
+
+### *Cold Flow* vs *Hot Flow*
 
 | ***Cold Flow***                                                                                                                                                                                               | ***Hot Flow***                                                                                                                                                                                                                                                                                                  |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -302,7 +366,7 @@ scope.launch(CoroutineName("CargarDatos")) {
 |                                                                                                                                                                                                               | Se puede convertir un cold flow en un hot flow usando los operadores intermedios `stateIn` y `sharedIn`.                                                                                                                                                                                                        |
 | Ejemplos: `Flow`                                                                                                                                                                                              | Ejemplos: `SharedFlow` y `StateFlow`                                                                                                                                                                                                                                                                            |
 
-## *`StateFlow` vs `SharedFlow`*
+### `StateFlow` vs `SharedFlow`
 
 | ***StateFlow***                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | ***SharedFlow***                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -313,11 +377,132 @@ scope.launch(CoroutineName("CargarDatos")) {
 | `stateIn`<br><br>`fun <T> MutableStateFlow<T>.stateIn(`<br>&nbsp;&nbsp;&nbsp;&nbsp;`scope: CoroutineScope,`<br>&nbsp;&nbsp;&nbsp;&nbsp;`started: SharingStarted = SharingStarted.WhileSubscribed(),`<br>&nbsp;&nbsp;&nbsp;&nbsp;`initialValue: T`<br>`): StateFlow<T>`<br><br>Crea una versión compartida del flow que mantiene su estado dentro del ``scope`` indicado.<br><br>• `scope` → El coroutine scope que el Flow compartido debe usar.<br>• `started` → El comportamiento de compartir que determina cuándo el Flow debe empezar y dejar de emitir valores.<br>&nbsp;&nbsp;&nbsp;&nbsp;• `SharingStarted.Lazily`: El flujo comienza a compartir datos cuando el primer collector empieza a recolectar y se detiene cuando el último collector deja de recolectar. Útil para compartir el estado **solo cuando hay un collector activo**.<br>&nbsp;&nbsp;&nbsp;&nbsp;• `SharingStarted.WhileSubscribed`: El flujo comienza a compartir datos cuando el primer collector empieza a recolectar y se detiene tras un período de inactividad (cuando no hay collectors activos). Útil para **compartir el estado mientras se está usando y detenerlo después de cierto tiempo, cuando ya no se necesita**.<br>&nbsp;&nbsp;&nbsp;&nbsp;• `SharingStarted.Eagerly`: El flujo comienza a compartir datos inmediatamente y continúa compartiéndolos indefinidamente, aunque no haya collectors activos. Útil para **compartir el estado todo el tiempo**.<br>• `initialValue` → El valor inicial del `StateFlow` que se emite cuando aún no se ha producido ningún valor. | `sharedIn`<br><br>`fun <T> Flow<T>.shareIn(`<br>&nbsp;&nbsp;&nbsp;&nbsp;`scope: CoroutineScope,`<br>&nbsp;&nbsp;&nbsp;&nbsp;`started: SharingStarted = SharingStarted.WhileSubscribed(),`<br>&nbsp;&nbsp;&nbsp;&nbsp;`replay: Int = 0`<br>`): SharedFlow<T>`<br><br>Crea una versión compartida del flow que mantiene su estado dentro del ``scope`` indicado.<br><br>• `scope` → El coroutine scope que el Flow compartido debe usar.<br>• `started` → El comportamiento de compartir que determina cuándo el Flow debe empezar y dejar de emitir valores.<br>&nbsp;&nbsp;&nbsp;&nbsp;• `SharingStarted.Lazily`: El flujo comienza a compartir datos cuando el primer collector empieza a recolectar y se detiene cuando el último collector deja de recolectar. Útil para compartir el estado **solo cuando hay un collector activo**.<br>&nbsp;&nbsp;&nbsp;&nbsp;• `SharingStarted.WhileSubscribed`: El flujo comienza a compartir datos cuando el primer collector empieza a recolectar y se detiene tras un período de inactividad (cuando no hay collectors activos). Útil para **compartir el estado mientras se está usando y detenerlo después de cierto tiempo, cuando ya no se necesita**.<br>&nbsp;&nbsp;&nbsp;&nbsp;• `SharingStarted.Eagerly`: El flujo comienza a compartir datos inmediatamente y continúa compartiéndolos indefinidamente, aunque no haya collectors activos. Útil para **compartir el estado todo el tiempo**.<br>• `replay` → Número de emisiones previas que se deben reenviar a nuevos suscriptores. Útil para **proveer a los nuevos suscriptores con un cierto número de emisiones pasadas**. |
 | **Casos de uso más comunes**:<br><br>✅ **Representar el estado actual de la UI** que cambia con el tiempo (por ejemplo, `UiState` en `ViewModel`).<br>✅ **Sustituir LiveData** en arquitecturas reactivas (MVVM/MVI).<br>✅ **Exponer un valor observable que siempre tiene un estado actual.** Todo nuevo collector recibe inmediatamente el valor actual almacenado (no espera a que se emita uno nuevo).<br>✅ **Sincronizar estado entre múltiples collectors** que necesitan conocer el valor más reciente (ej. pantalla + test + logger). **Todos los collectors reciben el mismo valor actual al mismo tiempo**, pero `StateFlow` **siempre mantiene un valor vigente**.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | **Casos de uso más comunes**:<br><br>✅ **Emitir eventos efímeros o de una sola vez**, como *navegaciones, mensajes, toasts o errores.*<br>✅ **Transmitir flujos de datos que no representan estado**, sino una **secuencia de valores** (por ejemplo, actualizaciones de ubicación, resultados de red o logs).<br>✅ Difusión (_multicast_) de eventos a múltiples collectors (todos reciben el mismo evento simultáneamente, si están suscritos en ese momento). **A diferencia de StateFlow, los valores no se almacenan**; los collectors que se suscriben tarde no reciben los eventos previos, salvo que se configure `replay`.<br>✅ **Configurar buffers o políticas de desborde (overflow)** cuando se necesita controlar la presión del flujo (cuando los productores generan eventos más rápido de lo que los consumidores pueden procesar).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
+### ``Channel`` vs ``SharedFlow``
+- `Channel`
+    - **Cola** :arrow_right: **“Uno toma un _ticket_”** 
+    - **_Fan-out “single consumer”_** :arrow_right: **Cada mensaje lo consume SOLO UN _receiver_/consumidor**, aunque haya varios posibles.
+    - En Kotlin, un `Channel` se comporta así: si dos corrutinas están recibiendo del mismo _channel_, **cada elemento lo recibe una u otra, NO ambas**. Esto se decide por **orden de espera + _scheduling_** de corrutinas. 
+    - Es ideal para “**eventos _one-shot_ a un consumidor**” o **_work-queue_**.
+- `SharedFlow`
+    - **Altavoz** :arrow_right: **“Todos escuchan el anuncio”**
+    - **_Fan-out “broadcast”_** :arrow_right: **Cada mensaje se entrega A TODOS los consumidores activos** (_collectors_ que ya están colectando). 
+    - Un **`SharedFlow`** se comporta así: todos los _collectors_ reciben la misma emisión.
+
 ## Anotaciones & Funciones
-### [``combine``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/combine.html)
+### Operadores de creación y ejecución de ``Flow``
+> 👉 Dónde nace el flujo y cuándo se ejecuta
+
+#### [``asFlow``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/as-flow.html)
+Convierte una **fuente existente** (colecciones, secuencias, rangos, etc.) en un ``Flow`` frío (**_cold stream_**), emitiendo sus elementos de **forma secuencial al ser colectados**. Se usa principalmente para **adaptar estructuras ya existentes** a APIs basadas en ``Flow``, especialmente en **ejemplos, tests o _pipelines_ simples**.  
+No introduce concurrencia ni _buffer_. La emisión ocurre en el **contexto del _collector_**, salvo que se use [``flowOn``](#flowon).
+
+📌 **Ejemplo**:  
+Una lista se convierte en ``Flow`` y se consume al colectar
+
+```kotlin
+listOf(1, 2, 3)
+    .asFlow()
+    .collect { println(it) }
+
+// 1
+// 2
+// 3
+
+// También se puede aplicar sobre rangos o secuencias
+(1..3).asFlow()
+    .collect { println(it) }
+```
+
+#### [``collect``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/collect.html)
+Operador terminal que **inicia la ejecución del _Flow_** y **consume todos los valores emitidos**, ejecutando una acción por cada uno. Es suspendido, respeta cancelación y _backpressure_, y no devuelve un valor (``Unit``).
+
+📌 **Ejemplo**:  
+El ``Flow`` se ejecuta, emite ``1``, ``2``, ``3``, y cada valor es consumido en orden
+```kotlin
+flowOf(1, 2, 3)
+    .collect { value ->
+        println(value)
+    }
+```
+
+#### [``flow``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/flow.html)
+Crea un ``Flow`` frío (**_cold stream_**), donde el bloque **se ejecuta al colectar**. Permite **emitir valores suspendibles, cancelables y secuenciales**.
+
+📌 **Ejemplo**:
+
+```kotlin
+flow {
+    emit(loadFromDisk()) // Bloque de Emisión/Producción de valores
+}
+```
+
+#### [``flowOf``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/flow-of.html)
+Crea un ``Flow`` frío (**_cold stream_**) a partir de **valores conocidos**, que se **emiten secuencialmente al ser colectados**. Se usa principalmente para **ejemplos, tests y flujos simples**, donde los valores ya están disponibles.  
+No introduce concurrencia ni _buffer_, y no ejecuta lógica suspendida.
+
+📌 **Ejemplo**:  
+El flujo no se ejecuta hasta que se llama a ``collect``
+
+```kotlin
+val flow = flowOf(1, 2, 3)
+
+// Nada se emite aún
+
+flow.collect { println(it) }
+
+// 1
+// 2
+// 3
+
+// Equivalente conceptual a:
+flow {
+    emit(1)
+    emit(2)
+    emit(3)
+}
+```
+
+### Emisión y *Backpressure*
+> 👉 Cómo se producen eventos y quién controla el ritmo
+
+#### [`emit`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow-collector/emit.html) & [`tryEmit`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-mutable-shared-flow/try-emit.html)
+
+- **`emit`**: Es una **función suspendida** que **respeta _backpressure_**: se suspende hasta que el evento pueda ser emitido (cuando haya un _collector_ activo y/o espacio disponible en el _buffer_), permitiendo que **el consumidor regule el ritmo de producción**.
+- **`tryEmit`**: Es una **_función no suspendida_** usada con ``MutableSharedFlow`` y ``MutableStateFlow`` que **_intenta emitir el evento inmediatamente_**. Si el evento fue emitido con éxito (haya o no haya _collectors_), devuelve **`true`**. Si el evento no pudo ser emitido (porque el _buffer_ está lleno y se está usando la estrategia de _overflow_ ``BufferOverflow.SUSPEND``), los eventos adicionales simplemente se descartan (retornando **`false`**), sin suspender ni esperar. Esta es la principal diferencia con ``emit`` y la razón por la que **_se usa para eventos de alta frecuencia y no críticos_**. La función ofrece una solución de **_"intentar y olvidar" (fire-and-forget)_**, donde no es necesario bloquear el hilo emisor si un evento no se puede entregar de inmediato.
+
+📌 **Ejemplo**:
+
+```kotlin
+val sharedFlow = MutableSharedFlow<Int>(
+    replay = 0,
+    extraBufferCapacity = 1
+)
+
+coroutineScope.launch {
+    sharedFlow.collect { value ->
+        delay(100)          // Simula consumidor lento
+        println(value)
+    }
+}
+
+coroutineScope.launch {
+    sharedFlow.emit(1)      // Suspende si el buffer está lleno
+    sharedFlow.emit(2)
+}
+
+coroutineScope.launch {
+    val emitted = sharedFlow.tryEmit(3) // No suspende
+    println("tryEmit success: $emitted")
+}
+```
+
+### Transformación y combinación de flujos
+> 👉 Qué se emite y cómo se combinan los datos
+
+#### [``combine``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/combine.html)
 Retorna un ``Flow`` cuyos valores se generan con la función ``transform`` (la _lambda_), **combinando los valores emitidos más recientemente por cada _flow_**.
 
-📌 Ejemplo:
+📌 **Ejemplo**:
 
 ```kotlin
 val flow = flowOf(1, 2).onEach { delay(10) }
@@ -330,17 +515,262 @@ combine(flow, flow2) { i, s ->
 }
 ```
 
-### `emit` & `tryEmit`
+#### [`scan`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/scan.html)
+Operador intermedio que **acumula estado** a partir de los valores emitidos y **emite cada estado intermedio**, comenzando por un valor inicial.  
+Es el equivalente reactivo de un [``fold``](../Kotlin/Colecciones/Aggregate%20operations.md#fold-and-reduce), pero **sin esperar al final del flujo**. Cada emisión depende del valor anterior acumulado.
 
-- **`emit`**: Es una **_función suspendida que espera hasta que el evento pueda ser emitido_** (si hay un _collector_ disponible y espacio en el _buffer_).
-- **`tryEmit`**: Es una **_función no suspendida que intenta emitir el evento inmediatamente_**. Si el evento fue emitido con éxito (haya o no haya _collectors_), devuelve **`true`**. Si el evento no pudo ser emitido (porque el _buffer_ está lleno y se está usando la estrategia de _overflow_ ``BufferOverflow.SUSPEND``), los eventos adicionales simplemente se descartan (retornando **`false`**), sin suspender ni esperar. Esta es la principal diferencia con ``emit`` y la razón por la que **_se usa para eventos de alta frecuencia y no críticos_**. La función ofrece una solución de **_"intentar y olvidar" (fire-and-forget)_**, donde no es necesario bloquear el hilo emisor si un evento no se puede entregar de inmediato.
+📌 **Ejemplo**:  
+Se emite el estado inicial (``0``) y luego cada acumulación parcial
 
-### [`Mutex`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.sync/-mutex.html)
+```kotlin
+flowOf(1, 2, 3)
+    .scan(0) { acc, value -> acc + value }
+    .collect { println(it) }
+
+// 0
+// 1
+// 3
+// 6
+```
+
+### Concurrencia y desacople en ``Flow``
+> 👉 Dónde se separan productor y consumidor (**_concurrency boundaries_**)
+
+#### [``buffer``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/buffer.html)
+Operador intermedio que introduce un _concurrency boundary_ entre el productor y el consumidor, **desacoplándolos mediante un _buffer_** (se ejecutan en **corrutinas separadas**).  
+Permite que el **productor emita más rápido** sin esperar a que el consumidor procese cada valor.
+
+📌 **Ejemplo**:  
+Sin ``buffer``, cada ``emit`` esperaría al ``collect``.  
+Con ``buffer``, la emisión continúa mientras haya espacio disponible en el _buffer_.
+
+```kotlin
+flow {
+    repeat(3) {
+        emit(it)
+        println("emit $it")
+    }
+}
+    .buffer()
+    .collect {
+        delay(100)
+        println("collect $it")
+    }
+```
+
+#### [``conflate``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/conflate.html)
+Operador intermedio que introduce un _concurrency boundary_ y **desacopla productor y consumidor**, pero **solo conserva el valor más reciente** cuando el consumidor es más lento.  
+Los valores intermedios **se descartan**, reduciendo la presión sin suspender al productor.
+
+📌 **Ejemplo**:  
+El productor emite más rápido que el consumidor.  
+El consumidor recibe únicamente el último valor disponible.
+
+```kotlin
+flow {
+    repeat(5) {
+        emit(it)
+        delay(10)
+    }
+}
+    .conflate()
+    .collect {
+        delay(100)
+        println(it)
+    }
+
+// 0
+// 4
+```
+
+#### [``flatMapMerge``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/flat-map-merge.html)
+Operador intermedio que **transforma cada valor emitido en un nuevo ``Flow`` y fusiona (mergea) sus emisiones de forma concurrente**.  
+Introduce un _concurrency boundary_: cada _flow_ interno se colecta en **corrutinas separadas**, permitiendo que **sus emisiones se intercalen según estén disponibles**.
+
+📌 **Ejemplo**:  
+Cada valor se transforma en un ``Flow`` que emite dos valores con demora.  
+Las emisiones de ambos flujos se intercalan.
+
+```kotlin
+flowOf(1, 2)
+    .flatMapMerge { value ->
+        flow {
+            emit(value * 10)
+            delay(50)
+            emit(value * 10 + 1)
+        }
+    }
+    .collect { println(it) }
+
+// 10
+// 20
+// 11
+// 21
+```
+
+#### [``flowOn``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/flow-on.html)
+Cambia el ``CoroutineContext`` del flujo ascendente (**_upstream_**), es decir, el bloque de emisión y los operadores intermedios **definidos antes** de ``flowOn``.
+
+📌 **Ejemplo**:
+
+```kotlin
+flow {
+    emit(loadFromDisk())
+}
+    .flowOn(Dispatchers.IO) // Producción/Emisión en IO
+    .collect { result ->
+        println(result)     // Colección en el contexto actual
+    }
+```
+
+#### [``merge``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/merge.html)
+Operador intermedio que **combina múltiples _Flows_ en uno solo, emitiendo los valores de todos a medida que llegan, sin preservar orden entre flujos**.  
+Cada ``Flow`` se colecta **concurrentemente**, introduciendo un **_concurrency boundary_**.
+
+A diferencia de [``flatMapMerge``](#flatmapmerge), **no transforma valores**: simplemente **fusiona emisiones existentes**.
+
+📌 **Ejemplo**:  
+Los valores se emiten en el orden en que cada ``Flow`` los produce.  
+Cada flujo se ejecuta en su propia corrutina, y el _collector_ recibe los valores **tan pronto como están disponibles**, sin esperar a que los demás flujos emitan.
+
+```kotlin
+val flowA = flow {
+    emit("A1")
+    delay(30)
+    emit("A2")
+}
+
+val flowB = flow {
+    delay(10)
+    emit("B1")
+    emit("B2")
+}
+
+merge(flowA, flowB)
+    .collect { println(it) }
+
+// B1
+// B2
+// A1
+// A2
+```
+
+### Operadores de *side-effects*, *lifecycle* y errores
+> 👉 No cambian datos, cambian comportamiento. Ideales para _logging_, métricas, _setup_, _fallback_
+
+#### [``cancellable``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/cancellable.html)
+Operador intermedio que **hace explícita la cooperación con la cancelación** durante la recolección del ``Flow``.  
+Garantiza que el flujo **verifique el estado de cancelación entre emisiones**, incluso cuando el _upstream_ no tiene puntos de suspensión frecuentes.
+
+No introduce _concurrency boundaries_ ni _buffers_: **solo afecta el comportamiento de cancelación**.
+
+📌 **Ejemplo**:  
+La recolección se detiene inmediatamente cuando se cancela la corrutina.  
+Sin ``cancellable``, un flujo puramente CPU-bound podría continuar emitiendo valores hasta llegar a un punto de suspensión. Con ``cancellable``, la cancelación se respeta de forma cooperativa entre emisiones.
+
+```kotlin
+val job = CoroutineScope(Dispatchers.Default).launch {
+    flow {
+        repeat(1_000) {
+            emit(it)
+        }
+    }
+        .cancellable()
+        .collect { value ->
+            println(value)
+        }
+}
+
+delay(10)
+job.cancel()
+```
+
+#### [``catch``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/catch.html)
+Operador intermedio que **intercepta excepciones lanzadas en el flujo ascendente (_upstream_)**, permitiendo **manejar errores o emitir valores alternativos** sin cancelar la recolección. Es el equivalente reactivo de un bloque ``try / catch`` y suele combinarse con [``onCompletion``](#oncompletion) para lógica de cierre.
+
+No captura excepciones del bloque ``collect`` ni excepciones de cancelación (``CancellationException``).
+
+📌 **Ejemplo**:  
+Si ocurre un error durante la emisión, se maneja y el flujo continúa con un valor de respaldo.
+
+```kotlin
+flow {
+    emit(1)
+    error("Algo falló")
+}
+    .catch { e ->
+        emit(-1)
+    }
+    .collect {
+        println(it)
+    }
+
+// 1
+// -1
+```
+
+#### [``onCompletion``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/on-completion.html)
+Operador intermedio que **se ejecuta cuando el flujo termina**, ya sea por **finalización normal, error o cancelación**. es análogo a un bloque ``finally`` en un ``try / catch / finally``.  
+Permite ejecutar lógica de limpieza, _logging_ o métricas **sin alterar los valores emitidos**.
+
+Recibe como parámetro opcional la causa de finalización (``Throwable?``), que es ``null`` si el flujo terminó correctamente.
+
+📌 **Ejemplo**:  
+Se ejecuta siempre al finalizar el flujo, independientemente del motivo
+
+```kotlin
+flowOf(1, 2, 3)
+    .onCompletion { cause ->
+        println("Flow finalizado. Error = $cause")
+    }
+    .collect {
+        println(it)
+    }
+
+// 1
+// 2
+// 3
+// Flow finalizado. Error = null
+```
+
+#### [``onEach``]()
+
+#### [``onStart``]()
+
+### Control de ritmo (*time-based*)
+> 👉 Cuándo se permite emitir
+
+#### [``debounce``]()
+
+#### [``sample``]()
+
+#### [``throttle``]()
+
+### Operadores terminales de obtención de valor
+> 👉 Consumir parcialmente el ``Flow``
+
+#### [``first``]()
+
+#### [``single``]()
+
+### Lanzamiento, *scopes* y cancelación
+> 👉 Cómo se ejecutan corrutinas
+
+#### [``cancel``]()
+
+#### [``launch``]()
+
+#### [``launchIn``]()
+
+### Sincronización y concurrencia
+> 👉 Protección de estado compartido
+
+#### [`Mutex`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.sync/-mutex.html)
 
 - **Descripción**: Permite detener (suspender) la ejecución de corrutinas, a diferencia de los bloqueos tradicionales que son para hilos como **`synchronized`**.
 - **Uso**: Se utiliza a menudo en lugar de **`synchronized`** para manejar el acceso a recursos compartidos de manera más efectiva, ya que permite que las corrutinas sean "despertadas" una vez que se libera el bloqueo.
 
-📌 Ejemplo:
+📌 **Ejemplo**:
 
 ```kotlin
 val mutex = Mutex()
@@ -355,12 +785,12 @@ coroutineScope.launch {
 }
 ```
 
-### [`synchronized()`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/synchronized.html)
+#### [`synchronized()`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/synchronized.html)
 
 - **Descripción**: Bloquea el acceso a una sección crítica del código en un contexto de múltiples hilos (*threads*). Esto asegura que ***solo un hilo pueda ejecutar el bloque de código que está dentro de `synchronized` al mismo tiempo***. Se pueden sincronizar bloques de código dentro de métodos, funciones o incluso *lambdas*.
 - **Uso**: Es útil cuando se necesita controlar el acceso a recursos compartidos desde múltiples hilos.
 
-📌 Ejemplo:
+📌 **Ejemplo**:
 
 ```kotlin
 private val lock = Any()
@@ -372,12 +802,12 @@ fun safeFunction() {
 }
 ```
 
-### [`@Synchronized`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/)
+#### [`@Synchronized`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/)
 
 - **Descripción**: Marca ***métodos que necesitan ser ejecutados de manera sincronizada***, es decir, que ***sólo un hilo puede ejecutarlo a la vez***.
 - **Uso**: Al agregar **`@Synchronized`** a un método, Kotlin genera un bloqueo en un objeto interno (el objeto receptor del método) para que solo un hilo pueda ejecutarlo en un momento dado.
 
-📌 Ejemplo:
+📌 **Ejemplo**:
 
 ```kotlin
 @Synchronized
@@ -386,40 +816,59 @@ fun threadSafeMethod() {
 }
 ```
 
-### [`@ThreadLocal`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.native.concurrent/-thread-local/)
+#### [`@ThreadLocal`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.native.concurrent/-thread-local/)
 
 - **Descripción**: Marca ***campos que deben tener un valor único para cada hilo***. Permite que ***cada hilo tenga su propia copia de la variable***, lo que ayuda a evitar interferencias.
 - **Uso**: Es útil para mantener variables que son específicas a un hilo sin interferencias entre hilos.
 
-📌 Ejemplo:
+📌 **Ejemplo**:
 
 ```kotlin
 @ThreadLocal
 private var threadSpecificVariable: Int = 0
 ```
 
-### [`@Transient`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-transient/)
-
-- **Descripción**: Indica que ***una propiedad de una clase no debe ser serializada***. Es útil para propiedades que no son relevantes para la persistencia de datos.
-- **Uso**: Es común utilizarla en clases que implementan la interfaz **`Serializable`** y para propiedades sensibles, como contraseñas. Al marcar una propiedad como **`@Transient`**, se excluye de la serialización, lo que significa que no se guardará cuando el objeto sea convertido a un formato serializado.
-
-📌 Ejemplo:
-
-```kotlin
-data class User(@Transient val password: String, val username: String)
-```
-
-### [`@Volatile`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.concurrent/-volatile/)
+#### [`@Volatile`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.concurrent/-volatile/)
 
 - **Descripción**: Indica que ***el valor de una variable puede ser modificado por varios hilos (threads)*** y que la visibilidad de esa variable debe ser consistente entre ellos. También evita el cacheo de la variable para asegurar que siempre se lea el valor más reciente.
 - **Uso**: Al marcar una variable como **`@Volatile`**, Kotlin asegura que cualquier operación de lectura/escritura en esa variable se refleje inmediatamente en todos los hilos, eliminando posibles problemas de _cache_ de CPU.
 
-📌 Ejemplo:
+📌 **Ejemplo**:
 
 ```kotlin
 @Volatile
 var sharedResource: Int = 0
 ```
+
+### Serialización y modelo de datos
+> 👉 Persistencia / representación
+
+#### [`@Transient`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-transient/)
+
+- **Descripción**: Indica que ***una propiedad de una clase no debe ser serializada***. Es útil para propiedades que no son relevantes para la persistencia de datos.
+- **Uso**: Es común utilizarla en clases que implementan la interfaz **`Serializable`** y para propiedades sensibles, como contraseñas. Al marcar una propiedad como **`@Transient`**, se excluye de la serialización, lo que significa que no se guardará cuando el objeto sea convertido a un formato serializado.
+
+📌 **Ejemplo**:
+
+```kotlin
+data class User(@Transient val password: String, val username: String)
+```
+
+### Primitivas de suspensión y cooperación
+> 👉 Nivel bajo, base del modelo
+
+#### [``delay``]()
+
+#### [``yield``]()
+
+#### [``async``]() & [``await``]()
+
+#### [``withContext``]()
+
+#### [``join``]()
+
+#### [``suspend``]() & [``resume``]()
+
 
 ## *Testing* en corrutinas: ``StandardTestDispatcher`` y ``UnconfinedTestDispatcher``
 > ℹ️ **Nota:**  
@@ -434,7 +883,7 @@ Ambos son *dispatchers* utilizados en pruebas de corrutinas en Kotlin, pero tien
 3. **Determinismo**: Proporciona un comportamiento determinista y predecible, ideal para pruebas unitarias.
 4. **Caso de uso ideal**: Pruebas donde se necesita verificar el orden exacto de ejecución o controlar precisamente cuándo se ejecutan las corrutinas.
 
-📌 Ejemplo:
+📌 **Ejemplo**:
 
 ```kotlin
 val testDispatcher = StandardTestDispatcher()
@@ -453,7 +902,7 @@ testDispatcher.scheduler.advanceUntilIdle()
 3. **Simplicidad**: Más simple de usar cuando no se necesita controlar el tiempo de ejecución.
 4. **Caso de uso ideal**: Pruebas donde solo interesa el resultado final y no el orden o tiempo de ejecución.
 
-📌 Ejemplo:
+📌 **Ejemplo**:
 
 ```kotlin
 val testDispatcher = UnconfinedTestDispatcher()
@@ -488,3 +937,9 @@ class TestDispatcherRule(
     }
 }
 ```
+
+## Referencias y Fuentes
+- [Kotlin Docs - Coroutines guide](https://kotlinlang.org/docs/coroutines-guide.html)
+- [Kotlin Docs - Asynchronous Flow](https://kotlinlang.org/docs/flow.html)
+- [Kotlin Docs - Channels](https://kotlinlang.org/docs/channels.html)
+- [Android Docs - Kotlin flows on Android](https://developer.android.com/kotlin/flow)
