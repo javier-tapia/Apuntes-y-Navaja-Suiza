@@ -7,6 +7,7 @@
   * [🛠 API vs Librería vs *Framework*](#-api-vs-librería-vs-framework)
   * [Asincronía (*Asynchrony*)](#asincronía-asynchrony)
   * [*Atomicity*](#atomicity)
+  * [*Backpressure*](#backpressure)
   * [*Build*](#build)
   * [*Bytecode*](#bytecode)
   * [*Callback*](#callback)
@@ -80,6 +81,9 @@ Ver [Concurrencia](#concurrencia-concurrency)
 Atomic implies indivisibility and irreducibility, so _**an atomic operation must be performed entirely or not performed at all**_. An operation that is atomic on one machine may not be on another.  
 An atomic operation is an operation during which a processor can simultaneously read a location and write it in the same bus operation. This prevents any other processor or I/O device from writing or reading memory until the operation is complete.  
 Atomicity is a trait that defines whether an operation can be interrupted or not. It matters because _**if something can't be interrupted, it's intrinsically thread safe**_.
+
+## *Backpressure*
+Mecanismo de control de flujo que **regula la velocidad de producción de datos cuando el consumidor no puede procesarlos al mismo ritmo**, evitando saturación, pérdida de información o fallas por sobrecarga. Permite aplicar estrategias como espera, almacenamiento en _buffer_, descarte o reducción de datos para mantener la estabilidad del sistema.
 
 ## *Build*
 Proceso global que incluye varios pasos para preparar un software para su ejecución, incluyendo compilación del código fuente, ejecución de pruebas unitarias, empaquetado de la aplicación (por ejemplo, crear un archivo JAR o WAR en Java), generación de documentación, creación de artefactos para despliegue.
