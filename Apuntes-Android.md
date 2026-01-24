@@ -758,6 +758,8 @@ Por ejemplo, si se tiene un objeto *LiveData* en la UI que se puede actualizar d
   La *activity* sólo necesita observar el objeto *MediatorLiveData* para recibir actualizaciones de ambas fuentes.
 
 ### Manejo de *Flows* en la UI
+> 🔍 Ver también [Asincronía & Concurrencia](Kotlin/Asincronía%20&%20Concurrencia.md)
+
 Se deben tener en cuenta algunas cuestiones a la hora de recolectar un `Flow` emitido en un _ViewModel_ desde un _Fragment_ o una _Activity_, para no tener _memory leaks_ (fugas de memoria) ni errores relacionados al ciclo de vida.  
 La emisión en sí misma es generalmente una operación ligera, por lo que no suele ser un problema hacerla en el hilo principal. Sin embargo, cualquier procesamiento pesado que ocurra antes de la emisión debería moverse a un _dispatcher_ apropiado.
 

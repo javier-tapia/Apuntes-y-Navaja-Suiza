@@ -11,42 +11,41 @@
   * [*Dispatchers*](#dispatchers)
   * [*CoroutineCancellationException*](#coroutinecancellationexception)
   * [*CoroutineName*](#coroutinename)
-  * [Operadores de ``Flow``: Intermedios vs Terminales](#operadores-de-flow-intermedios-vs-terminales)
   * [Algunas comparativas útiles](#algunas-comparativas-útiles)
     * [*Cold Flow* vs *Hot Flow*](#cold-flow-vs-hot-flow)
     * [`StateFlow` vs `SharedFlow`](#stateflow-vs-sharedflow)
     * [``Channel`` vs ``SharedFlow``](#channel-vs-sharedflow)
+  * [Operadores de *Flows*: Intermedios vs Terminales](#operadores-de-flows-intermedios-vs-terminales)
   * [Anotaciones & Funciones](#anotaciones--funciones)
-    * [Operadores de creación y ejecución de ``Flow``](#operadores-de-creación-y-ejecución-de-flow)
+    * [Creación y ejecución de *Flows*](#creación-y-ejecución-de-flows)
       * [``asFlow``](#asflow)
       * [``collect``](#collect)
       * [``flow``](#flow)
       * [``flowOf``](#flowof)
-    * [Emisión y *Backpressure*](#emisión-y-backpressure)
+    * [Emisión y *Backpressure* en *Flows*](#emisión-y-backpressure-en-flows)
       * [`emit` & `tryEmit`](#emit--tryemit)
-    * [Transformación y combinación de flujos](#transformación-y-combinación-de-flujos)
+    * [Transformación y combinación de *Flows*](#transformación-y-combinación-de-flows)
       * [``combine``](#combine)
       * [`scan`](#scan)
-    * [Concurrencia y desacople en ``Flow``](#concurrencia-y-desacople-en-flow)
+    * [Concurrencia y desacople en *Flows*](#concurrencia-y-desacople-en-flows)
       * [``buffer``](#buffer)
       * [``conflate``](#conflate)
       * [``flatMapMerge``](#flatmapmerge)
       * [``flowOn``](#flowon)
       * [``merge``](#merge)
-    * [Operadores de *side-effects*, *lifecycle* y errores](#operadores-de-side-effects-lifecycle-y-errores)
+    * [Operadores de *side-effects*, *lifecycle* y errores en *Flows*](#operadores-de-side-effects-lifecycle-y-errores-en-flows)
       * [``cancellable``](#cancellable)
       * [``catch``](#catch)
       * [``onCompletion``](#oncompletion)
       * [``onEach``](#oneach)
       * [``onStart``](#onstart)
-    * [Control de ritmo (*time-based*)](#control-de-ritmo-time-based)
+    * [Control de ritmo (*time-based*) en *Flows*](#control-de-ritmo-time-based-en-flows)
       * [``debounce``](#debounce)
       * [``sample``](#sample)
-      * [``throttle``](#throttle)
-    * [Operadores terminales de obtención de valor](#operadores-terminales-de-obtención-de-valor)
+    * [Operadores terminales de obtención de valor en *Flows*](#operadores-terminales-de-obtención-de-valor-en-flows)
       * [``first``](#first)
       * [``single``](#single)
-    * [Lanzamiento, *scopes* y cancelación](#lanzamiento-scopes-y-cancelación)
+    * [Lanzamiento de *Flows*, *scopes* y cancelación](#lanzamiento-de-flows-scopes-y-cancelación)
       * [``cancel``](#cancel)
       * [``launch``](#launch)
       * [``launchIn``](#launchin)
@@ -58,13 +57,13 @@
       * [`@Volatile`](#volatile)
     * [Serialización y modelo de datos](#serialización-y-modelo-de-datos)
       * [`@Transient`](#transient)
-    * [Primitivas de suspensión y cooperación](#primitivas-de-suspensión-y-cooperación)
+    * [Primitivas de suspensión y cooperación en corrutinas](#primitivas-de-suspensión-y-cooperación-en-corrutinas)
       * [``delay``](#delay)
       * [``yield``](#yield)
       * [``async`` & ``await``](#async--await)
       * [``withContext``](#withcontext)
       * [``join``](#join)
-      * [``suspend`` & ``resume``](#suspend--resume)
+      * [``resume``](#resume)
   * [*Testing* en corrutinas: ``StandardTestDispatcher`` y ``UnconfinedTestDispatcher``](#testing-en-corrutinas-standardtestdispatcher-y-unconfinedtestdispatcher)
     * [``StandardTestDispatcher``](#standardtestdispatcher)
     * [``UnconfinedTestDispatcher``](#unconfinedtestdispatcher)
@@ -77,8 +76,8 @@
 ## TL;DR: Corrutinas y *Flows*
 > 🔍 Ver también [Manejo de *Flows* en la UI](../Apuntes-Android.md#manejo-de-flows-en-la-ui)
 
-**Las Corrutinas** están diseñadas para ejecutar **operaciones asíncronas** complejas de forma limpia y **secuencialmente**, lo que significa que el código de la corrutina espera a que regrese lo que invocó antes de continuar. Esto permite, entre otras cosas, **no bloquear el hilo principal**. Para eso, se utilizan **funciones de suspensión** (***suspension functions***), como ``delay()``, ``await()`` (que se utiliza junto con el *builder ``async{}``*) y ``withContext()`` (una práctica recomendada consiste en usar ``withContext()`` a fin de garantizar que todas las funciones sean seguras para el subproceso principal (*main-safe*), lo cual significa que se puede llamar a la función desde el subproceso principal). En esencia, **la función de suspensión realiza una acción asíncrona, pero para la corrutina que la invoca, se considera síncrona**.  
-También se puede indicar que una función personalizada es de suspensión anteponiéndole la palabra reservada ``suspend`` (pausa la ejecución de la corrutina actual y guarda todas las variables locales) o ``resume`` (continúa la ejecución de una corrutina suspendida desde donde se detuvo). A las funciones de suspensión sólo se las puede llamar **desde una corrutina** o **desde otra función de suspensión** y **retornan asincrónicamente un solo valor**.
+**Las Corrutinas** están diseñadas para ejecutar **operaciones asíncronas** complejas de forma limpia y **secuencialmente**, lo que significa que el código de la corrutina espera a que regrese lo que invocó antes de continuar. Esto permite, entre otras cosas, **no bloquear el hilo principal**. Para eso, se utilizan **funciones de suspensión** (***suspension functions***), como [``delay()``](#delay), ``await()`` (que se utiliza junto con el *builder [``async{}``](#async--await)*) y [``withContext()``](#withcontext) (una práctica recomendada consiste en usar esta función a fin de garantizar que todas las funciones sean seguras para el subproceso principal (*main-safe*), lo cual significa que se puede llamar a la función desde el subproceso principal). En esencia, **la función de suspensión realiza una acción asíncrona, pero para la corrutina que la invoca, se considera síncrona**.  
+También se puede indicar que una función personalizada es de suspensión anteponiéndole la palabra reservada [``suspend``](https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions) (pausa la ejecución de la corrutina actual y guarda todas las variables locales) o continuar la ejecución de una corrutina suspendida desde donde se detuvo con [``resume``](#resume). A las funciones de suspensión sólo se las puede llamar **desde una corrutina** o **desde otra función de suspensión** y **retornan asincrónicamente un solo valor**.
 
 **Los *Flows***, a diferencia de las funciones de suspensión que devuelven solo un único valor, se utilizan para **emitir múltiples valores secuencialmente, computados asincrónicamente**. Están diseñados explícitamente para manejar **operaciones asíncronas** complejas de forma efectiva y **emitir varias veces según se requiera**.  
 Los _Flows_ son ***cold streams***, al igual que las [Secuencias (*Sequences*)](../Apuntes-Kotlin.md#410-sequencet). El código dentro del constructor de un *flow* (*flow builder*), no se ejecuta hasta que el *flow* es recolectado.  
@@ -341,20 +340,6 @@ scope.launch(CoroutineName("CargarDatos")) {
 }
 ```
 
-## Operadores de ``Flow``: Intermedios vs Terminales
-
-- **Intermedios** :arrow_right: Transforman el ``Flow`` y retornan otro ``Flow`` (``Flow<T>``).
-- **Terminales** :arrow_right: Consumen el ``Flow`` y disparan la ejecución (devuelve ``Unit``, ``T`` o lanza una corrutina)
-
-> ℹ️ **Nota:**  
-> El siguiente cuadro agrupa los operadores principales. Algunos operadores tienen variantes (``mapNotNull``, ``filterIsInstance``, etc.).  
-> Los operadores marcados con (``⇉``) introducen un **_concurrency boundary_**: **corrutinas separadas** + **_buffer_** + **desacople** entre producción y consumo.
-
-| Tipo            | Operadores                                                                                                                                                                                                                                                                               |
-|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Intermedios** | `buffer` (``⇉``), `cancellable`, `catch`, `combine`, `conflate` (``⇉``), `debounce`, `distinctUntilChanged`, `filter`, `flatMapMerge` (``⇉``), `flowOn` (``⇉``), `map`, `merge` (``⇉``), `onCompletion`, `onEach`, `onStart`, `retry`, `retryWhen`, `sample`, `scan`, `transform`, `zip` |
-| **Terminales**  | `all`, `any`, `collect`, `collectLatest`, `count`, `first`, `firstOrNull`, `fold`, `last`, `lastOrNull`, `launchIn`, `none`, `produceIn`, `reduce`, `single`, `singleOrNull`, `toList`, `toSet`                                                                                          |
-
 ## Algunas comparativas útiles
 
 ### *Cold Flow* vs *Hot Flow*
@@ -388,8 +373,22 @@ scope.launch(CoroutineName("CargarDatos")) {
     - **_Fan-out “broadcast”_** :arrow_right: **Cada mensaje se entrega A TODOS los consumidores activos** (_collectors_ que ya están colectando). 
     - Un **`SharedFlow`** se comporta así: todos los _collectors_ reciben la misma emisión.
 
+## Operadores de *Flows*: Intermedios vs Terminales
+
+- **Intermedios** :arrow_right: Transforman el ``Flow`` y retornan otro ``Flow`` (``Flow<T>``).
+- **Terminales** :arrow_right: Consumen el ``Flow`` y disparan la ejecución (devuelve ``Unit``, ``T`` o lanza una corrutina)
+
+> ℹ️ **Nota:**  
+> El siguiente cuadro agrupa los operadores principales. Algunos operadores tienen variantes (``mapNotNull``, ``filterIsInstance``, etc.).  
+> Los operadores marcados con (``⇉``) introducen un **_concurrency boundary_**: **corrutinas separadas** + **_buffer_** + **desacople** entre producción y consumo.
+
+| Tipo            | Operadores                                                                                                                                                                                                                                                                               |
+|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Intermedios** | `buffer` (``⇉``), `cancellable`, `catch`, `combine`, `conflate` (``⇉``), `debounce`, `distinctUntilChanged`, `filter`, `flatMapMerge` (``⇉``), `flowOn` (``⇉``), `map`, `merge` (``⇉``), `onCompletion`, `onEach`, `onStart`, `retry`, `retryWhen`, `sample`, `scan`, `transform`, `zip` |
+| **Terminales**  | `all`, `any`, `collect`, `collectLatest`, `count`, `first`, `firstOrNull`, `fold`, `last`, `lastOrNull`, `launchIn`, `none`, `produceIn`, `reduce`, `single`, `singleOrNull`, `toList`, `toSet`                                                                                          |
+
 ## Anotaciones & Funciones
-### Operadores de creación y ejecución de ``Flow``
+### Creación y ejecución de *Flows*
 > 👉 Dónde nace el flujo y cuándo se ejecuta
 
 #### [``asFlow``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/as-flow.html)
@@ -462,7 +461,7 @@ flow {
 }
 ```
 
-### Emisión y *Backpressure*
+### Emisión y *Backpressure* en *Flows*
 > 👉 Cómo se producen eventos y quién controla el ritmo
 
 #### [`emit`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow-collector/emit.html) & [`tryEmit`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-mutable-shared-flow/try-emit.html)
@@ -496,11 +495,11 @@ coroutineScope.launch {
 }
 ```
 
-### Transformación y combinación de flujos
+### Transformación y combinación de *Flows*
 > 👉 Qué se emite y cómo se combinan los datos
 
 #### [``combine``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/combine.html)
-Retorna un ``Flow`` cuyos valores se generan con la función ``transform`` (la _lambda_), **combinando los valores emitidos más recientemente por cada _flow_**.
+Operador intermedio que retorna un ``Flow`` cuyos valores se generan con la función ``transform`` (la _lambda_), **combinando los valores emitidos más recientemente por cada _flow_**.
 
 📌 **Ejemplo**:
 
@@ -533,7 +532,7 @@ flowOf(1, 2, 3)
 // 6
 ```
 
-### Concurrencia y desacople en ``Flow``
+### Concurrencia y desacople en *Flows*
 > 👉 Dónde se separan productor y consumidor (**_concurrency boundaries_**)
 
 #### [``buffer``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/buffer.html)
@@ -609,7 +608,7 @@ flowOf(1, 2)
 ```
 
 #### [``flowOn``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/flow-on.html)
-Cambia el ``CoroutineContext`` del flujo ascendente (**_upstream_**), es decir, el bloque de emisión y los operadores intermedios **definidos antes** de ``flowOn``.
+Operador intermedio que **cambia el ``CoroutineContext`` del flujo ascendente (_upstream_)**, es decir, el bloque de emisión y los operadores intermedios **definidos antes** de ``flowOn``.
 
 📌 **Ejemplo**:
 
@@ -655,8 +654,8 @@ merge(flowA, flowB)
 // A2
 ```
 
-### Operadores de *side-effects*, *lifecycle* y errores
-> 👉 No cambian datos, cambian comportamiento. Ideales para _logging_, métricas, _setup_, _fallback_
+### Operadores de *side-effects*, *lifecycle* y errores en *Flows*
+> 👉 No cambian datos, **cambian comportamiento**. Ideales para _logging_, métricas, _setup_, _fallback_
 
 #### [``cancellable``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/cancellable.html)
 Operador intermedio que **hace explícita la cooperación con la cancelación** durante la recolección del ``Flow``.  
@@ -733,42 +732,202 @@ flowOf(1, 2, 3)
 // Flow finalizado. Error = null
 ```
 
-#### [``onEach``]()
+#### [``onEach``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/on-each.html)
+Operador intermedio que **ejecuta una acción para cada valor emitido** sin modificar el flujo. Es útil para **_side-effects_**, como _logging_, métricas, guardar en _cache_, _debug_, etc.  
+No detiene ni transforma los elementos, **simplemente los observa**.
 
-#### [``onStart``]()
+📌 **Ejemplo**:  
+Permite ejecutar un efecto secundario mientras los valores siguen fluyendo hacia ``collect``
 
-### Control de ritmo (*time-based*)
+```kotlin
+flowOf(1, 2, 3)
+    .onEach { println("Valor emitido: $it") }
+    .collect { println("Procesando: $it") }
+
+// Output:
+// Valor emitido: 1
+// Procesando: 1
+// Valor emitido: 2
+// Procesando: 2
+// Valor emitido: 3
+// Procesando: 3
+```
+
+#### [``onStart``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/on-start.html)
+Operador intermedio que **ejecuta una acción antes de que el _Flow_ comience a emitir valores**.  
+Se usa para inicialización, emitir valores iniciales o realizar _side-effects_ previos al flujo principal.
+
+📌 **Ejemplo**:  
+Se ejecuta primero el bloque de ``onStart``, luego las emisiones originales del _Flow_.
+
+```kotlin
+flowOf(1, 2, 3)
+    .onStart {
+        println("Starting flow")
+    }
+    .collect {
+        println(it)
+    }
+
+// Starting flow
+// 1
+// 2
+// 3
+```
+
+### Control de ritmo (*time-based*) en *Flows*
 > 👉 Cuándo se permite emitir
 
-#### [``debounce``]()
+#### [``debounce``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/debounce.html)
+Operador intermedio que **filtra emisiones rápidas**, manteniendo solo el valor más reciente después de que haya pasado un tiempo sin nuevas emisiones.  
+Se usa para **evitar procesar eventos demasiado frecuentes** (por ejemplo, búsquedas mientras se escribe).
 
-#### [``sample``]()
+📌 **Ejemplo**:  
+Solo se emite el último valor si no llegan otros dentro del intervalo.
 
-#### [``throttle``]()
+```kotlin
+flow {
+    emit(1)
+    delay(50)
+    emit(2)
+    delay(200)
+    emit(3)
+}
+    .debounce(100)
+    .collect { println(it) }
 
-### Operadores terminales de obtención de valor
+// 2
+// 3
+```
+
+#### [``sample``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/sample.html)
+Operador intermedio que **emite periódicamente el valor más reciente** del flujo, según un intervalo fijo.  
+A diferencia de [``debounce``](#debounce), **no espera silencio**, sino que toma “muestras” del estado actual.
+
+📌 **Ejemplo**:  
+Se emite el último valor disponible en cada intervalo.
+
+```kotlin
+flow {
+    repeat(5) {
+        emit(it)
+        delay(50)
+    }
+}
+    .sample(100)
+    .collect { println(it) }
+
+// 1
+// 3
+// 4
+```
+
+### Operadores terminales de obtención de valor en *Flows*
 > 👉 Consumir parcialmente el ``Flow``
 
-#### [``first``]()
+#### [``first``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/first.html)
+Operador terminal que **obtiene el primer valor emitido** por el _Flow_ y **cancela la colección inmediatamente después**.  
+Si el flujo está vacío, lanza una excepción (``NoSuchElementException``). Existe una variante con predicado.
 
-#### [``single``]()
+📌 **Ejemplo**:  
+Solo se consume la primera emisión.
 
-### Lanzamiento, *scopes* y cancelación
+```kotlin
+val result = flowOf(10, 20, 30).first()
+
+println(result)
+// 10
+```
+
+#### [``single``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/single.html)
+Operador terminal que **obtiene el único valor emitido** por el _Flow_.  
+Lanza excepción si el flujo está vacío o si emite más de un valor. Existe una variante con predicado.
+
+📌 **Ejemplo**:  
+El flujo debe emitir exactamente un valor.
+
+```kotlin
+val result = flowOf(42).single()
+
+println(result)
+// 42
+```
+
+### Lanzamiento de *Flows*, *scopes* y cancelación
 > 👉 Cómo se ejecutan corrutinas
 
-#### [``cancel``]()
+#### [``cancel``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/cancel.html)
+Función que **cancela una corrutina o un ``CoroutineScope``**, marcando su ``Job`` como cancelado.  
+La cancelación es **cooperativa**: la corrutina se detiene en el próximo punto de suspensión (``delay``, ``collect``, ``yield``, etc.), lanzando internamente una ``CancellationException``.
 
-#### [``launch``]()
+📌 **Ejemplo**:  
+Se cancela el ``Job``, deteniendo la corrutina antes de que termine.
 
-#### [``launchIn``]()
+```kotlin
+val job = CoroutineScope(Dispatchers.Default).launch {
+    repeat(5) {
+        delay(100)
+        println("Trabajo $it")
+    }
+}
+
+delay(250)
+job.cancel()
+
+println("Cancelado")
+
+// Trabajo 0
+// Trabajo 1
+// Cancelado
+```
+
+#### [``launch``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/launch.html)
+_Coroutine builder_ que **inicia una nueva corrutina** dentro de un ``CoroutineScope``.  
+Se usa para tareas asíncronas que **no devuelven resultado** (retorna un ``Job``) y cuyo ciclo de vida queda ligado al ``scope``. Las excepciones no capturadas cancelan el ``Job`` padre (salvo que se use ``SupervisorJob``).
+
+📌 **Ejemplo**:  
+Se lanza una corrutina que se ejecuta en paralelo al hilo principal.
+
+```kotlin
+val scope = CoroutineScope(Dispatchers.Default)
+
+val job = scope.launch {
+    delay(100)
+    println("Corrutina terminada")
+}
+
+println("Sigue el flujo principal")
+job.join()
+
+// Sigue el flujo principal
+// Corrutina terminada
+```
+
+#### [``launchIn``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/launch-in.html)
+Operador terminal que **inicia la recolección de un ``Flow`` dentro de un ``CoroutineScope``**, sin necesidad de llamar explícitamente a ``collect``.  
+Se usa junto con operadores como ``onEach``, ``catch``, etc. Retorna un ``Job`` que representa la recolección activa.
+
+📌 **Ejemplo**:  
+El ``Flow`` comienza a ejecutarse en el ``scope`` y cada valor se maneja en ``onEach``.
+
+```kotlin
+val scope = CoroutineScope(Dispatchers.Main)
+
+flowOf(1, 2, 3)
+    .onEach { println(it) }
+    .launchIn(scope)
+
+// 1
+// 2
+// 3
+```
 
 ### Sincronización y concurrencia
 > 👉 Protección de estado compartido
 
 #### [`Mutex`](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.sync/-mutex.html)
-
-- **Descripción**: Permite detener (suspender) la ejecución de corrutinas, a diferencia de los bloqueos tradicionales que son para hilos como **`synchronized`**.
-- **Uso**: Se utiliza a menudo en lugar de **`synchronized`** para manejar el acceso a recursos compartidos de manera más efectiva, ya que permite que las corrutinas sean "despertadas" una vez que se libera el bloqueo.
+Permite detener (suspender) la ejecución de corrutinas, a diferencia de los bloqueos tradicionales que son para hilos como [`synchronized`](#synchronized).  
+Se utiliza a menudo en lugar de `synchronized` para manejar el acceso a recursos compartidos de manera más efectiva, ya que permite que las corrutinas sean "despertadas" una vez que se libera el bloqueo.
 
 📌 **Ejemplo**:
 
@@ -786,9 +945,8 @@ coroutineScope.launch {
 ```
 
 #### [`synchronized()`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/synchronized.html)
-
-- **Descripción**: Bloquea el acceso a una sección crítica del código en un contexto de múltiples hilos (*threads*). Esto asegura que ***solo un hilo pueda ejecutar el bloque de código que está dentro de `synchronized` al mismo tiempo***. Se pueden sincronizar bloques de código dentro de métodos, funciones o incluso *lambdas*.
-- **Uso**: Es útil cuando se necesita controlar el acceso a recursos compartidos desde múltiples hilos.
+Bloquea el acceso a una sección crítica del código en un contexto de múltiples hilos (*threads*). Esto asegura que **solo un hilo pueda ejecutar el bloque de código que está dentro de `synchronized` al mismo tiempo**. Se pueden sincronizar bloques de código dentro de métodos, funciones o incluso *lambdas*.  
+Es útil cuando se necesita controlar el acceso a recursos compartidos desde múltiples hilos.
 
 📌 **Ejemplo**:
 
@@ -803,9 +961,8 @@ fun safeFunction() {
 ```
 
 #### [`@Synchronized`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/)
-
-- **Descripción**: Marca ***métodos que necesitan ser ejecutados de manera sincronizada***, es decir, que ***sólo un hilo puede ejecutarlo a la vez***.
-- **Uso**: Al agregar **`@Synchronized`** a un método, Kotlin genera un bloqueo en un objeto interno (el objeto receptor del método) para que solo un hilo pueda ejecutarlo en un momento dado.
+Marca **métodos que necesitan ser ejecutados de manera sincronizada**, es decir, que **sólo un hilo puede ejecutarlo a la vez**.  
+Al agregar `@Synchronized` a un método, Kotlin genera un bloqueo en un objeto interno (el objeto receptor del método) para que solo un hilo pueda ejecutarlo en un momento dado.
 
 📌 **Ejemplo**:
 
@@ -817,9 +974,8 @@ fun threadSafeMethod() {
 ```
 
 #### [`@ThreadLocal`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.native.concurrent/-thread-local/)
-
-- **Descripción**: Marca ***campos que deben tener un valor único para cada hilo***. Permite que ***cada hilo tenga su propia copia de la variable***, lo que ayuda a evitar interferencias.
-- **Uso**: Es útil para mantener variables que son específicas a un hilo sin interferencias entre hilos.
+Marca **campos que deben tener un valor único para cada hilo**. Permite que **cada hilo tenga su propia copia de la variable**, lo que ayuda a evitar interferencias.  
+Es útil para mantener variables que son específicas a un hilo sin interferencias entre hilos.
 
 📌 **Ejemplo**:
 
@@ -829,9 +985,8 @@ private var threadSpecificVariable: Int = 0
 ```
 
 #### [`@Volatile`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.concurrent/-volatile/)
-
-- **Descripción**: Indica que ***el valor de una variable puede ser modificado por varios hilos (threads)*** y que la visibilidad de esa variable debe ser consistente entre ellos. También evita el cacheo de la variable para asegurar que siempre se lea el valor más reciente.
-- **Uso**: Al marcar una variable como **`@Volatile`**, Kotlin asegura que cualquier operación de lectura/escritura en esa variable se refleje inmediatamente en todos los hilos, eliminando posibles problemas de _cache_ de CPU.
+Indica que **el valor de una variable puede ser modificado por varios hilos (threads)** y que la visibilidad de esa variable debe ser consistente entre ellos. También evita el cacheo de la variable para asegurar que siempre se lea el valor más reciente.  
+Al marcar una variable como `@Volatile`, Kotlin asegura que cualquier operación de lectura/escritura en esa variable se refleje inmediatamente en todos los hilos, eliminando posibles problemas de _cache_ de CPU.
 
 📌 **Ejemplo**:
 
@@ -844,9 +999,8 @@ var sharedResource: Int = 0
 > 👉 Persistencia / representación
 
 #### [`@Transient`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-transient/)
-
-- **Descripción**: Indica que ***una propiedad de una clase no debe ser serializada***. Es útil para propiedades que no son relevantes para la persistencia de datos.
-- **Uso**: Es común utilizarla en clases que implementan la interfaz **`Serializable`** y para propiedades sensibles, como contraseñas. Al marcar una propiedad como **`@Transient`**, se excluye de la serialización, lo que significa que no se guardará cuando el objeto sea convertido a un formato serializado.
+Indica que **una propiedad de una clase no debe ser serializada**. Es útil para propiedades que no son relevantes para la persistencia de datos.  
+Es común utilizarla en clases que implementan la interfaz `Serializable` y para propiedades sensibles, como contraseñas. Al marcar una propiedad como `@Transient`, se excluye de la serialización, lo que significa que no se guardará cuando el objeto sea convertido a un formato serializado.
 
 📌 **Ejemplo**:
 
@@ -854,21 +1008,172 @@ var sharedResource: Int = 0
 data class User(@Transient val password: String, val username: String)
 ```
 
-### Primitivas de suspensión y cooperación
-> 👉 Nivel bajo, base del modelo
+### Primitivas de suspensión y cooperación en corrutinas
+> 👉 Bajo nivel; base del modelo. Son las operaciones fundamentales que permiten que las corrutinas sean **asíncronas, cancelables y no bloqueantes**, y sobre las cuales se construyen los operadores de ``Flow`` y otras abstracciones de Kotlin
 
-#### [``delay``]()
+#### [``delay``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/delay.html)
+Función de suspensión que **pausa la corrutina sin bloquear el hilo** durante un tiempo determinado.  
+Es un punto de **cancelación cooperativa**: si la corrutina es cancelada mientras está suspendida, lanza ``CancellationException``.
 
-#### [``yield``]()
+📌 **Ejemplo**:  
 
-#### [``async``]() & [``await``]()
+```kotlin
+launch {
+    println("Inicio")
+    delay(1000)
+    println("Fin")
+}
 
-#### [``withContext``]()
+// Inicio
+// (~1s de diferencia)
+// Fin
+```
 
-#### [``join``]()
+#### [``yield``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/yield.html)
+Función de suspensión que **cede voluntariamente la ejecución** para que otras corrutinas puedan correr.  
+No implica necesariamente un cambio de hilo, pero sí le da al _scheduler_ la oportunidad de reordenar tareas.  
+Es un punto de **cancelación cooperativa**: si la corrutina fue cancelada, lanza ``CancellationException``.
 
-#### [``suspend``]() & [``resume``]()
+📌 **Ejemplo**:  
 
+```kotlin
+launch {
+    repeat(3) { i ->
+        println("A $i")
+        yield()
+    }
+}
+
+launch {
+    repeat(3) { i ->
+        println("B $i")
+        yield()
+    }
+}
+
+// Posible salida (puede variar):
+// A 0
+// B 0
+// A 1
+// B 1
+// A 2
+// B 2
+```
+
+#### [``async``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) & [``await``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-deferred/await.html)
+- **``async``**: Lanza una corrutina que **produce un resultado futuro**. Devuelve un objeto ``Deferred<T>`` (una promesa de valor). 
+- **``await``**: Función de suspensión que **espera el resultado del ``Deferred``**. Si aún no terminó, se suspende sin bloquear el hilo. 
+
+Ambas forman la base del modelo **concurrente con resultados** en corrutinas.  
+También son puntos de **cancelación cooperativa**: si el ``Deferred`` es cancelado, ``await()`` lanza ``CancellationException``.
+
+📌 **Ejemplo**:  
+
+```kotlin
+launch {
+    val deferred1 = async {
+        delay(1000)
+        10
+    }
+
+    val deferred2 = async {
+        delay(500)
+        20
+    }
+
+    val result = deferred1.await() + deferred2.await()
+    println(result)
+}
+
+// (~1s de diferencia total, no 1.5s)
+// 30
+```
+
+#### [``withContext``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/with-context.html)
+Función de suspensión que **cambia el contexto de la corrutina** (por ejemplo, el ``Dispatcher``) para ejecutar un bloque de código y **devuelve su resultado**.  
+Se usa para **mover trabajo a otro hilo o _pool_** (I/O, CPU, etc.) sin romper la concurrencia estructurada.
+
+A diferencia de [``async``](#async--await), **no crea una corrutina hija independiente**: simplemente **suspende la actual**, ejecuta el bloque en el nuevo contexto y luego vuelve al contexto original.
+
+📌 **Ejemplo**:  
+
+```kotlin
+launch(Dispatchers.Main) {
+    println("Main thread")
+
+    val result = withContext(Dispatchers.IO) {
+        println("Doing IO work")
+        "Data loaded"
+    }
+
+    println(result)
+}
+
+// Main thread
+// Doing IO work
+// Data loaded
+```
+
+#### [``join``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/join.html)
+Función de suspensión que **espera a que una corrutina (``Job``) finalice** sin bloquear el hilo.  
+Se usa cuando **solo interesa la finalización**, no un resultado (a diferencia de [``await``](#async--await)).
+
+Respeta cancelación: si la corrutina que llama a ``join`` es cancelada, también se cancela la espera.
+
+📌 **Ejemplo**:  
+
+```kotlin
+val job = launch {
+    delay(500)
+    println("Trabajo terminado")
+}
+
+println("Esperando...")
+job.join()
+println("Continúa ejecución")
+
+// Esperando...
+// (≈500 ms)
+// Trabajo terminado
+// Continúa ejecución
+```
+
+#### [``resume``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-cancellable-continuation/resume.html)
+Función de bajo nivel que **reanuda una corrutina previamente suspendida**, entregándole un valor y continuando su ejecución desde el punto donde se había detenido. No se usa en código de alto nivel con ``Flow`` o ``suspend`` comunes, sino en **integraciones**, librerías o código de infraestructura.  
+Se usa a través de una ``Continuation`` (normalmente ``CancellableContinuation``) y es clave para **adaptar APIs basadas en _callbacks_** al modelo de corrutinas. Es parte del mecanismo interno de suspensión:
+
+``suspend`` **guarda el estado** (el compilador transforma la función en una **máquina de estados**, y la ``Continuation`` mantiene ese estado) :arrow_right: ``resume`` **lo restaura y continúa**
+
+> ℹ️ **Nota:**  
+> - ``resume`` **solo debe llamarse una vez** por continuación. 
+> - Si la corrutina fue cancelada antes de reanudar, ``resume`` **puede fallar o ser ignorado** según el estado de la continuación.
+> - Existe ``resumeWithException()`` para **reanudar señalando un error**.
+
+📌 **Ejemplo**:  
+Reanudar una corrutina desde un _callback_.
+
+```kotlin
+suspend fun fetchData(): String =
+    suspendCancellableCoroutine { cont ->
+
+        println("Esperando resultado")
+
+        // Simula API async con callback
+        Thread {
+            Thread.sleep(300)
+            cont.resume("DATA")
+        }.start()
+    }
+
+launch {
+    val result = fetchData()
+    println(result)
+}
+
+// Esperando resultado
+// (~300 ms)
+// DATA
+```
 
 ## *Testing* en corrutinas: ``StandardTestDispatcher`` y ``UnconfinedTestDispatcher``
 > ℹ️ **Nota:**  
