@@ -2,9 +2,24 @@
 
 ***Index***:
 <!-- TOC -->
-  * [*Video Players: ExoPlayer*, *JW Player* y *Bitmovin*](#video-players-exoplayer-jw-player-y-bitmovin)
+  * [Conceptos de Multimedia en Android](#conceptos-de-multimedia-en-android)
+    * [Modelo Mental del flujo](#modelo-mental-del-flujo)
     * [DRM (*Digital Rights Management*)](#drm-digital-rights-management)
-    * [🎬 *ExoPlayer*](#-exoplayer)
+      * [Niveles de seguridad de  *Widevine*: L1, L2 y L3](#niveles-de-seguridad-de-widevine-l1-l2-y-l3)
+    * [*Buffer*](#buffer)
+    * [*Decoder*](#decoder)
+    * [*Renderer*](#renderer)
+    * [*Surface*](#surface)
+    * [*Stall* vs *Freeze*](#stall-vs-freeze)
+      * [Perspectiva amplia (académica/general)](#perspectiva-amplia-académicageneral)
+      * [Perspectiva en el contexto de *Bitmovin*](#perspectiva-en-el-contexto-de-bitmovin)
+      * [Reconciliando ambas visiones](#reconciliando-ambas-visiones)
+      * [Resumen práctico](#resumen-práctico)
+    * [*Reload Source*](#reload-source)
+    * [*Tweaks (``TweaksConfig``)*](#tweaks-tweaksconfig)
+  * [*Video Players: ExoPlayer*, *JW Player* y *Bitmovin*](#video-players-exoplayer-jw-player-y-bitmovin)
+    * [🎬 *ExoPlayer*/*Media3*](#-exoplayermedia3)
+      * [``MediaDrm``](#mediadrm)
     * [🎥 *JW Player*](#-jw-player)
     * [🎞️ *Bitmovin Player*](#-bitmovin-player)
     * [🧭 Comparativa general](#-comparativa-general)
@@ -50,12 +65,43 @@
 
 ---
 
-## *Video Players: ExoPlayer*, *JW Player* y *Bitmovin*
-> 💡 **Recomendación:** Para la mayoría de los proyectos modernos en Kotlin/Android, **ExoPlayer** es la opción ideal, salvo que se requiera un sistema comercial de _streaming_ con publicidad y analíticas integradas (caso en el que **JW Player** o **Bitmoving** puede ser más conveniente).
+## Conceptos de Multimedia en Android
+### Modelo Mental del flujo
+
+ ```text
+                    ┌─────────────────┐
+                    │     BUFFER      │
+                    │  (datos compri- │
+                    │    midos A/V)   │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              │                             │
+              ▼                             ▼
+    ┌─────────────────┐           ┌─────────────────┐
+    │  VIDEO DECODER  │           │  AUDIO DECODER  │
+    │  (frames raw)   │           │  (PCM samples)  │
+    └────────┬────────┘           └────────┬────────┘
+             │                             │
+             ▼                             │
+    ┌─────────────────┐                    │
+    │ VIDEO RENDERER  │                    │
+    │ (dibuja frames) │                    │
+    └────────┬────────┘                    │
+             │                             │
+             ▼                             ▼
+    ┌─────────────────┐           ┌─────────────────┐
+    │    SURFACE      │           │   AUDIO TRACK   │
+    │   (pantalla)    │           │   (AudioTrack)  │
+    └─────────────────┘           └─────────────────┘
+             │                             │
+             ▼                             ▼
+          👁️ Ojos                      🔊 Oídos 
+ ```
 
 ### DRM (*Digital Rights Management*)
-Es un conjunto de tecnologías utilizadas para **_proteger contenido audiovisual y controlar su uso_** dentro de una aplicación.  
-Cuando un recurso está protegido por DRM, **_el video se distribuye cifrado_**, y solo puede ser descifrado por un módulo autorizado en el dispositivo. Esto **_evita la copia, extracción o reproducción no autorizada del contenido_**.
+Es un conjunto de tecnologías utilizadas para **proteger contenido audiovisual y controlar su uso** dentro de una aplicación.  
+Cuando un recurso está protegido por DRM, **el video se distribuye cifrado**, y solo puede ser descifrado por un módulo autorizado en el dispositivo (un **CDM** o **_Content Decryption Module_**). Esto **dificulta/mitiga la copia, extracción o reproducción no autorizada del contenido**.
 
 En entornos móviles y de _streaming_, los sistemas DRM más utilizados son:
 
@@ -63,11 +109,166 @@ En entornos móviles y de _streaming_, los sistemas DRM más utilizados son:
 - **_FairPlay_** (Apple)
 - **_PlayReady_** (Microsoft)
 
-A nivel conceptual, todos cumplen el mismo propósito :arrow_right: Asegurar que el contenido solo pueda ser reproducido por usuarios y dispositivos autorizados.
+A nivel conceptual, todos cumplen el mismo propósito :arrow_right: Asegurar que el contenido solo pueda ser reproducido por usuarios y dispositivos que cumplan la política (ventana de licencia, _offline_, _output restrictions_, HDCP, etc.).
 
-En reproductores como ExoPlayer, JW Player o Bitmovin, la compatibilidad con estos sistemas permite la **_reproducción segura de contenidos premium o licenciados_**.
+En reproductores como _ExoPlayer_, _JW Player_ o _Bitmovin_, la compatibilidad con estos sistemas permite la **reproducción segura de contenidos premium o licenciados**.
 
-### 🎬 *ExoPlayer*
+#### Niveles de seguridad de  *Widevine*: L1, L2 y L3
+> ℹ️ **Nota:**  
+> En la práctica, hoy la conversación común es L1 vs L3 porque L2 es relativamente raro
+
+| **Nivel** | **Descripción**             | **Seguridad** | **Calidad permitida** |
+|-----------|-----------------------------|---------------|-----------------------|
+| **L1**    | _Hardware_ (TEE)            | Alta          | HD, 4K                |
+| **L2**    | _Crypto_ en HW, video en SW | Media         | HD                    |
+| **L3**    | Todo en _software_          | Baja          | SD (480p)             |
+
+- **L1 (_Level_ 1)**
+    - Descifrado y reproducción a través de una **cadena segura** (TEE/_hardware_ + **_secure video path_**, típicamente con **_secure decoder/surface_**).
+    - Es el nivel normalmente requerido para **contenido premium** y para habilitar **HD/Full HD/4K/HDR** *según la política del proveedor*.
+    - **Dónde se usa** :arrow_right: Teléfonos/TV boxes/Smart TVs **certificados** (producción).
+- **L2 (_Level_ 2)**
+    - Descifrado en **TEE**, pero la **decodificación** ocurre fuera del entorno seguro (no hay cadena completa protegida).
+    - Menos aceptado; puede implicar restricciones de calidad según políticas.
+    - **Dónde se usa** :arrow_right: **Poco común** hoy; algunos dispositivos/intermedios.
+- **L3 (_Level_ 3)**
+    - Descifrado **fuera del TEE** (entorno no seguro); no hay _secure video path_ completo.
+    - Frecuentemente se aplica **limitación de calidad** (muchos servicios restringen L3) y es menos robusto contra extracción en dispositivos comprometidos.
+    - **Dónde se usa** :arrow_right: **Emuladores**, muchos dispositivos **no certificados** o con _Widevine_ degradado.
+
+### *Buffer*
+**¿Qué es?**  
+Es una **memoria temporal** que almacena datos de video/audio antes de que se procesen. Funciona como un "tanque de agua" que se llena desde la red y se vacía hacia el [_decoder_](#decoder).
+
+**¿Por qué importa?**  
+- Si el _buffer_ está vacío :arrow_right: El video se detiene ([**_stall_**](#stall-vs-freeze))
+- Si el _buffer_ es muy pequeño :arrow_right: Más probabilidad de interrupciones
+
+**Analogía**  
+Es como el tanque de agua de una casa. Si el tanque está vacío, no sale agua de la canilla aunque la bomba funcione.
+
+### *Decoder*
+**¿Qué es?**  
+Es el componente que **descomprime** los datos de video/audio. Los videos vienen comprimidos (H.264, H.265, VP9, etc.) y el _decoder_ los convierte en _frames_ de imagen "crudos" que se pueden mostrar.
+
+**Tipos de _decoders_**  
+- **_Hardware_ (HW)**: Usa chips especializados del dispositivo. **Más rápido, menos batería**.
+- **_Software_ (SW)**: Usa el CPU. **Más lento, más consumo, pero más compatible**.
+
+**¿Por qué importa?**  
+- Cada dispositivo tiene diferentes _decoders_ de _hardware_
+- Si el _decoder_ falla, el video se congela pero el audio puede seguir (tienen _decoders_ separados)
+
+### *Renderer*
+**¿Qué es?**  
+Es el componente que **dibuja** los _frames_ decodificados en la pantalla. Toma los _frames_ "crudos" del [_decoder_](#decoder) y los presenta en el [_Surface_](#surface).
+
+**En _Bitmovin_/_ExoPlayer_**  
+Hay _renderers_ separados para video y audio. Por eso pueden desincronizarse: el _audio renderer_ puede seguir funcionando aunque el _video renderer_ tenga problemas.
+
+### *Surface*
+**¿Qué es?**  
+Es la **"ventana" o lienzo** donde se dibuja el video. Es una abstracción de Android que representa un área de la pantalla donde el [_renderer_](#renderer) puede pintar _frames_.
+
+**Tipos**  
+- `SurfaceView` :arrow_right: Ventana separada, **mejor rendimiento**
+- `TextureView` :arrow_right: Integrado con la jerarquía de vistas, **más flexible pero más lento**
+
+**¿Por qué importa?**  
+- Si el _Surface_ se destruye (por ejemplo, cuando la app va a _background_), el video se congela
+- El audio NO depende del _Surface_, por eso puede seguir sonando
+
+### *Stall* vs *Freeze*
+#### Perspectiva amplia (académica/general)
+- **_Freeze_** :arrow_right: **Descripción fenomenológica (síntoma)**: la imagen se queda congelada. Términos relacionados: "_video freeze_", "_image freeze_", "_frozen frame_".
+- **_Stall_** :arrow_right: **Descripción técnica/causal**: una parte del _pipeline_ se quedó sin avanzar, y por eso se produce el _freeze_. Términos relacionados: "_decoder stall_", "_render stall_", "_buffering stall_".
+
+#### Perspectiva en el contexto de *Bitmovin*
+
+| **Concepto**          | **_Stall_**                        | **_Freeze_**                                           |
+|-----------------------|------------------------------------|--------------------------------------------------------|
+| **Causa**             | _Buffer_ vacío (falta de datos)    | Problema de _decoder_/_surface_                        |
+| **Comportamiento**    | Video y audio se detienen          | Video se detiene, audio puede continuar                |
+| **Recuperación**      | Automática cuando llegan más datos | Puede requerir [_reload_ del _source_](#reload-source) |
+| **Evento _Bitmovin_** | `StallStarted` / `StallEnded`      | `Error` (a veces)                                      |
+
+- **_Freeze_** :arrow_right: "Tengo datos pero no puedo mostrarlos" (problema de [_decoder_](#decoder)/[_surface_](#surface))
+- **_Stall_** :arrow_right: "No tengo datos para mostrar" (problema de red/_buffer_)
+
+#### Reconciliando ambas visiones
+En **_Bitmovin/ExoPlayer_**, "_Stall_" tiene un significado **específico y más estrecho**: eventos `StallStarted`/`StallEnded` que el _player_ emite cuando el **_buffer_ se vacía**.
+
+Pero en sentido amplio, "_stall_" puede referirse a cualquier parte del _pipeline_ que se detiene:
+
+```text
+STALL (sentido amplio) ──────────────────────────────────────────┐
+│                                                                │
+│   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────┐ │
+│   │  Buffer Stall   │   │  Decoder Stall  │   │ Render Stall│ │
+│   │ (Bitmovin event)│   │ (error decoder) │   │(surface lost)│ │
+│   └────────┬────────┘   └────────┬────────┘   └──────┬──────┘ │
+│            │                     │                   │        │
+└────────────┴─────────────────────┴───────────────────┴────────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │     FREEZE      │
+                          │  (lo que el     │
+                          │  usuario ve)    │
+                          └─────────────────┘
+```
+
+#### Resumen práctico
+
+| **Perspectiva**             | **_Stall_**                            | **_Freeze_**                          |
+|-----------------------------|----------------------------------------|---------------------------------------|
+| **_Bitmovin_ (específica)** | Evento de _buffer_ vacío               | Problema de _decoder_/_surface_       |
+| **General (amplia)**        | Cualquier causa técnica del _pipeline_ | El síntoma visible (imagen congelada) |
+
+**Para el trabajo diario con _Bitmovin_** :arrow_right: Cuando aparece `StallStarted` en los _logs_, significa específicamente "_buffer_ vacío". Si el video se congela sin ese evento, probablemente sea un problema de _decoder_ o _surface_ (lo que en sentido amplio también sería un "_stall_" del _pipeline_, pero _Bitmovin_ no lo reporta así).
+
+### *Reload Source*
+**¿Qué es?**  
+Es la acción de **volver a cargar** el contenido de video desde cero.
+
+📌 **Ejemplo**:  
+
+```kotlin
+player.load(source)
+```
+
+**¿Cuándo se usa?**  
+- Después de un error de [_decoder_](#decoder) irrecuperable
+- Para cambiar de calidad/[DRM](#drm-digital-rights-management) _level_
+- Para "resetear" el estado del _player_
+
+**Problemas**  
+- Pierde la posición actual de reproducción (hay que guardarla y restaurarla)
+- Puede causar _desync_ si no se hace correctamente
+- El _buffer_ se vacía y hay que volver a llenarlo
+
+### *Tweaks (``TweaksConfig``)*
+**¿Qué es?**  
+Son **configuraciones avanzadas** del _player_ que modifican comportamientos internos. Son "ajustes finos" que no están en la configuración principal.
+
+📌 **Ejemplos en Bitmovin**:  
+
+```kotlin
+TweaksConfig(
+    limitQualityOnDrmError = true,        // Bajar calidad si hay error DRM
+    isNativeHlsParsingEnabled = false,    // Usar parser propio vs nativo
+    preferSoftwareDecodingForAds = true   // SW decoder para ads
+)
+
+```
+
+**¿Por qué importa?**  
+Estos _tweaks_ pueden afectar la estabilidad del [_decoder_](#decoder) y la sincronización A/V.
+
+## *Video Players: ExoPlayer*, *JW Player* y *Bitmovin*
+> 💡 **Recomendación:** Para la mayoría de los proyectos modernos en Kotlin/Android, **ExoPlayer** es la opción ideal, salvo que se requiera un sistema comercial de _streaming_ con publicidad y analíticas integradas (caso en el que **JW Player** o **Bitmoving** puede ser más conveniente).
+
+### 🎬 *ExoPlayer*/*Media3*
 Originalmente, fue una librería independiente de Google para reproducción de medios en Android. A partir de 2022, Google migró _ExoPlayer_ a la librería **_AndroidX Media3_** (``androidx.media3``).  
 Es el reproductor recomendado oficialmente para Android y Android TV, y reemplaza gradualmente al reproductor nativo `MediaPlayer`, ofreciendo mayor flexibilidad y soporte para formatos modernos.
 
@@ -81,8 +282,8 @@ androidx.media3
 └── media3-session         # Media session
 
 **Características principales:**
-- Soporte extendido para formatos: MP4, MP3, AAC, FLAC, DASH, HLS, _SmoothStreaming_, etc.
-- Integración con **DRM (_Widevine_, _PlayReady_)** y **subtítulos**.
+- Soporte extendido para formatos: MP4, MP3, AAC, FLAC, DASH, HLS, _SmoothStreaming_ (existe como módulo aparte, ``media3-smoothstreaming``), etc.
+- Integración con **DRM (_Widevine_ y, donde esté disponible, _PlayReady_)** y **subtítulos**.
 - Personalización completa de componentes (_renderers_, _track selectors_, etc.).
 - Compatible con **Jetpack Compose** y **Kotlin Coroutines**.
 - Reproducción adaptativa y eficiente, con gestión avanzada de _buffers_.
@@ -96,8 +297,9 @@ androidx.media3
 **Limitaciones:**
 - Requiere mayor configuración inicial que `MediaPlayer`.
 - No incluye de forma nativa funciones avanzadas de monetización o _analytics_ (se deben agregar aparte).
+- La seguridad real ([L1/L3](#niveles-de-seguridad-de-widevine-l1-l2-y-l3), bloqueo de captura, HDCP) no depende del _player_ sino del dispositivo/OS/certificación.
 
-**Ejemplo:**
+📌 **Ejemplo**:  
 
 ```kotlin
 val player = ExoPlayer.Builder(context).build()
@@ -108,6 +310,27 @@ player.setMediaItem(mediaItem)
 player.prepare()
 player.play()
 ```
+
+#### ``MediaDrm``
+Es la **API nativa de Android** (clase `android.media.MediaDrm`) que usan los reproductores para **hablar con el [DRM](#drm-digital-rights-management) del dispositivo** (por ejemplo _Widevine_) durante la reproducción de contenido protegido.
+
+Dicho simple: es el componente con el que la app/_player_ hace el flujo de DRM:  
+1. Crea una instancia para un DRM en particular (_Widevine_, _PlayReady_ si existiera, etc.)
+2. Abre una sesión DRM
+3. Genera el **_license challenge_**
+4. La app lo envía al **_license server_**
+5. Recibe la licencia y se la entrega a `MediaDrm`
+6. `MediaDrm` entrega las **_keys_** al _pipeline_ de decodificación para que el video se pueda descifrar y reproducir
+
+**Para qué se usa (qué cosas “prueba”)**  
+- Verificar si el dispositivo soporta un DRM (p. ej. _Widevine_)
+- Consultar propiedades como el **nivel de seguridad** (_Widevine_ `L1` vs `L3`)
+- Detectar errores de licencia/_keys_ (en el flujo que implemente el _player_)
+
+**Cómo se relaciona con _Widevine_ y _ExoPlayer_**  
+- _Widevine_ es el “sistema DRM” (_key system_ `com.widevine.alpha`)
+- `MediaDrm` es la **API** mediante la cual Android expone _Widevine_ al resto del sistema
+- _ExoPlayer_/_Media3_ por debajo usa `MediaDrm` (a través de _wrappers_ como `FrameworkMediaDrm` o `DefaultDrmSessionManager`) para todo el manejo de licencias
 
 ### 🎥 *JW Player*
 Es un _framework_ multimedia comercial orientado a _streaming_ profesional, monetización y análisis avanzado.  
@@ -168,7 +391,7 @@ Se integra fácilmente en Android (nativo y Compose), iOS, Web y Smart TVs, y of
 - **Documentación amplia pero dispersa**, requiere cierta familiaridad para aprovechar todo su potencial. 
 - **Tamaño del SDK** superior al de soluciones más livianas como _ExoPlayer_ o _Media3_.
 
-**Ejemplo:**
+📌 **Ejemplo**:  
 
 ```kotlin
 // build.gradle
@@ -931,8 +1154,8 @@ _Checklist_ de buenas prácticas para mejorar el rendimiento y eficiencia al pro
 ### :three: Interoperabilidad multiplataforma
 La siguiente tabla indica, para cada funcionalidad, las librerías correspondientes en Android y iOS, como también si se puede usar mediante un _wrapper_ o si requiere implementación nativa por plataforma para el caso de KMP.  
 A tener en cuenta:
-1. **KMP wrapper** → Existe una librería o _wrapper_ que permite usar esa funcionalidad de forma multiplataforma dentro de un módulo común (``shared``). Por ejemplo, un módulo KMP puede exponer funciones de _ExoPlayer_ o _WebRTC_ a código común usando un _wrapper_ que internamente llama al código nativo de Android o iOS.
-2. **Nativo** → No hay un _wrapper_ KMP disponible; para usar esa funcionalidad en KMP, hay que escribir código específico por plataforma (`expect/actual`), llamando directamente a la API nativa de Android o iOS.
+1. **KMP wrapper** :arrow_right: Existe una librería o _wrapper_ que permite usar esa funcionalidad de forma multiplataforma dentro de un módulo común (``shared``). Por ejemplo, un módulo KMP puede exponer funciones de _ExoPlayer_ o _WebRTC_ a código común usando un _wrapper_ que internamente llama al código nativo de Android o iOS.
+2. **Nativo** :arrow_right: No hay un _wrapper_ KMP disponible; para usar esa funcionalidad en KMP, hay que escribir código específico por plataforma (`expect/actual`), llamando directamente a la API nativa de Android o iOS.
 
 | 🔧 Funcionalidad                      | 🤖 Android               | 🍏 iOS                          | 🌐 KMP      |
 |---------------------------------------|--------------------------|---------------------------------|-------------|

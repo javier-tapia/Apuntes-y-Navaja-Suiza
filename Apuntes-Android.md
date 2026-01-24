@@ -52,6 +52,15 @@
       * [En el archivo *.kt*:](#en-el-archivo-kt-1)
       * [Y en el *xml*:](#y-en-el-xml-1)
     * [*RecyclerView*](#recyclerview)
+      * [Componentes principales](#componentes-principales)
+      * [Cómo funciona el reciclado](#cómo-funciona-el-reciclado)
+      * [Tipos de *LayoutManagers*](#tipos-de-layoutmanagers)
+      * [*ViewHolder*](#viewholder)
+      * [*Adapter*](#adapter)
+      * [Cambios en los datos](#cambios-en-los-datos)
+    * [*LeanBack*](#leanback)
+      * [Estructura de pantalla en *Leanback*](#estructura-de-pantalla-en-leanback)
+      * [*Leanback* vs *RecyclerView*](#leanback-vs-recyclerview)
     * [*Styles y Themes*](#styles-y-themes)
       * [En ***Styles.xml***:](#en-stylesxml)
       * [En ***AndroidManifest.xml***:](#en-androidmanifestxml)
@@ -1536,54 +1545,143 @@ Otro ejemplo útil sería usar un *BindingAdapter* para cargar una imagen en un 
 ```
 
 ### *RecyclerView*
-Este *widget* es una versión más avanzada y flexible del *ListView*. Varios componentes diferentes trabajan juntos para mostrar los datos: un **administrador de diseño** (***layout manager***), objetos **contenedores de vistas** (***view holders***) y un **adaptador** (***adapter***). El contenedor general de la UI es un objeto *RecyclerView* que se agrega al diseño. El objeto *RecyclerView* usa un *layout manager* para posicionar los elementos individuales en la pantalla y determinar cuándo volver a usar las vistas de elementos que ya no ve el usuario. Para volver a usar (reciclar) una vista, un *layout manager* puede solicitar al adaptador que reemplace el contenido de la vista por un elemento diferente del conjunto de datos. Android incluye tres administradores de diseño estándar para utilizar (***LinearLayoutManager***, ***GridLayoutManager*** o ***StaggeredGridLayoutManager***), aunque también se puede implementar uno propio extendiendo la clase abstracta ***RecyclerView.LayoutManager***.  
-Las vistas incluidas en la lista, que **representan los elementos en un conjunto de datos**, están representadas por objetos *view holder*. Esos objetos son instancias de una clase que se define **extendiendo** ***RecyclerView.ViewHolder***. Cada objeto *view holder* es responsable de mostrar un elemento individual con una vista. Por ejemplo, si la lista muestra una colección de música, cada objeto *view holder* representa un álbum individual. El objeto *RecyclerView* crea solamente la cantidad de objetos *view holder* que sean necesarios para mostrar la parte en pantalla del contenido dinámico, más algunos adicionales. A medida que el usuario se desplaza por la lista, el objeto *RecyclerView* **toma las vistas fuera de pantalla y vuelve a vincularlas con los datos** que se desplazan en la pantalla.  
-Un adaptador o *adapter*, que se crea **extendiendo** ***RecyclerView.Adapter***, administra los objetos *view holder*, y consta de tres métodos: ***``onCreateViewHolder()``***, ***``onBindViewHolder()``*** y ***``getItemCount()``***. Primero, el *layout manager* llama al método *``onCreateViewHolder()``* para que construya un objeto *RecyclerView.ViewHolder* y configure la vista que usa para mostrar su contenido. Luego, el *layout manager* vincula el *view holder* con sus datos. Para hacerlo, llama al método *``onBindViewHolder()``* del adaptador y pasa la posición del *view holder* en el *RecyclerView*. Es necesario que el método *``onBindViewHolder()``* busque los datos correspondientes y los use para completar el diseño del *view holder*. En resumen, **el adaptador crea ***view holders***, según sea necesario, y los vincula con sus datos**, asignando el *view holder* a una posición y llamando al método *``onBindViewHolder()``*, que usa la posición del *view holder* para determinar cuál debería ser el contenido, en función de su posición en la lista. El método ***``getItemCount()``*** retorna el tamaño del conjunto de datos.
+> 🔍 Ver también [_LeanBack_](#leanback)
+
+Este *widget* sirve para mostrar **listas eficientes con reutilización de vistas**. Es la evolución flexible de _ListView_ y se basa en reciclado y rebinding de vistas.  
+_RecyclerView_ separa **estructura (_LayoutManager_), datos (_Adapter_) y vistas (_ViewHolder_)** para lograr rendimiento y flexibilidad.
+
+#### Componentes principales
+
+| **Componente**    | **Rol**                             |
+|-------------------|-------------------------------------|
+| ``RecyclerView``  | Contenedor de la lista              |
+| ``LayoutManager`` | Define cómo se posicionan los ítems |
+| ``Adapter``       | Conecta datos ↔ vistas              |
+| ``ViewHolder``    | Contiene las vistas de un ítem      |
+
+#### Cómo funciona el reciclado
+1. Se crean **solo las vistas visibles** + **_buffer_** 
+2. Cuando un ítem sale de pantalla :arrow_right: Se **reutiliza su _ViewHolder_**, no se crean vistas nuevas por cada ítem
+3. El _Adapter_ vuelve a **bindear datos** al _ViewHolder_
+
+#### Tipos de *LayoutManagers*
+- ``LinearLayoutManager`` :arrow_right: Lista vertical/horizontal 
+- ``GridLayoutManager`` :arrow_right: Grilla 
+- ``StaggeredGridLayoutManager`` :arrow_right: Grilla tipo _Pinterest_ 
+- También se puede crear uno propio extendiendo ``RecyclerView.LayoutManager``
+
+#### *ViewHolder*
+Clase que extiende ``RecyclerView.ViewHolder``.  
+Representa **una celda de la lista** y mantiene referencias a sus vistas para evitar ``findViewById()`` repetidos.
+
+#### *Adapter*
+Extiende ``RecyclerView.Adapter<VH>``. Se encarga de crear _ViewHolders_ y bindearlos a posiciones.
+
+| **Método**             | **Qué hace**                  |
+|------------------------|-------------------------------|
+| `onCreateViewHolder()` | Crea la vista                 |
+| `onBindViewHolder()`   | Bindea datos según `position` |
+| `getItemCount()`       | Tamaño del _dataset_          |
+
+#### Cambios en los datos
+| **Tipo de cambio**         | **Ejemplo**               | **Método típico**                                                                                    |
+|----------------------------|---------------------------|------------------------------------------------------------------------------------------------------|
+| *Item change*              | Se actualiza contenido    | `notifyItemChanged()`                                                                                |
+| *Structural change*        | Insertar / borrar / mover | `notifyItemInserted()`, ``notifyItemRemoved()``, ``notifyItemMoved()``, ``notifyItemRangeChanged()`` |
+| *Rebind* completo (evitar) | Todo cambió               | `notifyDataSetChanged()`                                                                             |
+
+**Alternativas modernas a ``notifyDataSetChanged()``**  
+
+| **Herramienta**     | **Cuándo usarla**                                                                               |
+|---------------------|-------------------------------------------------------------------------------------------------|
+| ``DiffUtil``        | Comparar listas y actualizar solo lo que cambió                                                 |
+| ``ListAdapter``     | _Adapter_ con ``DiffUtil`` incorporado                                                          |
+| ``AsyncListDiffer`` | _Diff_ en segundo plano                                                                         |
+| ``SortedList``      | Lista siempre ordenada con notificaciones                                                       |
+| ``Paging``          | Carga paginada bajo demanda con _Jetpack Paging_ (_scroll_ infinito eficiente desde red y/o DB) |
+
+<br>
+
+📌 **Ejemplo**:  
 
 ```kotlin
-    import android.view.LayoutInflater
-    import android.view.ViewGroup
-    import android.widget.TextView
-    
-    class MyAdapter(private val myDataset: Array<String>) :
-        RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
-    
-        // Provide a reference to the views for each data item
-        // Complex data items may need more than one view per item, and
-        // you provide access to all the views for a data item in a view holder.
-        // Each data item is just a string in this case that is shown in a TextView.
-        class MyViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
-    
-        // Create new views (invoked by the layout manager)
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int
-        ): MyAdapter.MyViewHolder {
-            // create a new view
-            val textView = LayoutInflater.from(parent.context)
-                .inflate(R.layout.my_text_view, parent, false) as TextView
-            // set the view's size, margins, paddings and layout parameters
-            // (...)
-            return MyViewHolder(textView)
-        }
-    
-        // Replace the contents of a view (invoked by the layout manager)
-        override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-            // - get element from your dataset at this position
-            // - replace the contents of the view with that element
-            holder.textView.text = myDataset[position]
-        }
-    
-        // Return the size of your dataset (invoked by the layout manager)
-        override fun getItemCount() = myDataset.size
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.widget.TextView
+
+class MyAdapter(private val myDataset: Array<String>) :
+    RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+
+    // Provide a reference to the views for each data item
+    // Complex data items may need more than one view per item, and
+    // you provide access to all the views for a data item in a view holder.
+    // Each data item is just a string in this case that is shown in a TextView.
+    class MyViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
+
+    // Create new views (invoked by the layout manager)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): MyAdapter.MyViewHolder {
+        // create a new view
+        val textView = LayoutInflater.from(parent.context)
+            .inflate(R.layout.my_text_view, parent, false) as TextView
+        // set the view's size, margins, paddings and layout parameters
+        // (...)
+        return MyViewHolder(textView)
     }
+
+    // Replace the contents of a view (invoked by the layout manager)
+    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+        // - get element from your dataset at this position
+        // - replace the contents of the view with that element
+        holder.textView.text = myDataset[position]
+    }
+
+    // Return the size of your dataset (invoked by the layout manager)
+    override fun getItemCount() = myDataset.size
+}
 ```
 
-También puede suceder que haya cambios en el conjunto de datos. Hay dos tipos diferentes de eventos de cambio en los datos: cambios en los elementos o ***item changes*** (cuando se actualizan los datos de un solo elemento, pero no se producen cambios de posición) y cambios estructurales o ***structural changes*** (cuando se insertan, eliminan o mueven elementos dentro del conjunto de datos). Para la primera clase de eventos se suelen utilizar métodos de notificación en el objeto *RecyclerView.Adapter*, como por ejemplo ***``notifyItemChanged()``***. El *layout manager* vincula nuevamente cualquier *view holder* afectado, lo que permite la actualización de sus datos. Por otro lado, para los cambios estructurales suele usarse ***``notifyDataSetChanged()``***, aunque este método debería usarse como último recurso ya que este evento no especifica qué ha cambiado en el conjunto de datos, lo que obliga a los observadores a asumir que es posible que todos los elementos y la estructura existente ya no sean válidos, en cuyo caso los *layout managers* se verán obligados a volver a vincular y retransmitir por completo todas las vistas visibles.  
-Sin embargo, también es posible utilizar otras soluciones que provee *RecyclerView*, como ser *DiffUtil*, *SortedList* o *Paging Library*:
-- ***DiffUtil***: Si el *RecyclerView* muestra una lista que se recupera desde cero para cada actualización (por ejemplo, de la red o de una base de datos), *DiffUtil* puede **calcular la diferencia entre las versiones de la lista**. *DiffUtil* toma ambas listas como entrada y calcula la diferencia, que se puede pasar a *RecyclerView* para activar animaciones y actualizaciones mínimas para mantener el rendimiento de la interfaz de usuario, y las animaciones significativas. Este enfoque requiere que cada lista se represente en la memoria con contenido inmutable y se basa en recibir actualizaciones como nuevas instancias de listas. También es ideal si la capa de interfaz de usuario no implementa un ordenamiento, solo presenta los datos en el orden en que se proporcionan. Hay tres API’s principales para aplicarlo (de mayor a menor nivel de abstracción): ***ListAdapter***, ***AsyncListDiffer*** y ***DiffUtil***. Cada enfoque permite especificar cómo se deben calcular las diferencias en función de los datos.
-- ***SortedList***: Puede mantener los elementos en orden y también **notificar los cambios en la lista** de modo que pueda vincularse a un *RecyclerView.Adapter*. Mantiene los elementos ordenados mediante el *callback* ***``compare(Object, Object)``*** y utiliza búsqueda binaria para recuperar elementos. Si los criterios de ordenamiento de los elementos pueden cambiar, hay que asegurarse de llamar a los métodos apropiados mientras se editan para evitar inconsistencias de datos. Se puede controlar el orden de los elementos y cambiar las notificaciones a través del parámetro ``Callback``. *SortedList* funciona si solo se necesita manejar eventos de inserción y eliminación, y tiene la ventaja de que **solo se necesita tener una única copia de la lista en memoria**.
-- ***Paging Library***: La librería de paginación amplía el enfoque basado en diferencias para admitir, adicionalmente, la carga paginada (cargar y mostrar pequeños fragmentos de datos a la vez). Esta carga de datos parciales a pedido reduce el uso del ancho de banda de la red y los recursos del sistema. Proporciona la clase ``androidx.paging.PagedList`` que funciona como una lista de carga automática, proporcionada una fuente de datos como una base de datos o una API de red paginada.
+### *LeanBack*
+_Leanback_ es un _framework_ de UI para **Android TV** que provee componentes listos para pantallas tipo catálogo (estructura de navegación basada en filas, animaciones de TV, navegación por foco y comportamiento _D-Pad_). Internamente usa [``RecyclerView``](#recyclerview), pero ofrece una **capa de abstracción superior**, orientada a contenido y experiencia de TV, no a la gestión manual de ítems y vistas.
+
+#### Estructura de pantalla en *Leanback*
+_Leanback_ no sólo abstrae listas orientadas a TV, sino también la **estructura estándar de pantallas de contenido para TV** mediante _Fragments_ listos para usar.  
+Estos componentes ya integran navegación por foco, animaciones y comportamientos típicos de interfaces tipo _Netflix_ / _Prime Video_, reduciendo la necesidad de manejar manualmente la experiencia de TV.
+
+| **_Fragment_**            | **Propósito**                                                      |
+|---------------------------|--------------------------------------------------------------------|
+| `BrowseSupportFragment`   | Pantalla principal estilo catálogo con filas y _headers_ laterales |
+| `RowsSupportFragment`     | Contenedor de filas sin _headers_                                  |
+| `DetailsSupportFragment`  | Pantalla de detalle de un ítem seleccionado                        |
+| `PlaybackSupportFragment` | Reproductor de contenido multimedia                                |
+
+#### *Leanback* vs *RecyclerView*
+
+| **Aspecto**          | **_RecyclerView_**                     | **_Leanback_**                                                                                                                                           |
+|----------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| _Adapter_            | `RecyclerView.Adapter<VH>`             | `ObjectAdapter` (ej: `ArrayObjectAdapter`)                                                                                                               |
+| _ViewHolder_         | Lo define el desarrollador             | Lo encapsula el `Presenter` (`Presenter.ViewHolder`)                                                                                                     |
+| Crear vista          | ``onCreateViewHolder()``               | ``Presenter.onCreateViewHolder()``                                                                                                                       |
+| Bindear datos        | ``onBindViewHolder(holder, position)`` | ``Presenter.onBindViewHolder(holder, item)``                                                                                                             |
+| **Diferencia clave** | Se recibe un `position`                | No usa ``position``: el ``Presenter`` recibe el modelo de datos (``item``), desacoplando la UI del índice de lista y orientándola al modelo de contenido |
+| **Uso típico**       | Apps móviles                           | Android TV                                                                                                                                               |
+
+**Similitudes**  
+- Ambos **reciclan vistas** para eficiencia
+- Ambos separan **creación** de **_binding_**
+- Ambos usan el patrón **_ViewHolder_**
+
+**Diferencia conceptual clave**  
+En _RecyclerView_, el _Adapter_ tiene **dos responsabilidades**: manejar la lista de datos y crear/bindear vistas.  
+En _Leanback_, estas responsabilidades están **separadas**:
+- **`ObjectAdapter`** :arrow_right: Maneja la lista de datos
+- **`Presenter`** :arrow_right: Crea y bindea vistas
+
+Esto permite reusar un mismo ``Presenter`` para distintos ``ObjectAdapter``, y un mismo ``ObjectAdapter`` puede manejar múltiples tipos de ítems usando un ``PresenterSelector`` (componente que decide **qué ``Presenter`` usar según el tipo de objeto**).
+
+Un patrón común en _LeanBack_ es **utilizar un _presenter_ para el contenedor (configura propiedades como _offsets_ o alineación de la ventana) y otro para los _items_ (define cómo se crea y bindea cada celda)**.
 
 ### *Styles y Themes*
 La principal **diferencia entre estilos** (***styles***) y **temas** (***themes***), es que **un tema se aplica a toda una jerarquía de vistas, una ***activity*** o una** ***app***, mientras que **un estilo sólo afecta a la vista en la que se aplica**. En otras palabras, **un tema es un estilo que se propaga de padres a hijos**. Los temas contienen atributos o configuraciones que aplican a todos los elementos de la UI. Mientras que los temas tienen unos **atributos genéricos**, cada vista puede tener una serie de estilos **específicos** que hagan que esa vista se muestre de una forma u otra. Por ejemplo, el *style* por defecto de un *TextView*, es ***Widget.AppCompat.TextView***.  
