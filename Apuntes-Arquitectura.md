@@ -782,7 +782,7 @@ Es decir: un Objeto A (**_Target_**) puede invocar con seguridad los métodos de
 
 <br>
 <p align="center">
-    <img src="images/adapter.png" width="1000" alt="">
+    <img src="images/adapter.png" width="800" alt="">
 </p>
 <br>
 
@@ -835,7 +835,7 @@ También puede crearse una clase **Fachada Adicional** para evitar contaminar un
 
 <br>
 <p align="center">
-    <img src="images/facade.png" width="1000" alt="">
+    <img src="images/facade.png" width="800" alt="">
 </p>
 <br>
 
@@ -932,7 +932,7 @@ Sirve para estructurar la lógica de negocio en capas, crear un decorador para c
 
 <br>
 <p align="center">
-    <img src="images/decorator.png" width="1000" alt="">
+    <img src="images/decorator.png" width="800" alt="">
 </p>
 <br>
 
@@ -1016,7 +1016,7 @@ Patrón de Comportamiento que permite extraer una familia de algoritmos de una �
 
 <br>
 <p align="center">
-    <img src="images/strategy.png" width="1000" alt="">
+    <img src="images/strategy.png" width="800" alt="">
 </p>
 <br>
 
