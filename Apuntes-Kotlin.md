@@ -74,6 +74,7 @@
     * [6.4. *This expression*](#64-this-expression)
     * [6.5. *Null safety*](#65-null-safety)
     * [6.6. *SAM* (*Single Abstract Method*) *conversions*](#66-sam-single-abstract-method-conversions)
+      * [6.6.1. ``fun interface`` (*Functional Interfaces* en Kotlin)](#661-fun-interface-functional-interfaces-en-kotlin)
     * [6.7. *Reflection*](#67-reflection)
     * [6.8. *Scope functions*](#68-scope-functions)
     * [6.9. Jerarquía de resolución de llamadas a funciones](#69-jerarquía-de-resolución-de-llamadas-a-funciones)
@@ -1529,6 +1530,33 @@ Esta característica sólo funciona para **interoperar con Java**. Las ***functi
     }
 ```
 
+#### 6.6.1. ``fun interface`` (*Functional Interfaces* en Kotlin)
+Kotlin permite declarar **[interfaces funcionales](https://kotlinlang.org/docs/fun-interfaces.html) propias** usando el modificador ``fun``.  
+Una ``fun interface`` es una interfaz con **exactamente un método abstracto**, habilitando **_SAM conversion_ también para tipos definidos en Kotlin** (no solo Java). 
+
+Esto permite modelar **comportamiento como tipo**, combinando seguridad de tipos con la sintaxis concisa de _lambdas_. De esa forma, una **_lambda_ puede convertirse automáticamente en una instancia de esa interfaz**, evitando crear objetos anónimos.
+
+```kotlin
+fun interface ClickListener {
+    fun onClick(id: Int)
+}
+
+// SAM conversion
+val listener: ClickListener = ClickListener { id ->
+    println("Click en item $id")
+}
+```
+
+Sin ``fun interface``, se requeriría:
+
+```kotlin
+val listener = object : ClickListener {
+    override fun onClick(id: Int) {
+        println("Click en item $id")
+    }
+}
+```
+
 ### 6.7. *Reflection*
 
 - Ver [*Reflection*](Kotlin/Reflection.md)
@@ -1539,7 +1567,7 @@ Esta característica sólo funciona para **interoperar con Java**. Las ***functi
 
 ### 6.9. Jerarquía de resolución de llamadas a funciones
 En Kotlin, cuando se invoca una función **sin calificar explícitamente el receptor**, el compilador debe decidir **a qué función concreta se está refiriendo**.  
-Esto ocurre con frecuencia en _lambdas_ con _receiver_, DSLs, ``apply``, ``with``, ``run``, clases anidadas o cuando conviven _member functions_ y _extension functions_ con el mismo nombre.
+Esto ocurre con frecuencia en _lambdas_ con _receiver_, [DSLs](Glosary%20&%20Core%20Concepts/Software%20in%20general.md#dsl-domain-specific-language), ``apply``, ``with``, ``run``, clases anidadas o cuando conviven _member functions_ y _extension functions_ con el mismo nombre.
 
 Para resolver una llamada como ``metodo()`` (sin ``this.`` ni calificación explícita), Kotlin sigue una **jerarquía bien definida de búsqueda**, priorizando siempre:
 

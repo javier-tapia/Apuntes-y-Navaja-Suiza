@@ -23,6 +23,7 @@
   * [Copia superficial (*shallow copy*)](#copia-superficial-shallow-copy)
   * [Deserializar (*deserialize*)](#deserializar-deserialize)
   * [*Desugaring*](#desugaring)
+  * [DSL (*Domain-Specific Language*)](#dsl-domain-specific-language)
   * [Expresión (*expression*)](#expresión-expression)
   * [Funciones vs Métodos](#funciones-vs-métodos)
   * [HTTP (*HyperText Transfer Protocol*)](#http-hypertext-transfer-protocol)
@@ -153,6 +154,18 @@ Ver [Serializar](#serializar-serialize)
 ## *Desugaring*
 Transformación de una construcción de lenguaje de alto nivel (más "dulce" o conveniente para el programador) en una construcción equivalente de nivel inferior (más "cruda" o básica) que puede ser entendida por un intérprete o compilador que no soporta la construcción de alto nivel directamente. En resumen, se trata de ***traducir características de un lenguaje a una forma más básica***. Ver también la definición específica para [Android](Android%20specific.md#desugaring).
 
+## DSL (*Domain-Specific Language*)
+> 👉 Idea clave: **menos “cómo hacerlo”, más “qué se quiere expresar”**.
+
+Lenguaje diseñado para resolver problemas dentro de un **dominio específico**, en lugar de ser de propósito general.  
+Ofrece una sintaxis y abstracciones cercanas al problema que se quiere modelar, permitiendo expresar soluciones de forma **más declarativa, legible y concisa** que con un lenguaje general.
+
+📌 **Ejemplos**:  
+- **SQL** :arrow_right: consultas a bases de datos 
+- **_Regex_** :arrow_right: patrones de texto 
+- **Gradle Kotlin DSL** :arrow_right: configuración de builds 
+- **DSLs embebidas en código** (como _builders_ en Kotlin)
+
 ## Expresión (*expression*)
 Debe ser evaluada y, por lo tanto, retorna un valor.  
 Ver [Sentencia](#sentencia-statement)
@@ -261,8 +274,8 @@ También llamado análisis de sintaxis. Analiza un texto y decide qué significa
 ## *Polymorphism*
 Concepto fundamental en la **Programación Orientada a Objetos** que permite que un objeto o función tome múltiples formas. En términos más simples, el polimorfismo permite que una sola interfaz se use para representar diferentes tipos de datos o acciones. Esto es útil porque promueve la flexibilidad y la reutilización del código, permitiendo que una función o método opere sobre distintos tipos de datos según el contexto en que se utilice.
 
-- ***Dynamic Polymorphism*** → Capacidad de un objeto para comportarse de diferentes maneras en tiempo de ejecución (*runtime*). Generalmente se logra a través de la herencia (con clases abstractas o implementando interfaces) y sobreescritura (*overriding*) de funciones.  
-- ***Static Polymorphism*** → Capacidad de la misma función de manejar diferentes tipos de datos en tiempo de compilación (*compile-time*). Se implementa principalmente a través de la sobrecarga (*overloading*) de funciones y el compilador determina cuál usar basándose en su firma (número, orden y tipos de parámetros).
+- ***Dynamic Polymorphism*** :arrow_right: Capacidad de un objeto para comportarse de diferentes maneras en tiempo de ejecución (*runtime*). Generalmente se logra a través de la herencia (con clases abstractas o implementando interfaces) y sobreescritura (*overriding*) de funciones.  
+- ***Static Polymorphism*** :arrow_right: Capacidad de la misma función de manejar diferentes tipos de datos en tiempo de compilación (*compile-time*). Se implementa principalmente a través de la sobrecarga (*overloading*) de funciones y el compilador determina cuál usar basándose en su firma (número, orden y tipos de parámetros).
 
 ## Predicado (*predicate*)
 Representan funciones de argumento único que devuelven un valor booleano.
