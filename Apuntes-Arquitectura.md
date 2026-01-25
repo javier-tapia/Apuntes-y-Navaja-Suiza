@@ -26,25 +26,15 @@
     * [Qué es un Patrón de Diseño](#qué-es-un-patrón-de-diseño)
     * [Clasificación de los Patrones](#clasificación-de-los-patrones)
     * [*Singleton*](#singleton)
-      * [Ejemplo](#ejemplo)
     * [*Builder*](#builder)
-      * [Ejemplo](#ejemplo-1)
     * [*Abstract Factory*](#abstract-factory)
-      * [Ejemplo](#ejemplo-2)
     * [*Factory Method*](#factory-method)
-      * [Ejemplo](#ejemplo-3)
     * [*Adapter*](#adapter)
-      * [Ejemplo](#ejemplo-4)
     * [*Facade*](#facade)
-      * [Ejemplo](#ejemplo-5)
     * [*Decorator*](#decorator)
-      * [Ejemplo](#ejemplo-6)
     * [*Strategy*](#strategy)
-      * [Ejemplo](#ejemplo-7)
     * [*Observer*](#observer)
-      * [Ejemplo](#ejemplo-8)
     * [*State*](#state)
-      * [Ejemplo](#ejemplo-9)
     * [Referencias](#referencias)
 <!-- TOC -->
 
@@ -463,9 +453,9 @@ Entrada → Transformación → Salida
 
 ## Patrones de Diseño
 ### Qué es un Patrón de Diseño
-Es una **_solución reutilizable y comprobada_** que muestra **_cómo estructurar el código_** para solucionar **_problemas de diseño comunes y habituales_**.  
+Es una **solución reutilizable y comprobada** que muestra **cómo estructurar el código** para solucionar **problemas de diseño comunes y habituales**.  
 A menudo los patrones se confunden con algoritmos porque ambos conceptos describen soluciones típicas a problemas conocidos. Mientras que un algoritmo siempre define un grupo claro de acciones para lograr un objetivo, un patrón es una descripción de más alto nivel de una solución. El código del mismo patrón aplicado a dos programas distintos puede ser diferente.  
-Una analogía de **_un algoritmo sería una receta de cocina_**: ambos cuentan con pasos claros para alcanzar una meta. Por su parte, **_un patrón es más similar a un plano_**, ya que se puede observar cómo son su resultado y sus funciones, pero el orden exacto de la implementación depende del desarrollador.
+Una analogía de **un algoritmo sería una receta de cocina**: ambos cuentan con pasos claros para alcanzar una meta. Por su parte, **un patrón es más similar a un plano**, ya que se puede observar cómo son su resultado y sus funciones, pero el orden exacto de la implementación depende del desarrollador.
 
 ### Clasificación de los Patrones
 > :warning: Los ejemplos de cada patrón presentados más abajo representan implementaciones genéricas extrapolables a cualquier lenguaje orientado a objetos, no necesariamente son una versión idiomática en Kotlin, que para algunos casos podría resolverlo más fácilmente debido a las facilidades del lenguaje (ver [Design Patterns with Kotlin](Code%20Snippets%20with%20Kotlin/Design%20Patterns.md))
@@ -477,9 +467,9 @@ Los Patrones de Diseño se suelen clasificar en tres grandes grupos:
 - **Patrones de Comportamiento** :arrow_right: Se encargan de una comunicación efectiva y la asignación de responsabilidades entre objetos. Agrupa a: _Chain of Responsibility_, _Command_, _Iterator_, _Mediator_, _Memento_, _Observer_, _State_, _Strategy_, _Template Method_ y _Visitor_.
 
 ### *Singleton*
-Permite asegurarse de que **_una clase tenga una única instancia_**, a la vez que **_proporciona un punto de acceso global a dicha instancia y evita que otro código la sobreescriba_**.
+Patrón Creacional que permite asegurarse de que **una clase tenga una única instancia**, a la vez que **proporciona un punto de acceso global a dicha instancia y evita que otro código la sobreescriba**.
 
-El motivo más habitual es **_controlar el acceso a algún recurso compartido_**; por ejemplo, una base de datos o un archivo.
+El motivo más habitual es **controlar el acceso a algún recurso compartido**; por ejemplo, una base de datos o un archivo.
 
 <br>
 <p align="center">
@@ -487,12 +477,13 @@ El motivo más habitual es **_controlar el acceso a algún recurso compartido_**
 </p>
 <br>
 
-#### Ejemplo
-
-🧠 **Idea clave**: el constructor es privado y el acceso se hace a través de un método estático.
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: el constructor es privado y el acceso se hace a través de un método estático.
 
 ```kotlin
+// ================================
 // Clase Singleton
+// ================================
 class Logger private constructor() {
 
     fun log(message: String) {
@@ -512,7 +503,9 @@ class Logger private constructor() {
     }
 }
 
+// ================================
 // Cliente
+// ================================
 fun main() {
     val logger1 = Logger.getInstance()
     val logger2 = Logger.getInstance()
@@ -523,11 +516,11 @@ fun main() {
 ```
 
 ### *Builder*
-Permite **_construir objetos complejos paso a paso_** y producir distintos tipos y representaciones de un objeto empleando el mismo código de construcción. A su vez, **_no permite a otros objetos acceder al producto mientras se construye_**. Para eso, se extrae el código de construcción del objeto de su propia clase a **_objetos independientes llamados builders_**. Cada uno de esos _builders_ representa un "paso" de la construcción del objeto. Y lo importante, es que no es necesario llamarlos a todos: se pueden invocar solo aquellos que sean necesarios para producir una configuración particular del objeto.
+Patrón Creacional que permite **construir objetos complejos paso a paso** y producir distintos tipos y representaciones de un objeto empleando el mismo código de construcción. A su vez, **no permite a otros objetos acceder al producto mientras se construye**. Para eso, se extrae el código de construcción del objeto de su propia clase a **objetos independientes llamados _builders_**. Cada uno de esos _builders_ representa un "paso" de la construcción del objeto. Y lo importante, es que no es necesario llamarlos a todos: se pueden invocar solo aquellos que sean necesarios para producir una configuración particular del objeto.
 
-Opcionalmente, también se puede utilizar una clase **_director_**, la cual puede **_definir el orden en el que se deben ejecutar los pasos_** para la construcción de objetos "habituales" o más usados, mientras que el _builder_ proporciona la implementación de dichos pasos.
+Opcionalmente, también se puede utilizar una clase **director**, la cual puede **definir el orden en el que se deben ejecutar los pasos** para la construcción de objetos "habituales" o más usados, mientras que el _builder_ proporciona la implementación de dichos pasos.
 
-Este patrón es util para **_evitar que los constructores de las clases tengan una enorme cantidad de parámetros_** (incluso cuando no se necesitan todos en todo momento) o la necesidad de crear **_múltiples subclases_** que cubran todas las combinaciones posibles de los parámetros.
+Este patrón es util para **evitar que los constructores de las clases tengan una enorme cantidad de parámetros** (incluso cuando no se necesitan todos en todo momento) o la necesidad de crear **múltiples subclases** que cubran todas las combinaciones posibles de los parámetros.
 
 <br>
 <p align="center">
@@ -535,12 +528,13 @@ Este patrón es util para **_evitar que los constructores de las clases tengan u
 </p>
 <br>
 
-#### Ejemplo
-
-🧠 **Idea clave**: el ``Director`` orquesta el proceso; el ``Builder`` encapsula los pasos concretos.
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: el ``Director`` orquesta el proceso; el ``Builder`` encapsula los pasos concretos.
 
 ```kotlin
+// ================================
 // Producto final
+// ================================
 class Product {
     private val parts = mutableListOf<String>()
 
@@ -551,7 +545,9 @@ class Product {
     }
 }
 
+// ================================
 // Interfaz Builder
+// ================================
 interface Builder {
     fun reset()
     fun buildPartA()
@@ -560,7 +556,9 @@ interface Builder {
     fun getResult(): Product
 }
 
+// ================================
 // Builder concreto
+// ================================
 class ConcreteBuilder : Builder {
     private var product = Product()
 
@@ -583,7 +581,9 @@ class ConcreteBuilder : Builder {
     override fun getResult(): Product = product
 }
 
+// ================================
 // Director opcional: define el orden de construcción
+// ================================
 class Director(private var builder: Builder) {
 
     fun changeBuilder(builder: Builder) {
@@ -602,7 +602,9 @@ class Director(private var builder: Builder) {
     }
 }
 
+// ================================
 // Cliente
+// ================================
 fun main() {
     val builder = ConcreteBuilder()
     val director = Director(builder)
@@ -614,11 +616,11 @@ fun main() {
 ```
 
 ### *Abstract Factory*
-Permite producir **_familias de objetos relacionados (y sus variantes)_** sin especificar sus clases concretas, ya sea porque no se conozcan de antemano o sencillamente porque se quiere permitir una futura extensibilidad.
+Patrón Creacional que permite producir **familias de objetos relacionados (y sus variantes)** sin especificar sus clases concretas, ya sea porque no se conozcan de antemano o sencillamente porque se quiere permitir una futura extensibilidad.
 
-El patrón sugiere declarar de forma explícita **_interfaces para cada producto diferente de la familia de productos_** y hacer que todas **_las variantes de los productos sigan esas interfaces_**.  
-Luego, declarar la *Abstract Factory*: una **_interfaz con una lista de métodos de creación para todos los productos que son parte de la familia de productos_**, los cuales deben devolver productos abstractos representados por las interfaces que extraídas previamente.  
-A su vez, para cada variante de una familia de productos, se crea una **_clase de fábrica independiente_** basada en la interfaz *Abstract Factory*, la cual devuelve productos de un tipo particular (variantes específicas de los productos).
+El patrón sugiere declarar de forma explícita **interfaces para cada producto diferente de la familia de productos** y hacer que todas **las variantes de los productos sigan esas interfaces**.  
+Luego, declarar la *Abstract Factory*: una **interfaz con una lista de métodos de creación para todos los productos que son parte de la familia de productos**, los cuales deben devolver productos abstractos representados por las interfaces que extraídas previamente.  
+A su vez, para cada variante de una familia de productos, se crea una **clase de fábrica independiente** basada en la interfaz *Abstract Factory*, la cual devuelve productos de un tipo particular (variantes específicas de los productos).
 
 En resumen, se crean dos niveles de abstracción: uno para los objetos creados y otro para las fábricas.
 
@@ -628,12 +630,13 @@ En resumen, se crean dos niveles de abstracción: uno para los objetos creados y
 </p>
 <br>
 
-#### Ejemplo
-
-🧠 **Idea clave**: se crean familias completas de productos relacionados (botones y checkboxes) sin conocer sus clases concretas.
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: se crean familias completas de productos relacionados (botones y _checkboxes_) sin conocer sus clases concretas.
 
 ```kotlin
+// ================================
 // Interfaces abstractas para los productos
+// ================================
 interface Button {
     fun paint()
 }
@@ -642,7 +645,9 @@ interface Checkbox {
     fun paint()
 }
 
+// ================================
 // Implementaciones concretas
+// ================================
 class WinButton : Button {
     override fun paint() = println("Renderizando botón estilo Windows")
 }
@@ -659,13 +664,17 @@ class MacCheckbox : Checkbox {
     override fun paint() = println("Renderizando checkbox estilo macOS")
 }
 
+// ================================
 // Fábrica abstracta
+// ================================
 interface GUIFactory {
     fun createButton(): Button
     fun createCheckbox(): Checkbox
 }
 
+// ================================
 // Fábricas concretas
+// ================================
 class WinFactory : GUIFactory {
     override fun createButton(): Button = WinButton()
     override fun createCheckbox(): Checkbox = WinCheckbox()
@@ -676,7 +685,9 @@ class MacFactory : GUIFactory {
     override fun createCheckbox(): Checkbox = MacCheckbox()
 }
 
+// ================================
 // Cliente
+// ================================
 class Application(private val factory: GUIFactory) {
 
     private val button = factory.createButton()
@@ -696,9 +707,9 @@ fun main() {
 ```
 
 ### *Factory Method*
-Delega la responsabilidad de crear el objeto a un único método. Normalmente, esto termina siendo una clase ``Factory`` (o `Creator`) cuya única función es crear objetos del tipo de la interfaz del producto. Las subclases que heredan de dicha clase ``Factory``, van a sobreescribir su método de creación, los cuales retornarán los productos concretos (las diferentes implementaciones de la interfaz del producto).
+Patrón Creacional que delega la responsabilidad de crear el objeto a un único método. Normalmente, esto termina siendo una clase ``Factory`` (o `Creator`) cuya única función es crear objetos del tipo de la interfaz del producto. Las subclases que heredan de dicha clase ``Factory``, van a sobreescribir su método de creación, los cuales retornarán los productos concretos (las diferentes implementaciones de la interfaz del producto).
 
-Es util para **_evitar duplicar la lógica_** de creación de objetos, **_ocultar la complejidad_** de la creación de objetos y crear **_funcionalidades más genéricas_**.
+Es util para **evitar duplicar la lógica** de creación de objetos, **ocultar la complejidad** de la creación de objetos y crear **funcionalidades más genéricas**.
 
 <br>
 <p align="center">
@@ -706,17 +717,21 @@ Es util para **_evitar duplicar la lógica_** de creación de objetos, **_oculta
 </p>
 <br>
 
-#### Ejemplo
-
-🧠 **Idea clave**: El *Factory Method* define un punto de extensión en una clase base para delegar la creación de objetos a sus subclases. Cada subclase decide qué producto concreto instanciar, pero el código cliente solo conoce la interfaz común.
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: El *Factory Method* define un punto de extensión en una clase base para delegar la creación de objetos a sus 
+> subclases. Cada subclase decide qué producto concreto instanciar, pero el código cliente solo conoce la interfaz común.
 
 ```kotlin
+// ================================
 // Interfaz del producto
+// ================================
 interface Product {
     fun doStuff()
 }
 
+// ================================
 // Productos concretos
+// ================================
 class ConcreteProductA : Product {
     override fun doStuff() = println("Haciendo algo con el Producto A")
 }
@@ -725,7 +740,9 @@ class ConcreteProductB : Product {
     override fun doStuff() = println("Haciendo algo con el Producto B")
 }
 
+// ================================
 // Clase base (creador)
+// ================================
 abstract class Factory {
     fun someOperation() {
         val product = createProduct()
@@ -736,7 +753,9 @@ abstract class Factory {
     protected abstract fun createProduct(): Product
 }
 
+// ================================
 // Fábricas concretas
+// ================================
 class ConcreteFactoryA : Factory() {
     override fun createProduct(): Product = ConcreteProductA()
 }
@@ -745,7 +764,9 @@ class ConcreteFactoryB : Factory() {
     override fun createProduct(): Product = ConcreteProductB()
 }
 
+// ================================
 // Cliente
+// ================================
 fun main() {
     val factoryA: Factory = ConcreteFactoryA()
     factoryA.someOperation()   // Haciendo algo con el Producto A
@@ -756,61 +777,399 @@ fun main() {
 ```
 
 ### *Adapter*
-TODO...
+Patrón Estructural que permite la colaboración entre objetos con **interfaces incompatibles**. Un adaptador o _adapter_ es un objeto especial que **convierte la interfaz de un objeto, de forma que otro objeto pueda comprenderla**.  
+Es decir: un Objeto A (**_Target_**) puede invocar con seguridad los métodos del Adaptador, ya que tiene su misma interfaz; y a su vez, al recibir una llamada, el Adaptador pasa la solicitud a un Objeto B (**_Adaptee_**), pero en un formato y orden que ese Objeto B espera. En ocasiones se puede incluso crear un adaptador de dos direcciones que pueda convertir las llamadas en ambos sentidos.
 
-#### Ejemplo
+<br>
+<p align="center">
+    <img src="images/adapter.png" width="1000" alt="">
+</p>
+<br>
 
-🧠 **Idea clave**:
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: El _Adapter_ implementa la interfaz que el cliente espera (**_Target_**) y traduce las llamadas hacia una clase existente con interfaz incompatible (**_Adaptee_**), convirtiendo datos y formato.
+
 ```kotlin
+// =======================
+// Target (lo que el cliente conoce)
+// =======================
+interface ClientInterface {
+    fun method(data: String): String
+}
 
+// =======================
+// Adaptee (servicio existente / incompatible)
+// =======================
+class Service {
+    fun serviceMethod(specialData: String): String {
+        return "Service procesó: $specialData"
+    }
+}
+
+// =======================
+// Adapter
+// =======================
+class Adapter(private val service: Service) : ClientInterface {
+    override fun method(data: String): String {
+        val specialData = convertToServiceFormat(data)
+        return service.serviceMethod(specialData)
+    }
+
+    private fun convertToServiceFormat(data: String): String {
+        return "[Adaptado] $data"
+    }
+}
+
+// =======================
+// Cliente
+// =======================
+fun main() {
+    val client: ClientInterface = Adapter(Service())
+    println(client.method("Solicitud del cliente")) // Service procesó: [Adaptado] Solicitud del cliente
+}
 ```
 
 ### *Facade*
-TODO...
+Patrón Estructural que proporciona una interfaz simplificada a **Subsistema Complejo** (una librería, un _framework_ o cualquier otro grupo complejo de clases). Resulta útil cuando la aplicación se tiene que integrar con una librería sofisticada con decenas de funciones, de la cual sólo se necesita una pequeña parte.  
+También puede crearse una clase **Fachada Adicional** para evitar contaminar una única fachada con funciones no relacionadas que podrían convertirla en otra estructura compleja. Las fachadas adicionales pueden utilizarse por clientes y por otras fachadas.
 
-#### Ejemplo
+<br>
+<p align="center">
+    <img src="images/facade.png" width="1000" alt="">
+</p>
+<br>
 
-🧠 **Idea clave**:
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: El **Cliente** no interactúa directamente con múltiples clases del **Subsistema**. En su lugar, se comunica con una **Fachada**, que orquesta y delega las llamadas necesarias. Opcionalmente, puede existir una **Fachada Adicional** para agrupar otra parte del subsistema y evitar que la fachada principal crezca demasiado.
+
 ```kotlin
+// ===============================
+// Subsistema (complejo)
+// ===============================
+class AudioDecoder {
+    fun decode(file: String) = println("Decodificando audio de $file")
+}
 
+class VideoDecoder {
+    fun decode(file: String) = println("Decodificando video de $file")
+}
+
+class Renderer {
+    fun render() = println("Renderizando contenido en pantalla")
+}
+
+class NetworkStreamer {
+    fun stream() = println("Transmitiendo datos por red")
+}
+
+// ===============================
+// Fachada Adicional
+// ===============================
+class StreamingFacade(
+    private val networkStreamer: NetworkStreamer,
+    private val renderer: Renderer
+) {
+    fun anotherOperation() {
+        networkStreamer.stream()
+        renderer.render()
+    }
+}
+
+// ===============================
+// Fachada Principal
+// ===============================
+class MediaFacade(
+    // linksToSubsystemObjects
+    private val audioDecoder: AudioDecoder,
+    private val videoDecoder: VideoDecoder,
+    private val renderer: Renderer,
+    // optionalAdditionalFacade
+    private val streamingFacade: StreamingFacade? = null
+) {
+
+    fun subsystemOperation(file: String) {
+        println("MediaFacade: iniciando reproducción simplificada...")
+        audioDecoder.decode(file)
+        videoDecoder.decode(file)
+        renderer.render()
+    }
+
+    fun playStreaming() {
+        streamingFacade?.anotherOperation()
+    }
+}
+
+// ===============================
+// Cliente
+// ===============================
+fun main() {
+    val renderer = Renderer()
+    val streaming = StreamingFacade(NetworkStreamer(), renderer)
+
+    val facade = MediaFacade(
+        audioDecoder = AudioDecoder(),
+        videoDecoder = VideoDecoder(),
+        renderer = renderer,
+        streamingFacade = streaming
+    )
+
+    // El cliente usa una API simple
+    facade.subsystemOperation("movie.mp4")
+    facade.playStreaming()
+}
+
+// MediaFacade: iniciando reproducción simplificada...
+// Decodificando audio de movie.mp4
+// Decodificando video de movie.mp4
+// Renderizando contenido en pantalla
+// Transmitiendo datos por red
+// Renderizando contenido en pantalla
 ```
 
 ### *Decorator*
-TODO...
+Patrón Estructural que permite **añadir funcionalidades a objetos** sin la necesidad de crear una nueva subclase, colocándolos dentro de **objetos encapsuladores (_wrappers_)** que contienen estas funcionalidades. Los objetos resultantes **se estructurarán como una pila**, siendo el último decorador de la pila el objeto con el que el cliente trabaja.  
+Sirve para estructurar la lógica de negocio en capas, crear un decorador para cada capa y componer objetos con varias combinaciones de esta lógica, en tiempo de ejecución. El código cliente puede tratar a todos estos objetos de la misma forma, ya que todos siguen una interfaz común.
 
-#### Ejemplo
+<br>
+<p align="center">
+    <img src="images/decorator.png" width="1000" alt="">
+</p>
+<br>
 
-🧠 **Idea clave**:
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: Los decoradores **implementan la misma interfaz que el componente**, contienen una referencia al objeto envuelto (_wrappee_) y delegan la operación principal, agregando comportamiento antes o después. Se pueden **apilar dinámicamente**.
+
 ```kotlin
+// ================================
+// Component
+// ================================
+interface Component {
+    fun execute()
+}
 
+// ================================
+// Concrete Component
+// ================================
+class ConcreteComponent : Component {
+    override fun execute() {
+        println("ConcreteComponent: ejecución base")
+    }
+}
+
+// ================================
+// Base Decorator
+// ================================
+open class BaseDecorator(
+    protected val wrappee: Component
+) : Component {
+
+    override fun execute() {
+        wrappee.execute() // Delegación al componente envuelto
+    }
+}
+
+// ================================
+// Concrete Decorator A
+// ================================
+class LoggingDecorator(component: Component) : BaseDecorator(component) {
+
+    override fun execute() {
+        println("LoggingDecorator: antes de ejecutar")
+        super.execute()
+        println("LoggingDecorator: después de ejecutar")
+    }
+}
+
+// ================================
+// Concrete Decorator B
+// ================================
+class SecurityDecorator(component: Component) : BaseDecorator(component) {
+
+    override fun execute() {
+        println("SecurityDecorator: chequeo de seguridad")
+        super.execute()
+    }
+}
+
+// ================================
+// Client
+// ================================
+fun main() {
+    val component = ConcreteComponent()
+
+    val decorated =
+        SecurityDecorator(
+            LoggingDecorator(component)
+        )
+
+    decorated.execute()
+}
+
+// SecurityDecorator: chequeo de seguridad
+// LoggingDecorator: antes de ejecutar
+// ConcreteComponent: ejecución base
+// LoggingDecorator: después de ejecutar
 ```
 
 ### *Strategy*
-TODO...
+Patrón de Comportamiento que permite extraer una familia de algoritmos de una única clase, colocar cada uno de ellos en una clase separada y hacer sus **objetos intercambiables**. Cada una de esas clases separadas se llama **Estrategia**. Y la clase original, llamada **Contexto**, debe tener un campo para almacenar una referencia a una de las estrategias, ya que no es responsable de seleccionar un algoritmo adecuado para la tarea, sino que es el cliente quien le pasa la estrategia deseada.
 
-#### Ejemplo
+<br>
+<p align="center">
+    <img src="images/strategy.png" width="1000" alt="">
+</p>
+<br>
 
-🧠 **Idea clave**:
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: El **Contexto delega el comportamiento** a un objeto Estrategia que implementa una interfaz común. La estrategia puede **cambiarse en tiempo de ejecución**, alterando el algoritmo sin modificar el contexto.
+
 ```kotlin
+// ================================
+// Strategy
+// ================================
+interface Strategy {
+    fun execute(data: String): String
+}
 
+// ================================
+// Concrete Strategies
+// ================================
+class UpperCaseStrategy : Strategy {
+    override fun execute(data: String): String {
+        return data.uppercase()
+    }
+}
+
+class ReverseStrategy : Strategy {
+    override fun execute(data: String): String {
+        return data.reversed()
+    }
+}
+
+// ================================
+// Context
+// ================================
+class Context(
+    private var strategy: Strategy
+) {
+
+    fun setStrategy(strategy: Strategy) {
+        this.strategy = strategy
+    }
+
+    fun doSomething(data: String) {
+        val result = strategy.execute(data)
+        println("Resultado: $result")
+    }
+}
+
+// ================================
+// Client
+// ================================
+fun main() {
+    val context = Context(UpperCaseStrategy())
+
+    context.doSomething("kotlin") // Resultado: KOTLIN
+
+    context.setStrategy(ReverseStrategy())
+
+    context.doSomething("kotlin") // Resultado: niltok
+}
 ```
 
 ### *Observer*
-TODO...
+> ℹ️ **Nota:**  
+> También llamado Observador, Publicación-Suscripción, Modelo-patrón, _Event-Subscriber_, _Listener_
 
-#### Ejemplo
+Patrón de Comportamiento que permite definir un **mecanismo de suscripción para notificar a varios objetos (_subscribers_)** sobre cualquier **evento que le suceda al objeto que están observando (_publisher_)**.  
+Sirve para cuando los cambios en el estado de un objeto necesitan cambiar otros objetos y el grupo de esos objetos es desconocido de antemano o cambia dinámicamente.
 
-🧠 **Idea clave**:
+<br>
+<p align="center">
+    <img src="images/observer.png" width="1000" alt="">
+</p>
+<br>
+
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**: El **_Publisher_ mantiene una lista de suscriptores** y los notifica cuando cambia su estado. Los suscriptores implementan una interfaz común y reaccionan al evento mediante ``update()``.
+
 ```kotlin
+// ================================
+// Subscriber
+// ================================
+interface Subscriber {
+    fun update(context: String)
+}
 
+// ================================
+// Concrete Subscribers
+// ================================
+class EmailSubscriber(private val name: String) : Subscriber {
+    override fun update(context: String) {
+        println("Email a $name: nuevo estado = $context")
+    }
+}
+
+class SmsSubscriber(private val name: String) : Subscriber {
+    override fun update(context: String) {
+        println("SMS a $name: nuevo estado = $context")
+    }
+}
+
+// ================================
+// Publisher
+// ================================
+class Publisher {
+    private val subscribers = mutableListOf<Subscriber>()
+    private var mainState: String = "Inicial"
+
+    fun subscribe(s: Subscriber) {
+        subscribers.add(s)
+    }
+
+    fun unsubscribe(s: Subscriber) {
+        subscribers.remove(s)
+    }
+
+    fun notifySubscribers() {
+        for (s in subscribers) {
+            s.update(mainState)
+        }
+    }
+
+    fun mainBusinessLogic(newState: String) {
+        println("Publisher: cambiando estado a $newState")
+        mainState = newState
+        notifySubscribers()
+    }
+}
+
+// ================================
+// Client
+// ================================
+fun main() {
+    val publisher = Publisher()
+
+    val email = EmailSubscriber("Ana")
+    val sms = SmsSubscriber("Luis")
+
+    publisher.subscribe(email)
+    publisher.subscribe(sms)
+
+    publisher.mainBusinessLogic("ACTIVO")
+}
+
+// Publisher: cambiando estado a ACTIVO
+// Email a Ana: nuevo estado = ACTIVO
+// SMS a Luis: nuevo estado = ACTIVO
 ```
 
 ### *State*
 TODO...
 
-#### Ejemplo
+📌 **Ejemplo**:  
+> 🧠 **Idea clave**:
 
-🧠 **Idea clave**:
 ```kotlin
 
 ```
