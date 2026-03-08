@@ -5,7 +5,8 @@
   * [Conceptos de Multimedia en Android](#conceptos-de-multimedia-en-android)
     * [Modelo Mental del flujo](#modelo-mental-del-flujo)
     * [DRM (*Digital Rights Management*)](#drm-digital-rights-management)
-      * [Niveles de seguridad de  *Widevine*: L1, L2 y L3](#niveles-de-seguridad-de-widevine-l1-l2-y-l3)
+      * [CDM - SoC - TEE - SVP](#cdm---soc---tee---svp)
+      * [Niveles de seguridad de *Widevine*: L1, L2 y L3](#niveles-de-seguridad-de-widevine-l1-l2-y-l3)
     * [*Buffer*](#buffer)
     * [*Decoder*](#decoder)
     * [*Renderer*](#renderer)
@@ -18,46 +19,46 @@
     * [*Reload Source*](#reload-source)
     * [*Tweaks (``TweaksConfig``)*](#tweaks-tweaksconfig)
   * [*Video Players: ExoPlayer*, *JW Player* y *Bitmovin*](#video-players-exoplayer-jw-player-y-bitmovin)
-    * [🎬 *ExoPlayer*/*Media3*](#-exoplayermedia3)
+    * [*ExoPlayer*/*Media3*](#exoplayermedia3)
       * [``MediaDrm``](#mediadrm)
-    * [🎥 *JW Player*](#-jw-player)
-    * [🎞️ *Bitmovin Player*](#-bitmovin-player)
-    * [🧭 Comparativa general](#-comparativa-general)
+    * [*JW Player*](#jw-player)
+    * [*Bitmovin Player*](#bitmovin-player)
+    * [Comparativa general](#comparativa-general)
     * [📚 Recursos recomendados](#-recursos-recomendados)
   * [Grabación y captura multimedia: *CameraX* y *MediaRecorder*](#grabación-y-captura-multimedia-camerax-y-mediarecorder)
-    * [📸 *CameraX*](#-camerax)
-    * [🎤 *MediaRecorder*](#-mediarecorder)
-    * [🧭 Comparativa general](#-comparativa-general-1)
+    * [*CameraX*](#camerax)
+    * [*MediaRecorder*](#mediarecorder)
+    * [Comparativa general](#comparativa-general-1)
     * [📚 Recursos recomendados](#-recursos-recomendados-1)
   * [Audio: reproducción y grabación (*MediaPlayer*, *AudioRecord*, *AudioTrack*)](#audio-reproducción-y-grabación-mediaplayer-audiorecord-audiotrack)
-    * [🔊 *MediaPlayer*](#-mediaplayer)
-    * [🎤 *AudioRecord*](#-audiorecord)
-    * [🎧 *AudioTrack*](#-audiotrack)
-    * [🧭 Comparativa general](#-comparativa-general-2)
+    * [*MediaPlayer*](#mediaplayer)
+    * [*AudioRecord*](#audiorecord)
+    * [*AudioTrack*](#audiotrack)
+    * [Comparativa general](#comparativa-general-2)
     * [📚 Recursos recomendados](#-recursos-recomendados-2)
   * [Edición y procesamiento multimedia (*FFmpeg*, *ML Kit*, *OpenCV*)](#edición-y-procesamiento-multimedia-ffmpeg-ml-kit-opencv)
-    * [🎬 *FFmpeg*](#-ffmpeg)
-    * [🤖 *ML Kit*](#-ml-kit)
-    * [🧠 *OpenCV (Open Source Computer Vision Library)*](#-opencv-open-source-computer-vision-library)
-    * [🧭 Comparativa general](#-comparativa-general-3)
+    * [*FFmpeg*](#ffmpeg)
+    * [*ML Kit*](#ml-kit)
+    * [*OpenCV (Open Source Computer Vision Library)*](#opencv-open-source-computer-vision-library)
+    * [Comparativa general](#comparativa-general-3)
     * [📚 Recursos recomendados](#-recursos-recomendados-3)
   * [Transmisión y *streaming* en tiempo real (*WebRTC*, *RTMP*, *HLS*, *DASH*)](#transmisión-y-streaming-en-tiempo-real-webrtc-rtmp-hls-dash)
-    * [📡 *WebRTC*](#-webrtc)
-    * [🔴 *RTMP (Real-Time Messaging Protocol)*](#-rtmp-real-time-messaging-protocol)
-    * [📺 *HLS (HTTP Live Streaming)* y *DASH (Dynamic Adaptive Streaming over HTTP)*](#-hls-http-live-streaming-y-dash-dynamic-adaptive-streaming-over-http)
-    * [🧭 Comparativa general](#-comparativa-general-4)
+    * [*WebRTC*](#webrtc)
+    * [*RTMP (Real-Time Messaging Protocol)*](#rtmp-real-time-messaging-protocol)
+    * [*HLS (HTTP Live Streaming)* y *DASH (Dynamic Adaptive Streaming over HTTP)*](#hls-http-live-streaming-y-dash-dynamic-adaptive-streaming-over-http)
+    * [Comparativa general](#comparativa-general-4)
     * [📚 Recursos recomendados](#-recursos-recomendados-4)
   * [Almacenamiento y *caching* multimedia](#almacenamiento-y-caching-multimedia)
-    * [💾 *Cache* de medios en Android](#-cache-de-medios-en-android)
-    * [🛠 Librerías y herramientas comunes](#-librerías-y-herramientas-comunes)
-    * [🧭 Comparativa de *caching*](#-comparativa-de-caching)
+    * [*Cache* de medios en Android](#cache-de-medios-en-android)
+    * [Librerías y herramientas comunes](#librerías-y-herramientas-comunes)
+    * [Comparativa de *caching*](#comparativa-de-caching)
     * [📚 Recursos recomendados](#-recursos-recomendados-5)
   * [Procesamiento y efectos en tiempo real](#procesamiento-y-efectos-en-tiempo-real)
-    * [🎨 Filtros y efectos de video/audio](#-filtros-y-efectos-de-videoaudio)
-    * [🛠 Librerías y herramientas comunes](#-librerías-y-herramientas-comunes-1)
-    * [🧭 Comparativa general](#-comparativa-general-5)
+    * [Filtros y efectos de video/audio](#filtros-y-efectos-de-videoaudio)
+    * [Librerías y herramientas comunes](#librerías-y-herramientas-comunes-1)
+    * [Comparativa general](#comparativa-general-5)
     * [📚 Recursos recomendados](#-recursos-recomendados-6)
-  * [📌 Consideraciones clave: formatos, optimización y multiplataforma](#-consideraciones-clave-formatos-optimización-y-multiplataforma)
+  * [Consideraciones clave: formatos, optimización y multiplataforma](#consideraciones-clave-formatos-optimización-y-multiplataforma)
     * [:one: Formatos](#one-formatos)
     * [:two: Optimización](#two-optimización)
     * [:three: Interoperabilidad multiplataforma](#three-interoperabilidad-multiplataforma)
@@ -101,7 +102,7 @@
 
 ### DRM (*Digital Rights Management*)
 Es un conjunto de tecnologías utilizadas para **proteger contenido audiovisual y controlar su uso** dentro de una aplicación.  
-Cuando un recurso está protegido por DRM, **el video se distribuye cifrado**, y solo puede ser descifrado por un módulo autorizado en el dispositivo (un **CDM** o **_Content Decryption Module_**). Esto **dificulta/mitiga la copia, extracción o reproducción no autorizada del contenido**.
+Cuando un recurso está protegido por DRM, **el video se distribuye cifrado**, y solo puede ser descifrado por un módulo autorizado en el dispositivo (un [**CDM**](#cdm---soc---tee---svp)). Esto **dificulta/mitiga la copia, extracción o reproducción no autorizada del contenido**.
 
 En entornos móviles y de _streaming_, los sistemas DRM más utilizados son:
 
@@ -113,7 +114,17 @@ A nivel conceptual, todos cumplen el mismo propósito :arrow_right: Asegurar que
 
 En reproductores como _ExoPlayer_, _JW Player_ o _Bitmovin_, la compatibilidad con estos sistemas permite la **reproducción segura de contenidos premium o licenciados**.
 
-#### Niveles de seguridad de  *Widevine*: L1, L2 y L3
+#### CDM - SoC - TEE - SVP
+- **CDM (_Content Decryption Module_)** :arrow_right: “El orquestador”  
+  Es el “DRM engine” que orquesta licencia, políticas y el uso de claves. En Widevine L1, el CDM suele estar dividido entre una parte en el sistema “normal” y un **núcleo seguro** en el **TEE** (_hardware-backed_), que realiza las operaciones sensibles (claves/cripto) y configura/autoriza la reproducción protegida.
+- **SoC (_System on a Chip_)** :arrow_right: “Dónde vive el hardware”  
+  Es el **_chip_ principal** del dispositivo; integra CPU, GPU, bloques multimedia (p. ej. _decoder_), controladores de memoria/pantalla y, típicamente, bloques de seguridad que habilitan el TEE y rutas protegidas.
+- **TEE (_Trusted Execution Environment_)** :arrow_right: “Dónde se protegen claves y se hace la cripto”  
+  Es un entorno aislado soportado por _hardware_ (p. ej. _ARM TrustZone_), separado del OS normal (Android/Linux y apps). En Widevine L1, aloja el núcleo seguro del DRM para **manejo de claves/licencias y criptografía**, evitando que el OS y las apps accedan a claves o material sensible.
+- **SVP (_Secure Video Path_)** :arrow_right: “Cómo se mantiene protegido el video ya descifrado”  
+  Es el **_pipeline_ protegido** (_decrypt_/_decode_/_render_) que usa **_secure/protected buffers_** y termina en una **_secure/protected surface_**. Así, una vez autorizado el uso de claves por el TEE, el contenido se **descifra** hacia _buffers_ protegidos, se **decodifica** en un *secure decoder* y los frames se muestran en **una *secure/protected surface***, sin pasar por memoria/superficies accesibles al entorno normal.
+
+#### Niveles de seguridad de *Widevine*: L1, L2 y L3
 > ℹ️ **Nota:**  
 > En la práctica, hoy la conversación común es L1 vs L3 porque L2 es relativamente raro
 
@@ -268,7 +279,7 @@ Estos _tweaks_ pueden afectar la estabilidad del [_decoder_](#decoder) y la sinc
 ## *Video Players: ExoPlayer*, *JW Player* y *Bitmovin*
 > 💡 **Recomendación:** Para la mayoría de los proyectos modernos en Kotlin/Android, **ExoPlayer** es la opción ideal, salvo que se requiera un sistema comercial de _streaming_ con publicidad y analíticas integradas (caso en el que **JW Player** o **Bitmoving** puede ser más conveniente).
 
-### 🎬 *ExoPlayer*/*Media3*
+### *ExoPlayer*/*Media3*
 Originalmente, fue una librería independiente de Google para reproducción de medios en Android. A partir de 2022, Google migró _ExoPlayer_ a la librería **_AndroidX Media3_** (``androidx.media3``).  
 Es el reproductor recomendado oficialmente para Android y Android TV, y reemplaza gradualmente al reproductor nativo `MediaPlayer`, ofreciendo mayor flexibilidad y soporte para formatos modernos.
 
@@ -332,7 +343,7 @@ Dicho simple: es el componente con el que la app/_player_ hace el flujo de DRM:
 - `MediaDrm` es la **API** mediante la cual Android expone _Widevine_ al resto del sistema
 - _ExoPlayer_/_Media3_ por debajo usa `MediaDrm` (a través de _wrappers_ como `FrameworkMediaDrm` o `DefaultDrmSessionManager`) para todo el manejo de licencias
 
-### 🎥 *JW Player*
+### *JW Player*
 Es un _framework_ multimedia comercial orientado a _streaming_ profesional, monetización y análisis avanzado.  
 Ofrece SDK's para Android, iOS y Web, y se utiliza en entornos donde se necesita control sobre derechos, publicidad y métricas.
 
@@ -364,7 +375,7 @@ val jwPlayerView = JWPlayerView(this, playerConfig)
 setContentView(jwPlayerView)
 ```
 
-### 🎞️ *Bitmovin Player*
+### *Bitmovin Player*
 Es un reproductor multimedia multiplataforma, altamente configurable y orientado a escenarios profesionales de _streaming_ donde se requieren métricas avanzadas, optimización para múltiples dispositivos y compatibilidad con los principales estándares de video adaptativo (DASH, HLS) y DRM.  
 Se integra fácilmente en Android (nativo y Compose), iOS, Web y Smart TVs, y ofrece un SDK con API extensible, analíticas integradas y soporte de _low-latency_.
 
@@ -444,7 +455,7 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-### 🧭 Comparativa general
+### Comparativa general
 
 | Característica          | ExoPlayer                | JW Player      | Bitmovin Player                    |
 |-------------------------|--------------------------|----------------|------------------------------------|
@@ -467,7 +478,7 @@ class MainActivity : AppCompatActivity() {
 
 > 💡 **Recomendación:** Si se necesita capturar fotos o videos de forma moderna y compatible con la mayoría de los dispositivos Android, **CameraX** es la opción ideal. Para un control a más bajo nivel sobre la grabación o codificación, se la puede combinar con **MediaRecorder**.
 
-### 📸 *CameraX*
+### *CameraX*
 Es una librería de Jetpack que simplifica el uso de la cámara en Android, ofreciendo una API moderna, consistente y fácil de integrar.  
 Está construida sobre `Camera2`, pero abstrae su complejidad mediante componentes listos para usar.
 
@@ -510,7 +521,7 @@ imageCapture.takePicture(
 )
 ```
 
-### 🎤 *MediaRecorder*
+### *MediaRecorder*
 Es una API nativa de Android que permite grabar **audio y video** directamente desde las fuentes del dispositivo (micrófono, cámara, pantalla).  
 Aunque puede usarse de manera independiente, suele integrarse con CameraX o Camera2 para obtener control total del proceso de grabación.
 
@@ -548,7 +559,7 @@ val recording = videoCapture.output
     }
 ```
 
-### 🧭 Comparativa general
+### Comparativa general
 
 | Característica          | CameraX              | MediaRecorder       |
 |-------------------------|----------------------|---------------------|
@@ -569,7 +580,7 @@ val recording = videoCapture.output
 
 > 💡 **Recomendación:** Para la mayoría de los casos de uso, **MediaPlayer** es suficiente para la reproducción básica de audio. Sin embargo, si se requiere procesamiento personalizado o grabación en tiempo real, **AudioRecord** y **AudioTrack** ofrecen un mayor nivel de control.
 
-### 🔊 *MediaPlayer*
+### *MediaPlayer*
 Es una API de alto nivel que permite reproducir archivos o flujos de audio de forma sencilla.  
 Puede trabajar con archivos locales o remotos, y soporta los formatos más comunes (MP3, AAC, OGG, WAV, entre otros).
 
@@ -599,7 +610,7 @@ mediaPlayer.setOnCompletionListener {
 }
 ```
 
-### 🎤 *AudioRecord*
+### *AudioRecord*
 Permite capturar audio crudo desde el micrófono del dispositivo para procesarlo o almacenarlo manualmente.  
 Se utiliza en escenarios donde se requiere control sobre el formato de muestreo, la frecuencia y el manejo de _buffers_.
 
@@ -641,7 +652,7 @@ audioRecord.stop()
 audioRecord.release()
 ```
 
-### 🎧 *AudioTrack*
+### *AudioTrack*
 Complementario a *AudioRecord*, *AudioTrack* permite reproducir audio PCM (sin comprimir) o generado dinámicamente.  
 Se usa para aplicaciones que necesitan reproducir audio procesado o sintetizado en tiempo real.
 
@@ -683,7 +694,7 @@ audioTrack.stop()
 audioTrack.release()
 ```
 
-### 🧭 Comparativa general
+### Comparativa general
 
 | Característica              | MediaPlayer                  | AudioRecord      | AudioTrack       |
 |-----------------------------|------------------------------|------------------|------------------|
@@ -703,7 +714,7 @@ audioTrack.release()
 
 > 💡 **Recomendación:** Para tareas de edición o procesamiento multimedia en Android, se recomienda utilizar **FFmpeg** para manipulación de audio y video, **ML Kit** para análisis inteligente de imágenes y **OpenCV** para procesamiento avanzado y visión por computadora (_computer vision_).
 
-### 🎬 *FFmpeg*
+### *FFmpeg*
 Es una colección de herramientas y librerías de código abierto diseñadas para la **_conversión, compresión y procesamiento de audio y video_**.  
 En Android, puede utilizarse ejecutando los **binarios nativos** mediante Kotlin o Java, invocando comandos directamente. También pueden utilizarse _wrappers_ o dependencias que exponen sus comandos nativos mediante Kotlin o Java, pero primero hay que asegurarse que dichos proyectos sigan activos y en mantenimiento.
 
@@ -752,7 +763,7 @@ try {
 }
 ```
 
-### 🤖 *ML Kit*
+### *ML Kit*
 Es un SDK de Google que ofrece capacidades de inteligencia artificial y aprendizaje automático (_machine learning_) optimizadas para dispositivos móviles.  
 Permite realizar análisis multimedia mediante modelos integrados o personalizados, con o sin conexión.
 
@@ -786,7 +797,7 @@ recognizer.process(image)
     }
 ```
 
-### 🧠 *OpenCV (Open Source Computer Vision Library)*
+### *OpenCV (Open Source Computer Vision Library)*
 Es una librería ampliamente utilizada para tareas de visión por computadora (_computer vision_) y análisis de imágenes.  
 Proporciona cientos de funciones optimizadas para la manipulación de imágenes y videos en tiempo real.
 
@@ -814,7 +825,7 @@ Imgproc.GaussianBlur(src, dst, Size(15.0, 15.0), 0.0)
 Imgcodecs.imwrite("/sdcard/output_blur.jpg", dst)
 ```
 
-### 🧭 Comparativa general
+### Comparativa general
 
 | Característica              | FFmpeg                          | ML Kit               | OpenCV                        |
 |-----------------------------|---------------------------------|----------------------|-------------------------------|
@@ -836,7 +847,7 @@ Imgcodecs.imwrite("/sdcard/output_blur.jpg", dst)
 > 💡 **Recomendación:** Para la transmisión de audio y video en tiempo real, se deben evaluar las necesidades de latencia, compatibilidad de plataformas y formatos soportados.  
 > **WebRTC** es ideal para comunicaciones en tiempo real con baja latencia. **RTMP** es apropiado para _streaming_ hacia servidores y plataformas de distribución. **HLS** y **DASH** permiten transmisión adaptativa en redes variables.
 
-### 📡 *WebRTC*
+### *WebRTC*
 Es un estándar abierto que permite comunicación de audio, video y datos en tiempo real entre navegadores y aplicaciones móviles, sin necesidad de _plugins_ adicionales.
 
 **Características principales:**
@@ -878,7 +889,7 @@ val peerConnection = pcFactory.createPeerConnection(
 )
 ```
 
-### 🔴 *RTMP (Real-Time Messaging Protocol)*
+### *RTMP (Real-Time Messaging Protocol)*
 Es un protocolo de transmisión utilizado para enviar audio y video a servidores de _streaming_ o plataformas como YouTube o Twitch.
 
 **Características principales:**
@@ -907,7 +918,7 @@ val rtmpCamera = RtmpCamera1(surfaceView, object : ConnectCheckerRtmp {
 rtmpCamera.startStream("rtmp://tu-servidor/live/streamkey")
 ```
 
-### 📺 *HLS (HTTP Live Streaming)* y *DASH (Dynamic Adaptive Streaming over HTTP)*
+### *HLS (HTTP Live Streaming)* y *DASH (Dynamic Adaptive Streaming over HTTP)*
 Son protocolos de _streaming_ adaptativo, diseñados para transmitir contenido multimedia sobre [HTTP](../../Glosary%20&%20Core%20Concepts/Software%20in%20general.md#http-hypertext-transfer-protocol) con control de calidad dinámico según la red.
 
 **Características principales:**
@@ -939,7 +950,7 @@ val player = ExoPlayer.Builder(context).build().apply {
 binding.playerView.player = player
 ```
 
-### 🧭 Comparativa general
+### Comparativa general
 
 | Característica                 | WebRTC                       | RTMP                            | HLS                                | DASH                               |
 |--------------------------------|------------------------------|---------------------------------|------------------------------------|------------------------------------|
@@ -962,7 +973,7 @@ binding.playerView.player = player
 
 > 💡 **Recomendación:** Para mejorar la experiencia de usuario y reducir el uso de red, se deben implementar estrategias de _caching_ de audio y video, especialmente en aplicaciones con _streaming_ o reproducción frecuente de contenido multimedia.
 
-### 💾 *Cache* de medios en Android
+### *Cache* de medios en Android
 El _caching_ permite almacenar temporalmente fragmentos o archivos multimedia en el dispositivo para:
 - Reducir la carga de la red.
 - Minimizar la latencia en reproducciones repetidas.
@@ -982,7 +993,7 @@ El _caching_ permite almacenar temporalmente fragmentos o archivos multimedia en
 - Requiere control de tamaño y limpieza de _cache_.
 - Consumo de espacio en el dispositivo.
 
-### 🛠 Librerías y herramientas comunes
+### Librerías y herramientas comunes
 - **_ExoPlayer Cache_:** Soporte nativo de _cache_ de segmentos HLS/DASH o archivos locales.
 - **_DiskLruCache_:** _Cache_ en disco con política **LRU** (**_Least Recently Used_**), útil para recursos multimedia.
 - **_Room_:** Base de datos local para almacenar metadatos o referencias a archivos cacheados.
@@ -1033,7 +1044,7 @@ abstract class AppDatabase : RoomDatabase() {
 }
 ```
 
-### 🧭 Comparativa de *caching*
+### Comparativa de *caching*
 
 | Herramienta / Librería   | Tipo de caching                                          | Casos de uso recomendados                                                            |
 |--------------------------|----------------------------------------------------------|--------------------------------------------------------------------------------------|
@@ -1052,7 +1063,7 @@ abstract class AppDatabase : RoomDatabase() {
 
 > 💡 **Recomendación:** Para aplicaciones que necesiten aplicar filtros, efectos o análisis a audio y video en reproducción o _streaming_, se deben considerar la latencia, el consumo de CPU/GPU y la compatibilidad con frameworks multimedia existentes como _ExoPlayer_ o _ML Kit_.
 
-### 🎨 Filtros y efectos de video/audio
+### Filtros y efectos de video/audio
 El procesamiento en tiempo real permite aplicar transformaciones sobre _frames_ de video o señales de audio mientras se reproducen o capturan.
 
 **Características principales:**
@@ -1071,7 +1082,7 @@ El procesamiento en tiempo real permite aplicar transformaciones sobre _frames_ 
 - Puede aumentar la latencia si no se optimiza correctamente.
 - Curva de aprendizaje más elevada que reproducción simple de media.
 
-### 🛠 Librerías y herramientas comunes
+### Librerías y herramientas comunes
 - **OpenGL / OpenGL ES**: Renderizado de gráficos y procesamiento de frames en GPU.
 - **RenderScript** (deprecado en Android 12, aún usable en proyectos existentes): procesamiento de imágenes y video usando CPU/GPU.
 - **GPUImage / GPUImage2**: filtros y efectos en tiempo real con **_OpenGL_**.
@@ -1113,7 +1124,7 @@ imageAnalyzer.setAnalyzer(executor, FaceDetectionAnalyzer { faces ->
 cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalyzer)
 ```
 
-### 🧭 Comparativa general
+### Comparativa general
 
 | Herramienta / Librería     | Tipo de procesamiento                   | Casos de uso recomendados                                                 |
 |----------------------------|-----------------------------------------|---------------------------------------------------------------------------|
@@ -1129,7 +1140,7 @@ cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalyzer)
 - [Media3 / ExoPlayer – VideoFrameProcessor (API Reference)](https://developer.android.com/reference/kotlin/androidx/media3/common/VideoFrameProcessor) – Integración para procesar frames en ExoPlayer/Media3.
 - [OpenGL ES Android (Guía oficial)](https://developer.android.com/guide/topics/graphics/opengl) – Guía oficial de OpenGL ES en Android.
 
-## 📌 Consideraciones clave: formatos, optimización y multiplataforma
+## Consideraciones clave: formatos, optimización y multiplataforma
 
 > 💡 Tip: Este resumen sirve como _checklist_ para asegurar compatibilidad, eficiencia y consistencia en proyectos Android o multiplataforma que manejen audio, video y efectos en tiempo real.
 

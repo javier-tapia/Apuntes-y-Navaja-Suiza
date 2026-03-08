@@ -830,7 +830,7 @@ fun main() {
 ```
 
 ### *Facade*
-Patrón Estructural que proporciona una interfaz simplificada a **Subsistema Complejo** (una librería, un _framework_ o cualquier otro grupo complejo de clases). Resulta útil cuando la aplicación se tiene que integrar con una librería sofisticada con decenas de funciones, de la cual sólo se necesita una pequeña parte.  
+Patrón Estructural que proporciona una interfaz simplificada a un **Subsistema Complejo** (una librería, un _framework_ o cualquier otro grupo complejo de clases). Resulta útil cuando la aplicación se tiene que integrar con una librería sofisticada con decenas de funciones, de la cual sólo se necesita una pequeña parte.  
 También puede crearse una clase **Fachada Adicional** para evitar contaminar una única fachada con funciones no relacionadas que podrían convertirla en otra estructura compleja. Las fachadas adicionales pueden utilizarse por clientes y por otras fachadas.
 
 <br>

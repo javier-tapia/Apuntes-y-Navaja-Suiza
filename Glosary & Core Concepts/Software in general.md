@@ -6,7 +6,7 @@
   * [ABI (*Application Binary Interface*)](#abi-application-binary-interface)
   * [🛠 API vs Librería vs *Framework*](#-api-vs-librería-vs-framework)
   * [Asincronía (*Asynchrony*)](#asincronía-asynchrony)
-  * [*Atomicity*](#atomicity)
+  * [Atomicidad (*Atomicity*)](#atomicidad-atomicity)
   * [*Backpressure*](#backpressure)
   * [*Build*](#build)
   * [*Bytecode*](#bytecode)
@@ -43,6 +43,7 @@
   * [Sentencia (*statement*)](#sentencia-statement)
   * [Serializar (*serialize*)](#serializar-serialize)
   * [TLS/SSL](#tlsssl)
+  * [*Trade-off*](#trade-off)
 <!-- TOC -->
 
 ---
@@ -75,13 +76,51 @@ Se puede pensar **como una API, pero para el código binario**. Mientras que una
   📌 **Ejemplos:** Jetpack Compose, Spring, Django, Angular.
 
 ## Asincronía (*Asynchrony*)
-Modelo de ejecución donde una operación inicia y **no bloquea** al llamador mientras espera su resultado. El trabajo continúa “en segundo plano” y la finalización se notifica más tarde (por _callbacks_, promesas/futuros, eventos o reanudación de una corrutina). Se usa especialmente **para I/O y tareas de larga duración**.  
-Ver [Concurrencia](#concurrencia-concurrency)
+> 🔍 Ver también [Concurrencia](#concurrencia-concurrency)
 
-## *Atomicity*
-Atomic implies indivisibility and irreducibility, so _**an atomic operation must be performed entirely or not performed at all**_. An operation that is atomic on one machine may not be on another.  
-An atomic operation is an operation during which a processor can simultaneously read a location and write it in the same bus operation. This prevents any other processor or I/O device from writing or reading memory until the operation is complete.  
-Atomicity is a trait that defines whether an operation can be interrupted or not. It matters because _**if something can't be interrupted, it's intrinsically thread safe**_.
+Modelo de ejecución donde una operación inicia y **no bloquea** al llamador mientras espera su resultado. El trabajo continúa “en segundo plano” y la finalización se notifica más tarde (por _callbacks_, promesas/futuros, eventos o reanudación de una corrutina). Se usa especialmente **para I/O y tareas de larga duración**.
+
+## Atomicidad (*Atomicity*)
+Atómico implica indivisibilidad e irreductibilidad, por lo que **una operación atómica debe ejecutarse completamente o no ejecutarse en absoluto**. Una operación que es atómica en una máquina puede no serlo en otra.  
+Una operación atómica es una operación durante la cual un procesador puede leer una ubicación de memoria y escribir en ella simultáneamente dentro de la misma operación de _bus_. Esto impide que cualquier otro procesador o dispositivo de I/O (_Input-Output_) escriba o lea la memoria hasta que la operación haya finalizado.  
+La atomicidad es una propiedad que define si una operación puede ser interrumpida o no. Esto es importante porque **si algo no puede ser interrumpido, es intrínsecamente seguro para hilos (_thread-safe_)**.
+
+En contraposición, una **operación compuesta** es cualquier operación que internamente **requiere más de un paso sobre la misma variable para completarse**. Esta falta de atomicidad crea una **condición de carrera (*race condition*)**.
+
+El ejemplo clásico es `counter++`, que parece una sola operación, pero en realidad son tres:
+
+```
+1. READ → leer el valor actual de counter (ej: 5)
+2. ADD → incrementar en 1 (5 + 1 = 6)
+3. WRITE → escribir el nuevo valor (counter = 6)
+```
+
+Si dos hilos ejecutan `counter++` al mismo tiempo sin sincronización, puede pasar esto:
+
+```
+Hilo A: READ  → lee 5
+Hilo B: READ  → lee 5 (antes de que A escriba)
+Hilo A: WRITE → escribe 6
+Hilo B: WRITE → escribe 6  ← debería ser 7, se perdió un incremento
+```
+
+El **mecanismo para proteger operaciones compuestas** se denomina **exclusión mutua**: hace que esa secuencia de pasos sea ejecutada por **un solo hilo a la vez**, restaurando la atomicidad de forma artificial. Este concepto también aplica como técnica de coordinación entre hilos (ver [Concurrencia](#concurrencia-concurrency)).  
+El problema con `counter++` es que los tres pasos (READ → ADD → WRITE) pueden ser interrumpidos por otro hilo en el medio. La exclusión mutua garantiza que solo un hilo a la vez pueda ejecutar esos pasos, como si fueran una unidad indivisible:
+
+```
+Hilo A: adquiere el lock
+Hilo A: READ → 5
+Hilo A: ADD  → 6
+Hilo A: WRITE → 6
+Hilo A: libera el lock
+														Hilo B: adquiere el lock (recién ahora puede entrar)
+														Hilo B: READ → 6
+														Hilo B: ADD  → 7
+														Hilo B: WRITE → 7
+														Hilo B: libera el lock
+
+Resultado correcto: 7.
+```
 
 ## *Backpressure*
 Mecanismo de control de flujo que **regula la velocidad de producción de datos cuando el consumidor no puede procesarlos al mismo ritmo**, evitando saturación, pérdida de información o fallas por sobrecarga. Permite aplicar estrategias como espera, almacenamiento en _buffer_, descarte o reducción de datos para mantener la estabilidad del sistema.
@@ -136,8 +175,15 @@ Capacidad de un programa o componente de software para interactuar con otro en s
 Proceso que implica transformar código fuente (como el escrito en un lenguaje de programación de alto nivel) en código máquina que la CPU puede ejecutar.
 
 ## Concurrencia (*Concurrency*)
-Capacidad de un sistema para **gestionar varias tareas en progreso** durante el mismo intervalo de tiempo. Las tareas pueden ejecutarse **intercaladas** (_time-slicing_) en un solo hilo o repartidas entre múltiples hilos/procesos. Es principalmente un concepto de **estructura y coordinación** (composición, sincronización, comunicación, control de acceso a recursos).  
-Ver [Paralelismo](#paralelismo-parallelism) y [Asincronía](#asincronía-asynchrony)
+> 🔍 Ver también [Paralelismo](#paralelismo-parallelism) y [Asincronía](#asincronía-asynchrony)
+
+Capacidad de un sistema para **gestionar varias tareas en progreso** durante el mismo intervalo de tiempo. Las tareas pueden ejecutarse **intercaladas** (_time-slicing_) en un solo hilo o repartidas entre múltiples hilos/procesos. Es principalmente un concepto de **estructura y coordinación** (composición, sincronización, comunicación, control de acceso a recursos).
+
+Dentro de la concurrencia, un problema central es la **visibilidad de memoria**, la cual hace referencia a **si un hilo puede ver los cambios que otro hilo hizo sobre una variable**. Sin garantías explícitas, un hilo puede leer un valor desactualizado desde su _cache_ de CPU aunque otro hilo ya haya escrito el nuevo valor en memoria principal.
+
+La **exclusión mutua** (ver también lo mencionado en [Atomicidad](#atomicidad-atomicity)) es otra técnica de coordinación: **garantiza que solo un hilo ejecute una sección de código a la vez, bloqueando o suspendiendo a los demás mientras dura la operación**. A diferencia de la visibilidad, no se trata de cuándo se ven los cambios, sino de quién puede operar sobre el estado compartido en un momento dado.
+
+También, como estrategia para evitar problemas de coordinación, se puede determinar si el estado es **compartido entre hilos o aislado por hilo**. Es decir, si la variable existe como una sola instancia para todos los hilos o si cada hilo tiene la suya.
 
 ## Copia profunda (*deep copy*)
 Construye un nuevo objeto compuesto y luego, recursivamente, inserta copias de los objetos encontrados en el original.  
@@ -206,8 +252,9 @@ Tiempo que transcurre entre que se envía una señal o dato y el momento en que 
 Objetos que contienen otros objetos, como listas o instancias de clase
 
 ## Paralelismo (*Parallelism*)
-Caso particular de concurrencia donde hay **ejecución simultánea real** de múltiples tareas o partes de una tarea, típicamente en **múltiples cores/CPUs** (o unidades de cómputo). Es principalmente un concepto de **rendimiento**: aumentar _throughput_ o reducir el tiempo total de cómputo ejecutando trabajo al mismo tiempo.  
-Ver [Concurrencia](#concurrencia-concurrency)
+> 🔍 Ver también [Concurrencia](#concurrencia-concurrency)
+
+Caso particular de concurrencia donde hay **ejecución simultánea real** de múltiples tareas o partes de una tarea, típicamente en **múltiples cores/CPUs** (o unidades de cómputo). Es principalmente un concepto de **rendimiento**: aumentar _throughput_ o reducir el tiempo total de cómputo ejecutando trabajo al mismo tiempo.
 
 ## Parseo (*parsing*)
 También llamado análisis de sintaxis. Analiza un texto y decide qué significan las diferentes partes (*pars*) del mismo para luego procesarlas.
@@ -306,3 +353,6 @@ Proveen tres garantías principales:
 - **Cifrado**: los datos transmitidos no pueden ser leídos por terceros. 
 - **Integridad**: los datos no pueden ser modificados sin ser detectado. 
 - **Autenticación**: el cliente puede verificar la identidad del servidor (y viceversa, si se requiere).
+
+## *Trade-off*
+Es una **concesión o equilibrio entre opciones**: ganar en un aspecto implica **aceptar una desventaja** en otro.

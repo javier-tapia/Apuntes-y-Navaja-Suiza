@@ -45,7 +45,7 @@
     * [Operadores terminales de obtención de valor en *Flows*](#operadores-terminales-de-obtención-de-valor-en-flows)
       * [``first``](#first)
       * [``single``](#single)
-    * [Lanzamiento de *Flows*, *scopes* y cancelación](#lanzamiento-de-flows-scopes-y-cancelación)
+    * [Lanzamiento, *scopes* y cancelación](#lanzamiento-scopes-y-cancelación)
       * [``cancel``](#cancel)
       * [``launch``](#launch)
       * [``launchIn``](#launchin)
@@ -55,6 +55,7 @@
       * [`@Synchronized`](#synchronized-1)
       * [`@ThreadLocal`](#threadlocal)
       * [`@Volatile`](#volatile)
+      * [Comparativa](#comparativa)
     * [Serialización y modelo de datos](#serialización-y-modelo-de-datos)
       * [`@Transient`](#transient)
     * [Primitivas de suspensión y cooperación en corrutinas](#primitivas-de-suspensión-y-cooperación-en-corrutinas)
@@ -76,8 +77,26 @@
 ## TL;DR: Corrutinas y *Flows*
 > 🔍 Ver también [Manejo de *Flows* en la UI](../Apuntes-Android.md#manejo-de-flows-en-la-ui)
 
-**Las Corrutinas** están diseñadas para ejecutar **operaciones asíncronas** complejas de forma limpia y **secuencialmente**, lo que significa que el código de la corrutina espera a que regrese lo que invocó antes de continuar. Esto permite, entre otras cosas, **no bloquear el hilo principal**. Para eso, se utilizan **funciones de suspensión** (***suspension functions***), como [``delay()``](#delay), ``await()`` (que se utiliza junto con el *builder [``async{}``](#async--await)*) y [``withContext()``](#withcontext) (una práctica recomendada consiste en usar esta función a fin de garantizar que todas las funciones sean seguras para el subproceso principal (*main-safe*), lo cual significa que se puede llamar a la función desde el subproceso principal). En esencia, **la función de suspensión realiza una acción asíncrona, pero para la corrutina que la invoca, se considera síncrona**.  
-También se puede indicar que una función personalizada es de suspensión anteponiéndole la palabra reservada [``suspend``](https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions) (pausa la ejecución de la corrutina actual y guarda todas las variables locales) o continuar la ejecución de una corrutina suspendida desde donde se detuvo con [``resume``](#resume). A las funciones de suspensión sólo se las puede llamar **desde una corrutina** o **desde otra función de suspensión** y **retornan asincrónicamente un solo valor**.
+**Las Corrutinas** están diseñadas para ejecutar **operaciones asíncronas** de forma limpia y estructurada. Permiten escribir código que **se lee de forma secuencial**, pero que se ejecuta de manera **no bloqueante**. La principal herramienta para lograrlo son las **funciones de suspensión** ([***suspending functions***](https://kotlinlang.org/docs/coroutines-basics.html#suspending-functions)).
+
+Cuando una corrutina encuentra una `suspend fun`:
+
+- **Se suspende**: "Pausa" su propia ejecución en ese punto exacto, guardando su estado.
+- **Libera el hilo**: El hilo en el que corría queda libre para hacer otro trabajo.
+- **Se reanuda**: Una vez que la `suspend fun` termina su tarea (ej: una llamada a la red), la corrutina **se reanuda exactamente donde se detuvo** para continuar con la siguiente línea.
+
+El mecanismo de reanudación ([`resume`](#resume)) depende de cómo se estructura la concurrencia y se relaciona directamente con el control del flujo de ejecución en las corrutinas:
+
+1. **Reanudación tras finalizar el trabajo (Comportamiento de espera):**
+    - En este modelo, una corrutina necesita el **resultado** de una operación asíncrona para poder continuar su procesamiento. Esto se ejemplifica mediante el uso de `async` para iniciar la operación, que devuelve un `Deferred` representando el resultado de esa operación que se completará en el futuro.
+    - Cuando la corrutina encuentra la función de suspensión `await()` en ese `Deferred`, se **suspende** en ese punto. Esto significa que su contexto se guarda (como el estado de las variables locales y la posición en el código) y se libera el hilo para que realice otras tareas.
+    - Solo cuando la operación asíncrona ha finalizado y el resultado está disponible, la corrutina se **reanuda** en el punto donde se detuvo, permitiendo que el procesamiento continúe sin perder su estado anterior. Este enfoque garantiza un flujo ordenado y controlado, evitando condiciones de carrera.
+2. **Reanudación tras despachar el trabajo (Comportamiento "*fire-and-forget*"):**
+    - En este caso, una corrutina solo necesita **iniciar una tarea sin esperar un resultado inmediato**. Un ejemplo común es el uso de `launch`, donde se ejecuta una tarea de forma paralela.
+    - La corrutina se suspende lo suficiente para **despachar** la tarea hacia otro hilo o contexto, permitiendo que se ejecute independientemente. Después de este despacho, la corrutina original puede **reanudar su ejecución** inmediatamente, continuando con las siguientes líneas de código.
+    - Este enfoque puede ser riesgoso si no se gestiona adecuadamente, especialmente en flujos donde el **orden de las operaciones** es crítico. Si la corrutina reanuda su ejecución sin esperar a que la tarea despachada termine, puede producirse una condición de carrera (*race condition*). Esto ocurre cuando múltiples corrutinas acceden o modifican recursos compartidos simultáneamente, lo que puede provocar resultados inesperados y comportamientos indeseables.
+
+Las `suspend fun` más comunes son [`delay()`](#delay), [`withContext()`](#withcontext) (para cambiar de hilo de forma segura, garantizando *main-safety*), y [`await()`](#async--await) (para esperar un resultado). A las funciones de suspensión sólo se las puede llamar **desde una corrutina** o **desde otra función de suspensión** y retornan asincrónicamente un solo valor.
 
 **Los *Flows***, a diferencia de las funciones de suspensión que devuelven solo un único valor, se utilizan para **emitir múltiples valores secuencialmente, computados asincrónicamente**. Están diseñados explícitamente para manejar **operaciones asíncronas** complejas de forma efectiva y **emitir varias veces según se requiera**.  
 Los _Flows_ son ***cold streams***, al igual que las [Secuencias (*Sequences*)](../Apuntes-Kotlin.md#410-sequencet). El código dentro del constructor de un *flow* (*flow builder*), no se ejecuta hasta que el *flow* es recolectado.  
@@ -853,7 +872,7 @@ println(result)
 // 42
 ```
 
-### Lanzamiento de *Flows*, *scopes* y cancelación
+### Lanzamiento, *scopes* y cancelación
 > 👉 Cómo se ejecutan corrutinas
 
 #### [``cancel``](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/cancel.html)
@@ -994,6 +1013,19 @@ Al marcar una variable como `@Volatile`, Kotlin asegura que cualquier operación
 @Volatile
 var sharedResource: Int = 0
 ```
+
+#### Comparativa
+> ℹ️ **Nota:**  
+> `@ThreadLocal` no comparte estado entre hilos, por lo que **Visibilidad** y **Exclusión mutua** no aplican (ver [Atomicidad](../Glosary%20&%20Core%20Concepts/Software%20in%20general.md#atomicidad-atomicity)).  
+> En corrutinas, `@ThreadLocal` puede perder el valor si la corrutina cambia de hilo al reanudarse. Para ese caso existe `ThreadLocal.asContextElement()`.
+
+| Mecanismo       | Visibilidad | Exclusión mutua | Estrategia                |
+|-----------------|-------------|-----------------|---------------------------|
+| `@Volatile`     | ✅           | ❌               | Coordinación (memoria)    |
+| `synchronized`  | ✅           | ✅               | Coordinación (bloqueo)    |
+| `@Synchronized` | ✅           | ✅               | Coordinación (bloqueo)    |
+| `Mutex`         | ✅           | ✅               | Coordinación (suspensión) |
+| `@ThreadLocal`  | N/A         | N/A             | Aislamiento               |
 
 ### Serialización y modelo de datos
 > 👉 Persistencia / representación

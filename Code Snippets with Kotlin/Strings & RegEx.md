@@ -5,12 +5,13 @@
   * [Colores ARGB](#colores-argb)
   * [*Format Strings*](#format-strings)
   * [*Regex* para *matchear* cualquier *endpoint* que no sea el especificado](#regex-para-matchear-cualquier-endpoint-que-no-sea-el-especificado)
-  * [String extensions](#string-extensions)
+  * [*String extensions*](#string-extensions)
     * [``String?.nullIfNullOrEmpty``](#stringnullifnullorempty)
     * [``String?.orDefaultIfNullOrEmpty``](#stringordefaultifnullorempty)
     * [``String?.decodeUrl``](#stringdecodeurl)
     * [``String?.encodeUrl``](#stringencodeurl)
     * [``String.getCurrentTimestamp``](#stringgetcurrenttimestamp)
+  * [*Strings* & *Spans*](#strings--spans)
 <!-- TOC -->
 
 ---
@@ -20,13 +21,13 @@ En la mayoría de las situaciones al tratar con colores en formato ARGB (*Alpha,
 Al hacer `and 0xffffffff`, se asegura que el color final solo retiene los *bits* de color RGB (rojo, verde, azul) y establece el canal alfa en `FF` o `255` (completamente opaco), en caso de que el color de entrada tuviera un componente alfa diferente. Esto es útil si necesitas asegurarte de que el color resultante sea completamente opaco.
 
 ```kotlin
-    String.format(
-        ColorResourceProvider.HEXADECIMAL_COLOR_FORMAT,
-        ContextCompat.getColor(
-            this,
-            ColorResourceProvider.SOME_SCREEN_BACKGROUND_COLOR_CONTAINER
-        ) and 0xffffffff.toInt()
-    )
+String.format(
+    ColorResourceProvider.HEXADECIMAL_COLOR_FORMAT,
+    ContextCompat.getColor(
+        this,
+        ColorResourceProvider.SOME_SCREEN_BACKGROUND_COLOR_CONTAINER
+    ) and 0xffffffff.toInt()
+)
 ```
 
 ## *Format Strings*
@@ -87,20 +88,20 @@ println("Máximo: %.1f".format(numbers.max())) // Máximo: 26.1
 Matchear todo excepto `https://mobile.example.com/some-path/something`
 
 ```
-    // RegEx
-    
-    ^(?!https:\/\/mobile\.example\.com\/some-path\/something$).*$
-    
-    // Matches 2 and 3
-    
-    1. https://mobile.example.com/some-path/something
-    
-    2. https://mobile.example.com/some-path/somethingggg
-    
-    3. https://mobile.example.com/some-path/other
+// RegEx
+
+^(?!https:\/\/mobile\.example\.com\/some-path\/something$).*$
+
+// Matches 2 and 3
+
+1. https://mobile.example.com/some-path/something
+
+2. https://mobile.example.com/some-path/somethingggg
+
+3. https://mobile.example.com/some-path/other
 ```
 
-## String extensions
+## *String extensions*
 
 ### ``String?.nullIfNullOrEmpty``
 
@@ -175,4 +176,39 @@ fun String.getCurrentTimestamp(): String =
         .format(
             Calendar.getInstance().time,
         )
+```
+
+## *Strings* & *Spans*
+> **_Span_** :arrow_right: Objeto aplicado a un rango de un ``CharSequence`` para **modificar estilo, apariencia o comportamiento del texto sin alterar su contenido**. Se usa con tipos que implementan ``Spanned`` / ``Spannable``, como ``SpannableString`` o ``SpannableStringBuilder``.
+
+| Aspecto                     | `String`                                                                      | `SpannableString`                                                                                                              | `SpannableStringBuilder`                                                                                                               |
+|-----------------------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| Mutabilidad del texto       | **Inmutable**                                                                 | Texto **inmutable** (caracteres), pero admite _spans_                                                                          | Texto **mutable** (caracteres y _spans_)                                                                                               |
+| Formato (_spans_)           | No soporta                                                                    | Sí (por rangos)                                                                                                                | Sí (por rangos)                                                                                                                        |
+| Caso de uso típico          | Texto “plano” sin estilo                                                      | Ya se tiene el texto final y solo se necesita **estilizar** partes                                                             | Se necesita **armar/editar** el texto dinámicamente y estilizar mientras eso se hace                                                   |
+| _Performance_/_allocations_ | Si se concatena mucho (`+`), puede generar muchas copias                      | Bien para “crear una vez y usar” con estilo                                                                                    | Mejor para muchas modificaciones (_append_/_insert_/_delete_/_replace_)                                                                |
+| API de edición              | No (inmutable: no se pueden modificar caracteres; solo crear otro ``String``) | Limitada: no se pueden editar caracteres (no _append_/_insert_/_delete_/_replace_); solo gestionar _spans_ sobre un texto fijo | Completa: se pueden editar caracteres (_append_/_insert_/_delete_/_replace_) y también gestionar _spans_ mientras se modifica el texto |
+
+📌 **Ejemplo**:  
+
+```kotlin
+private fun setupWebInformation(web: String) = binding?.apply {
+    val fullText = context?.resources?.getString(
+        R.string.my_rentals_web_information,
+        web
+    ).orEmpty()
+    val start = fullText.indexOf(web)
+    val text = SpannableString(fullText)
+
+    if (start >= 0) {
+        text.setSpan(
+            StyleSpan(Typeface.BOLD),
+            start,
+            start + web.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+    }
+
+    myRentalsFragmentWebInformation.text = text
+}
 ```

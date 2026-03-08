@@ -9,11 +9,10 @@
     * [1.3. Clases selladas (*sealed class*)](#13-clases-selladas-sealed-class)
     * [1.4. Clases abstractas (*abstract class*)](#14-clases-abstractas-abstract-class)
     * [1.5. Interfaces](#15-interfaces)
+      * [1.5.1. *Sealed Interfaces*](#151-sealed-interfaces)
     * [1.6. Tipos genéricos en clases](#16-tipos-genéricos-en-clases)
-      * [:clipboard: A modo de resumen:](#clipboard-a-modo-de-resumen)
-      * [1.6.1. ``invariant``](#161-invariant)
-      * [1.6.2. ``covariant``](#162-covariant)
-      * [1.6.3. ``contravariant``](#163-contravariant)
+      * [1.6.1. Varianza](#161-varianza)
+      * [1.6.2. Por qué la contravarianza invierte la relación de subtipos](#162-por-qué-la-contravarianza-invierte-la-relación-de-subtipos)
     * [1.7. Clases anidadas e internas (*inner class*)](#17-clases-anidadas-e-internas-inner-class)
     * [1.8. *Data classes*](#18-data-classes)
     * [1.9. *Object expressions* y *Object declarations*](#19-object-expressions-y-object-declarations)
@@ -41,6 +40,9 @@
     * [3.6. Funciones de Orden Superior (*Higher-Order Functions*)](#36-funciones-de-orden-superior-higher-order-functions)
     * [3.7. *Function type with receiver* y *Function literal with receiver*](#37-function-type-with-receiver-y-function-literal-with-receiver)
     * [3.8. *Closures*](#38-closures)
+      * [3.8.1. Acceso y modificación de variables capturadas](#381-acceso-y-modificación-de-variables-capturadas)
+      * [3.8.2. Comportamiento de la captura: El origen de errores comunes](#382-comportamiento-de-la-captura-el-origen-de-errores-comunes)
+      * [3.8.3. Solución: Retrasar la lectura de la referencia](#383-solución-retrasar-la-lectura-de-la-referencia)
     * [3.9. *Inline Functions*](#39-inline-functions)
       * [3.9.1. Parámetros de tipo *reified*](#391-parámetros-de-tipo-reified)
     * [3.10. Tipos genéricos en funciones](#310-tipos-genéricos-en-funciones)
@@ -243,32 +245,43 @@ El uso más básico de las clases *enum* es implementar enumeraciones con ***seg
 ```
 
 ### 1.3. Clases selladas (*sealed class*)
-Permiten tener varias **clases heredadas** (se convierten en un tipo de “*enum* de clases”) y representar jerarquías de **clases restringidas** en las que un valor debe tener uno de los tipos de un conjunto limitado, pero no puede tener ningún otro tipo. Cada clase tiene sus propiedades, además de las heredadas, es decir, una subclase de una clase sellada puede tener múltiples instancias que pueden contener estado. Se utilizan mucho para realizar **comprobaciones de tipo** (***type-checks***) en expresiones y sentencias con ``when``:
+> ℹ️ **Nota:**  
+> Ver también [*Sealed Interfaces*](#151-sealed-interfaces)
+
+Permiten tener varias **clases heredadas** (se convierten en un tipo de “*enum* de clases”) y representar jerarquías de **clases restringidas** en las que un valor debe tener uno de los tipos de un conjunto limitado, pero no puede tener ningún otro tipo.  
+Cada clase tiene sus propiedades, además de las heredadas, es decir, una subclase de una clase sellada puede tener múltiples instancias que pueden contener estado. Se utilizan mucho para realizar **comprobaciones de tipo** (***type-checks***) en expresiones y sentencias con ``when``.
+
+**Características**:
+- Las subclases heredan de una clase base
+- Permite propiedades y estado compartido
+- Solo se puede extender una clase en Kotlin
+
+📌 **Ejemplo**:  
 
 ```kotlin
-    sealed class Operacion {
-        class Suma(val valor: Int) : Operacion()
-        class Resta(val valor: Int) : Operacion()
-        class Multiplicacion(val valor: Int) : Operacion()
-        class Division(val valor: Int) : Operacion()
-    }
-    
-    fun main() {
-        val numero = 5
-        var operacion: Operacion
-        operacion = Operacion.Suma(3)
-        val numero2 = calcular(numero, operacion)
-        println(numero2)  // 8
-        operacion = Operacion.Multiplicacion(6)
-        println(calcular(numero2, operacion))  // 48
-    }
-    
-    fun calcular(x: Int, op: Operacion) = when (op) {
-        is Operacion.Suma -> x + op.valor
-        is Operacion.Resta -> x - op.valor
-        is Operacion.Multiplicacion -> x * op.valor
-        is Operacion.Division -> x / op.valor
-    }
+sealed class Operacion {
+    class Suma(val valor: Int) : Operacion()
+    class Resta(val valor: Int) : Operacion()
+    class Multiplicacion(val valor: Int) : Operacion()
+    class Division(val valor: Int) : Operacion()
+}
+
+fun main() {
+    val numero = 5
+    var operacion: Operacion
+    operacion = Operacion.Suma(3)
+    val numero2 = calcular(numero, operacion)
+    println(numero2)  // 8
+    operacion = Operacion.Multiplicacion(6)
+    println(calcular(numero2, operacion))  // 48
+}
+
+fun calcular(x: Int, op: Operacion) = when (op) {
+    is Operacion.Suma -> x + op.valor
+    is Operacion.Resta -> x - op.valor
+    is Operacion.Multiplicacion -> x * op.valor
+    is Operacion.Division -> x / op.valor
+}
 ```
 
 ### 1.4. Clases abstractas (*abstract class*)
@@ -296,175 +309,307 @@ Una clase y algunos de sus miembros pueden ser declarados como ***abstract***. U
 Pueden contener **tanto declaraciones de métodos abstractos como implementaciones de métodos por defecto** (se diferencian porque unos no tienen la implementación y los otros sí; no hace falta usar la palabra reservada *default* como lo hace Java). La o las clases que implementen la interfaz, **deben implementar todo** lo que la interfaz tenga declarado. Lo que las hace diferentes de las clases abstractas es que **las interfaces no pueden contener estado**. Pueden tener propiedades, pero deben ser abstractas o proporcionar implementaciones de acceso (*getters* y *setters*).
 
 ```kotlin
-    interface EjemploInterface {
-        fun saludar()
+interface EjemploInterface {
+    fun saludar()
+}
+
+class ClaseA : EjemploInterface {
+    override fun saludar() = println("Hola")
+}
+
+class ClaseC : EjemploInterface {
+    override fun saludar() = println("Chau")
+}
+
+class ClaseB(var tipo: EjemploInterface) {
+    var saludo = when (tipo) {
+        is ClaseA -> tipo.saludar()
+        is ClaseC -> tipo.saludar()
+        else -> println("Error")
     }
-    
-    class ClaseA : EjemploInterface {
-        override fun saludar() = println("Hola")
-    }
-    
-    class ClaseC : EjemploInterface {
-        override fun saludar() = println("Chau")
-    }
-    
-    class ClaseB(var tipo: EjemploInterface) {
-        var saludo = when (tipo) {
-            is ClaseA -> tipo.saludar()
-            is ClaseC -> tipo.saludar()
-            else -> println("Error")
-        }
-    }
-    
-    fun main() {
-        var tipo: EjemploInterface = ClaseC()
-        var obj = ClaseB(tipo)
-        obj.saludo // Imprime ‘Chau’
-    }
+}
+
+fun main() {
+    var tipo: EjemploInterface = ClaseC()
+    var obj = ClaseB(tipo)
+    obj.saludo // Imprime ‘Chau’
+}
 ```
 
 Si una clase implementa dos *interfaces* que tienen un método no abstracto con el mismo nombre, al llamar a ese método desde la clase existe un **conflicto de nombres** y el compilador generará un error. Este problema se puede resolver proporcionando una nueva implementación del método:
 
 ```kotlin
-    interface A {
-        fun llamar() {
-            println("Desde interface A")
-        }
+interface A {
+    fun llamar() {
+        println("Desde interface A")
     }
-    
-    interface B {
-        fun llamar() {
-            println("Desde interface B")
-        }
+}
+
+interface B {
+    fun llamar() {
+        println("Desde interface B")
     }
-    
-    class ClaseImp : A, B {
-        // Implementación explícita del método en la clase
-        override fun llamar() {
-            super<A>.llamar() // llama al método de la interface A
-        }
+}
+
+class ClaseImp : A, B {
+    // Implementación explícita del método en la clase
+    override fun llamar() {
+        super<A>.llamar() // llama al método de la interface A
     }
-    
-    fun main(args: Array<String>) {
-        val obj = ClaseImp()
-        obj.llamar()
+}
+
+fun main(args: Array<String>) {
+    val obj = ClaseImp()
+    obj.llamar()
+}
+```
+
+#### 1.5.1. *Sealed Interfaces*
+> ℹ️ **Nota:**  
+> Ver también [*Sealed Class*](#13-clases-selladas-sealed-class)
+
+Una `sealed interface` restringe las implementaciones a un **conjunto cerrado y conocido en tiempo de compilación**, definido en el mismo módulo/paquete.  
+Se usa cuando se quiere exhaustividad en expresiones `when`, controlar estrictamente qué clases pueden implementarla y modelar jerarquías cerradas (ej.: estados, resultados, eventos).
+
+**Características**:
+- No tiene constructor
+- No mantiene estado compartido
+- Permite que una clase implemente varias interfaces
+
+📌 **Ejemplo**:  
+
+```kotlin
+sealed interface Resultado
+
+class Exito(val mensaje: String) : Resultado
+class Error(val codigo: Int) : Resultado
+object Cargando : Resultado
+
+fun manejarResultado(resultado: Resultado) {
+    when (resultado) {
+        is Exito -> println("Operación exitosa: ${resultado.mensaje}")
+        is Error -> println("Ocurrió un error. Código: ${resultado.codigo}")
+        Cargando -> println("Cargando...")
     }
+}
+
+fun main() {
+    val r: Resultado = Exito("Datos guardados")
+    manejarResultado(r)
+}
 ```
 
 ### 1.6. Tipos genéricos en clases
-Permiten definir clases, métodos (ver el apartado de genéricos de *Funciones*) y propiedades de manera que se puede **acceder a ellos utilizando diferentes tipos**. Es común utilizarlos en combinación con las **colecciones** para crear estructuras cuyos elementos no están limitados a un tipo determinado.  
-Una clase o un método de tipo genérico se declara con **parámetros de tipo** (o **tipo parametrizado**) entre corchetes angulares, y al crear una instancia de esa clase se debe proporcionar el tipo real del argumento (salvo que pueda ser inferido), por ejemplo:
+Los **genéricos** permiten definir clases, funciones (ver [acá](#310-tipos-genéricos-en-funciones)) y propiedades **parametrizadas por tipo**, de forma que puedan trabajar con distintos tipos sin perder **seguridad de tipos en tiempo de compilación**.  
+Se declaran utilizando **parámetros de tipo** entre corchetes angulares (`<>`). Al crear una instancia de la clase, se puede indicar el tipo concreto o dejar que el compilador lo **infiera automáticamente**.
+
+El uso de genéricos aporta principalmente:  
+- **Seguridad de tipo en tiempo de compilación**
+- **Eliminación de _casts_**
+- **Reutilización de código**
+- Integración natural con **colecciones tipadas**
 
 ```kotlin
-    class Caja<T>(t: T) {
-        var valor = t
+class Caja<T>(valorInicial: T) {
+    var valor: T = valorInicial
+}
+
+fun main() {
+    val caja1 = Caja<Int>(1)
+    val caja2 = Caja(1)              // Inferencia de tipo
+    val caja3 = Caja("Hola")
+    val caja4 = Caja(listOf('a','b','c'))
+
+    println(caja1.valor) // 1
+    println(caja2.valor) // 1
+    println(caja3.valor) // Hola
+    println(caja4.valor) // [a, b, c]
+}
+```
+
+#### 1.6.1. Varianza
+En Kotlin, los tipos genéricos **no preservan automáticamente la relación de subtipos** de sus tipos base.  
+Por ejemplo:
+```text
+Int : Number
+```
+
+Pero:
+```text
+List<Int> ≠ List<Number>
+```
+
+Para controlar cómo se relacionan los tipos genéricos entre sí se utiliza el concepto de **varianza**, que define **cómo puede variar el tipo genérico respecto a su jerarquía de tipos**. Dicho de otra forma, la varianza se determina por **cómo se utiliza `T` en la API pública de la clase**.
+
+En función de si un tipo **produce valores**, **consume valores** o **hace ambas cosas**, Kotlin define tres comportamientos:
+
+| Varianza                      | Modificador | API pública devuelve `T` | API pública recibe `T` | Idea clave                      | Uso típico                                    |
+|-------------------------------|-------------|--------------------------|------------------------|---------------------------------|-----------------------------------------------|
+| **Covariante (Producer)**     | `out`       | ✔                        | ❌                      | `T` **sale del objeto**         | Colecciones de solo lectura (ej.: `List`)     |
+| **Contravariante (Consumer)** | `in`        | ❌                        | ✔                      | `T` **entra al objeto**         | Comparadores, validadores (ej.: `Comparable`) |
+| **Invariante**                | —           | ✔                        | ✔                      | `T` **entra y sale del objeto** | Estructuras mutables (ej.: `MutableList`)     |
+
+📌 **Ejemplo**:
+```kotlin
+open class Animal
+class Dog : Animal()
+
+// ============================================================
+// Covariante (Producer)
+// El objeto solo produce valores de tipo T
+// ============================================================
+class Producer<out T>(private val value: T) {
+    fun produce(): T = value
+}
+
+// ============================================================
+// Contravariante (Consumer)
+// El objeto solo consume valores de tipo T
+// ============================================================
+class Consumer<in T : Any> {
+    fun consume(value: T) {
+        println("Consumido: ${value::class.simpleName}")
     }
-    
-    fun main() {
-        val caja1 = Caja<Int>(1) // val caja1: Caja<Int> = Caja<Int>(1)
-        val caja2 = Caja(1) // Inferencia del tipo
-        val caja3 =
-            Caja<Int>("Hola") // ERROR. Type mismatch: inferred type is String but Int was expected
-        val caja3 = Caja("Hola")
-        val caja4 = Caja(listOf('a', 'b', 'c', 'd'))
-    
-        println(caja1.valor) // 1
-        println(caja2.valor) // 1
-        println(caja3.valor) // Hola
-        println(caja4.valor) // [a, b, c, d]
+}
+
+// ============================================================
+// Invariante
+// El objeto produce y consume valores de tipo T
+// ============================================================
+class Box<T>(private var value: T) {
+    fun get(): T = value
+
+    fun set(newValue: T) {
+        value = newValue
     }
+}
+
+fun main() {
+    // Covarianza: Producer<Dog> puede usarse como Producer<Animal>
+    val producer: Producer<Animal> = Producer(Dog())
+    val animal: Animal = producer.produce()
+    println(animal::class.simpleName) // Dog
+
+    // Contravarianza: Consumer<Animal> puede usarse como Consumer<Dog>
+    val consumer: Consumer<Dog> = Consumer<Animal>()
+    consumer.consume(Dog()) // Consumido: Dog
+
+    // Invarianza
+    val boxDog: Box<Dog> = Box(Dog())
+
+    val dog: Dog = boxDog.get()
+    println(dog::class.simpleName) // Dog
+    boxDog.set(Dog())
+    println(boxDog.get()::class.simpleName) // Dog
+
+    // ERROR: Box es invariante (produce y consume T). 
+    val boxAnimal: Box<Animal> = boxDog
+    // Si esto fuera válido:
+    //
+    // val boxAnimal: Box<Animal> = boxDog
+    // boxAnimal.set(Animal())
+    //
+    // se terminaría insertando un Animal dentro de boxDog, que debería contener solo Dog.
+}
 ```
 
-El uso de genéricos conlleva una serie de ventajas, como son la **seguridad de tipo** (la comprobación se realiza en tiempo de compilación para evitar problemas durante la ejecución) y que **no requiere la conversión entre tipos** ni encasillar el objeto en un tipo determinado.  
-Al trabajar con genéricos, los tipos no mantienen la herencia de sus clases. Y en función de si esas clases actúan como **consumidores o productores**, tendremos que usar **covarianza o contravarianza**.
+#### 1.6.2. Por qué la contravarianza invierte la relación de subtipos
+Para entender por qué la **contravarianza (`in`) invierte la relación de subtipos**, conviene razonar paso a paso.
 
-#### :clipboard: A modo de resumen:
-
-- **_Consumir_** implica tener **_funciones que devuelven un valor del tipo genérico_**.
-- **_Producir_** implica tener **_funciones que reciben por argumento un objeto del tipo genérico_**.
-
-Por tanto:
-
-- Para **_devolver valores de un tipo más genérico que el tipo original_**, se necesita usar **_covarianza_** (se usa ***``out``*** en el tipo).
-- Para **_pasar valores de un tipo más genérico que el original_**, se necesita usar **_contravarianza_** (se usa ***``in``*** en el tipo).
-- Para **_trabajar con el tipo original_**, el tipo será **_invariante_** (no se usa ``in`` ni ``out``).
-
-#### 1.6.1. ``invariant``
-Cuando el parámetro de tipo no tiene modificadores de varianza (***``out``*** o ***`in`***), por defecto es invariante con respecto a su tipo genérico (no se pueden ni consumir ni producir valores con un tipo más genérico). Significa que **no hay relación entre dos tipos** generados por una clase genérica. Por ejemplo, no hay relación entre *``Cup<Int>``* y *``Cup<Number>``*, *``Cup<Any>``* o *``Cup<Nothing>``*.
+Partimos de una jerarquía de tipos simple:
 
 ```kotlin
-     class Cup<T>
-     
-     fun main(args: Array<String>) {
-          val anys: Cup<Any> = Cup<Int>() // Error: Type mismatch
-          val nothings: Cup<Nothing> = Cup<Int>() // Error: Type mismatch
-     }
+// Jerarquía de tipos base
+open class Animal
+class Dog : Animal()
 ```
 
-#### 1.6.2. ``covariant``
-Para hacer que el parámetro de tipo sea covariante con respecto a su tipo genérico (se pueden consumir sus valores con un tipo más genérico), se utiliza el **modificador** ***``out``***. Significa que **cuando** ***A*** **es subtipo de** ***B*** y ***Cup*** **es covariante**, el tipo ***``Cup<A>``*** **es subtipo de** ***``Cup<B>``***.
+Esto significa:
+
+```text
+Dog : Animal
+```
+
+Es decir, **`Dog` es un subtipo de `Animal`**.
+
+Ahora analicemos qué ocurre cuando ese tipo se usa en un **consumidor contravariante**.
+
+**Paso 1: Definir un consumidor**
+
+Un consumidor de `T` **recibe valores de tipo `T`**.
 
 ```kotlin
-     class Cup<out T>
-     
-     open class B
-     
-     class A : B()
-     
-     fun main() {
-          val b: Cup<B> = Cup<A>() // OK
-          val a: Cup<A> = Cup<B>() // Error: Type mismatch
-     
-          val anys: Cup<Any> = Cup<Int>() // OK
-          val nothings: Cup<Nothing> = Cup<Int>() // Error: Type mismatch
-     }
+// Un tipo contravariante: solo consume valores de T
+class Consumer<in T> {
+    fun consume(value: T) {
+        println("Consumido: $value")
+    }
+}
 ```
 
-Para asegurar la seguridad de tipo, Kotlin prohíbe el uso de parámetros de tipo ***covariante*** en posiciones *in* (argumentos de métodos públicos) o *invariantes* (propiedades públicas), debiéndolo usar **solamente en posiciones** ***out*** (tipos de retorno de métodos públicos), de ahí viene el uso del modificador *out* para los tipos covariantes.
+Esto implica que:
+
+```text
+Consumer<Animal> puede consumir cualquier Animal
+Consumer<Dog> solo puede consumir Dog
+```
+
+**Paso 2: Comparar las capacidades**
+
+Si comparamos ambos consumidores:
+
+```text
+Consumer<Animal>
+    acepta: Animal, Dog, etc.
+
+Consumer<Dog>
+    acepta: solo Dog
+```
+
+Por lo tanto:
+
+```text
+Consumer<Animal> puede hacer todo lo que Consumer<Dog> puede hacer y más.
+```
+
+**Paso 3: Aplicar la regla de sustitución**
+
+Una regla fundamental del sistema de tipos es:
+
+```text
+Un tipo A puede usarse donde se espera B si A puede hacer al menos todo lo que B hace.
+```
+
+Como `Consumer<Animal>` **puede consumir `Dog`**, entonces puede usarse en cualquier lugar donde se espere un `Consumer<Dog>`.
 
 ```kotlin
-     interface Source<out T> {
-          fun nextT(): T
-     }
-     
-     fun demo(strs: Source<String>) {
-          val objects: Source<Any> = strs // Esto está OK, ya que T es un parámetro out
-     // ...
-     }
+fun main() {
+    // Un consumidor de Animal puede usarse como consumidor de Dog
+    val consumer: Consumer<Dog> = Consumer<Animal>()
+
+    consumer.consume(Dog()) // válido
+}
 ```
 
-#### 1.6.3. ``contravariant``
-Para hacer que el parámetro de tipo sea contravariante, se utiliza el **modificador** ***``in``***. Significa que cuando ***A*** **es subtipo de** ***B*** y ***Cup*** **es contravariante**, el tipo ***``Cup<A>``*** **es supertipo de** ***``Cup<B>``***.
+**Paso 4: Resultado**
 
-```kotlin
-     class Cup<in T>
-     
-     open class B
-     
-     class A : B()
-     
-     fun main() {
-          val b: Cup<B> = Cup<A>() // Error: Type mismatch
-          val a: Cup<A> = Cup<B>() // OK
-     
-          val anys: Cup<Any> = Cup<Int>() // Error: Type mismatch
-          val nothings: Cup<Nothing> = Cup<Int>() // OK
-     }
+La relación de subtipos queda **invertida**:
+
+```text
+Dog : Animal
+
+pero
+
+Consumer<Animal> : Consumer<Dog>
 ```
 
-Los parámetros de tipo ***contravariante***, que se realizan con el modificador ***in*** en Kotlin, **sólo se permiten en posiciones** ***in*** (argumentos de métodos públicos), estando prohibidos en posiciones *out* (tipos de retorno de métodos públicos) e *invariantes* (propiedades públicas).
+Esto ocurre porque el tipo genérico **solo recibe valores (`T` entra al objeto)**.
 
-```kotlin
-     interface Comparable<in T> {
-          operator fun compareTo(other: T): Int
-     }
-     
-     fun demo(x: Comparable<Number>) {
-          x.compareTo(1.0) // 1.0 es de tipo Double, que es un subtipo de Number
-     // Así, se puede asignar x a una variable de tipo Comparable<Double>
-          val y: Comparable<Double> = x // OK!
-     }
-```
+Por eso se denomina **contravarianza**: la relación de subtipos **va en dirección contraria** a la del tipo base.
+
+>💡 **Regla práctica**:  
+> _Producer_ (``out``)  :arrow_right: **Mantiene la relación de subtipos**  
+> _Consumer_ (``in``)   :arrow_right: **Invierte la relación de subtipos**
 
 ### 1.7. Clases anidadas e internas (*inner class*)
 Una clase anidada marcada como *``inner``* puede acceder a los miembros de su clase externa (*outer class*). **Las clases internas llevan una referencia a un objeto de una clase externa**.
@@ -956,14 +1101,95 @@ La **sintaxis de función anónima** permite especificar el tipo de receptor de 
 ```
 
 ### 3.8. *Closures*
-Una expresión *lambda* o una función anónima (así como una función local y un *object expression*) pueden acceder a su *closure*, es decir, a las **variables declaradas en un ámbito** (***scope***) **externo**. Las variables capturadas en el *closure* pueden ser modificadas en el *lambda*.
+Una expresión *lambda*, una función anónima, una función local o un *object expression* tienen la capacidad de acceder a su ***closure***. La *closure* es el **conjunto de variables y funciones que "rodean" a la *lambda* en el momento de su creación** (su **ámbito o *scope* externo**). En esencia, la *lambda* "recuerda" el entorno donde fue creada.
+
+#### 3.8.1. Acceso y modificación de variables capturadas
+Las *lambdas* pueden leer y modificar las variables de su entorno, siempre que estas sean mutables (`var`). Esto es útil para realizar acumulaciones o cambiar el estado desde la *lambda*.
 
 ```kotlin
-    var sum = 0
-    ints.filter { it > 0 }.forEach {
-        sum += it
+// Ejemplo: Modificar una variable externa (un 'contador') desde una lambda.
+var sum = 0
+val ints = listOf(1, -2, 3, -4, 5)
+
+// La lambda dentro de forEach accede y modifica la variable 'sum' de su closure.
+ints.filter { it > 0 }.forEach {
+    sum += it // 'sum' es parte de la closure de esta lambda.
+}
+
+print(sum) // Imprime: 9
+```
+
+#### 3.8.2. Comportamiento de la captura: El origen de errores comunes
+Es crucial entender **qué** captura la *lambda* y **cuándo** lo hace. El comportamiento difiere entre tipos de datos, lo que puede llevar a errores inesperados, especialmente en código asíncrono.
+
+**Regla General**: La *lambda* captura el **valor** de las variables de su entorno **en el momento de su creación**.
+
+- **Para tipos primitivos (`Int`, `Boolean`, etc.)** :arrow_right: La _lambda_ captura una **copia del valor** que la variable tenía en ese instante.
+
+```kotlin
+var i = 0
+val miLambda = { println(i) } // Captura el valor 0.
+i = 10 // Esta reasignación no afecta a la lambda.
+miLambda() // Imprime: 0
+```
+
+- **Para objetos (instancias de clases)** :arrow_right: La *lambda* captura una **copia de la referencia** (la "dirección de memoria") a la que apuntaba la variable en ese instante.
+
+Esto crea una distinción fundamental:
+
+1. **Modificar el objeto referenciado**: Si se modifica una propiedad del objeto al que apunta la referencia, la *lambda* verá el cambio, ya que su referencia sigue apuntando a ese mismo objeto que ha mutado.
+
+```kotlin
+data class Persona(var nombre: String)
+val persona = Persona("Carlos")
+val miLambda = { println(persona.nombre) } // Captura la referencia al objeto Persona.
+
+persona.nombre = "Juan" // Modificas el objeto a través de su referencia.
+
+miLambda() // Imprime: "Juan". La lambda ve el cambio.
+```
+
+2. **Reasignar la variable a una nueva referencia**: Si se reasigna la variable para que apunte a un objeto completamente nuevo (o a `null`), la *lambda* **NO verá este cambio**. Seguirá usando la referencia original que capturó. **Este es un error muy común**.
+
+```kotlin
+// Ejemplo 1
+var persona: Persona? = Persona("Carlos")
+val miLambda = { println(persona?.nombre) } // Captura la referencia al primer objeto Persona.
+
+// Reasignamos la variable 'persona' para que apunte a un objeto completamente diferente.
+persona = Persona("Ana")
+
+miLambda() // Imprime: "Carlos". ¡No ve el cambio a "Ana"!
+
+// Ejemplo 2
+var controlador: Controlador? = null
+val lambdaAsincrona = { println(controlador) } // Captura 'null'.
+
+// Más tarde, en otro punto del código...
+controlador = Controlador() // La variable ahora apunta a un nuevo objeto.
+
+lambdaAsincrona() // Imprime: "null". No ve el nuevo objeto.
+```
+
+#### 3.8.3. Solución: Retrasar la lectura de la referencia
+Para evitar el problema de la reasignación, la estrategia es no capturar la referencia final directamente. En su lugar, se captura una referencia a un "contenedor" o clase padre, y se accede a la propiedad deseada **en el momento de la ejecución** de la *lambda*.
+
+```kotlin
+class MiClase {
+    var controlador: Controlador? = null
+
+    fun configurar() {
+        // La lambda captura 'this' (la referencia a la instancia de MiClase).
+        val lambdaAsincrona = {// Accede a la propiedad 'controlador' en el momento de la ejecución.
+            println(this.controlador)
+        }
+
+        // Simulación de inicialización tardía.
+        this.controlador = Controlador()
+
+        lambdaAsincrona() // Imprime la instancia del Controlador, ¡funciona!
     }
-    print(sum)
+}
 ```
 
 ### 3.9. *Inline Functions*
@@ -1046,40 +1272,40 @@ Marcando un tipo como ***``reified``***, se tendrá la capacidad de **utilizar e
 ```
 
 ### 3.10. Tipos genéricos en funciones
-Como las clases, las funciones también pueden tener **parámetros de tipo** con la sintaxis ***``fun <T> nombreFuncion(parametro: tipo<T>)``***:
+Al igual que las clases (ver [acá](#16-tipos-genéricos-en-clases)), las funciones también pueden tener **parámetros de tipo** con la sintaxis ***``fun <T> nombreFuncion(parametro: tipo<T>)``***:
 
 ```kotlin
-    fun <T> mostrarValor(lista: ArrayList<T>) {
-        for (elemento in lista) {
-            println(elemento)
-        }
+fun <T> mostrarValor(lista: ArrayList<T>) {
+    for (elemento in lista) {
+        println(elemento)
     }
-    
-    fun main() {
-        val stringLista: ArrayList<String> = arrayListOf<String>("Hola", "Mundo")
-        mostrarValor(stringLista)
-    
-        val floatLista: ArrayList<Float> = arrayListOf<Float>(10.5f, 5.0f, 25.5f)
-        mostrarValor(floatLista)
-    }
+}
+
+fun main() {
+    val stringLista: ArrayList<String> = arrayListOf<String>("Hola", "Mundo")
+    mostrarValor(stringLista)
+
+    val floatLista: ArrayList<Float> = arrayListOf<Float>(10.5f, 5.0f, 25.5f)
+    mostrarValor(floatLista)
+}
 ```
 
 Y también se pueden aplicar a **funciones de extensión** de tipo genérico:
 
 ```kotlin
-    fun <T> ArrayList<T>.mostrarValor() {
-        for (elemento in this) {
-            println(elemento)
-        }
+fun <T> ArrayList<T>.mostrarValor() {
+    for (elemento in this) {
+        println(elemento)
     }
-    
-    fun main() {
-        val stringLista: ArrayList<String> = arrayListOf<String>("Hola", "Mundo")
-        stringLista.mostrarValor()
-    
-        val floatLista: ArrayList<Float> = arrayListOf<Float>(10.5f, 5.0f, 25.5f)
-        floatLista.mostrarValor()
-    }
+}
+
+fun main() {
+    val stringLista: ArrayList<String> = arrayListOf<String>("Hola", "Mundo")
+    stringLista.mostrarValor()
+
+    val floatLista: ArrayList<Float> = arrayListOf<Float>(10.5f, 5.0f, 25.5f)
+    floatLista.mostrarValor()
+}
 ```
 
 ---

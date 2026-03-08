@@ -41,7 +41,9 @@
       * [Inyección por constructor (*constructor injection*)](#inyección-por-constructor-constructor-injection)
       * [Inyección a través de módulos](#inyección-a-través-de-módulos)
     * [*Koin*](#koin)
-  * [UI imperativa](#ui-imperativa)
+  * [UI (*User Interface*)](#ui-user-interface)
+    * [UI declarativa: *Jetpack Compose*](#ui-declarativa-jetpack-compose)
+    * [*Context extensions*](#context-extensions)
     * [*ViewBinding*](#viewbinding)
       * [Cómo usar *ViewBinding* en una *Activity*](#cómo-usar-viewbinding-en-una-activity)
       * [Cómo usar *ViewBinding* en un *Adapter* de *RecyclerView*](#cómo-usar-viewbinding-en-un-adapter-de-recyclerview)
@@ -72,7 +74,6 @@
     * [*Menus*](#menus)
       * [Para usar elementos de menú que se pueden activar, en el ***xml***:](#para-usar-elementos-de-menú-que-se-pueden-activar-en-el-xml)
       * [Y para comprobar y establecer el estado de activación:](#y-para-comprobar-y-establecer-el-estado-de-activación)
-  * [UI declarativa](#ui-declarativa)
   * [Android Performance](#android-performance)
   * [Navegación](#navegación)
   * [Accesibilidad (*a11y*)](#accesibilidad-a11y)
@@ -1371,7 +1372,15 @@ Y ya se podría recibir la dependencia o dependencias en la *Activity* o *Fragme
 
 ---
 
-## UI imperativa
+## UI (*User Interface*)
+### UI declarativa: *Jetpack Compose*
+
+- Ver [*Jetpack Compose*](Android/UI/Jetpack%20Compose.md)
+
+### *Context extensions*
+
+- Ver [*Context extensions*](Android/UI/Context%20extensions.md)
+
 ### *ViewBinding*
 Es una forma de **acceder a las vistas** (*xml*) que equilibra el rendimiento y la potencia, **sin necesidad de recurrir a otras alternativas**, como el método ***``findViewById()``*** (que en sí mismo es bastante costoso), ***Butterknife*** o ***Synthetic***. *ViewBinding* es un ‘subconjunto’ de *DataBinding* que evita la sobrecarga de compilación que produce el utilizar *DataBinding*. Se usa si no se necesita añadir código a las vistas (*xml*) ni realizar esa asignación directa entre una variable del código y una vista del *xml* que permite *DataBinding*. A diferencia de otras formas de enlazar las vistas, como por ejemplo *synthetic* de *kotlin extensions*, *ViewBinding* permite que **el compilador conozca la nulidad de la vista**.
 La forma de configurarlo depende de la versión de Android Studio. Para Android Studio 4.0 y siguientes, en el *build.gradle* poner lo siguiente **dentro de ``android{}``**:
@@ -2010,12 +2019,6 @@ Existen tres tipos fundamentales de presentaciones de menús o acciones en todas
         }
     }
 ```
-
----
-
-## UI declarativa
-
-- Ver [*Jetpack Compose*](Android/UI/Jetpack%20Compose.md)
 
 ---
 

@@ -24,6 +24,11 @@
   * [*Cherry-pick*](#cherry-pick)
     * [Con *Android Studio*](#con-android-studio)
     * [Desde Terminal](#desde-terminal)
+  * [Log de los últimos X commits abreviados](#log-de-los-últimos-x-commits-abreviados)
+  * [Ver detalles de un *commit* con el *hash*](#ver-detalles-de-un-commit-con-el-hash)
+  * [Revertir todos los cambios de un *commit* anterior](#revertir-todos-los-cambios-de-un-commit-anterior)
+  * [Restaurar archivos a una versión anterior](#restaurar-archivos-a-una-versión-anterior)
+  * [Comparar cambios entre distintos estados](#comparar-cambios-entre-distintos-estados)
 <!-- TOC -->
 
 ---
@@ -225,3 +230,112 @@ git cherry-pick -n <hash>
     ```bash
     git cherry-pick --abort  
     ```
+
+## Log de los últimos X commits abreviados
+```bash
+git log --oneline -{NUMERO}
+
+
+# Ejemplo: obtener los últimos 3 commits en una sola línea
+git log --oneline -3
+
+# Ejemplo del output:
+12a3b4c (HEAD -> feature/something) Merge with develop and resolve conflicts
+34jh98y (origin/develop, origin/HEAD, develop) Added - Add some tests (#123)
+daf986f Feature - Add some feature (#122)
+```
+
+## Ver detalles de un *commit* con el *hash*
+Muestra el autor, la fecha, el comentario y los _diffs_.
+
+```bash
+git show {HASH}
+
+
+# Ejemplo:
+git show 12a3b4c
+```
+
+## Revertir todos los cambios de un *commit* anterior
+Crea un nuevo _commit_ que deshace los cambios introducidos por un _commit_ anterior.  
+Es la forma más segura de revertir cambios en ramas compartidas, ya que no reescribe el historial.
+
+```bash
+git revert {HASH-DEL-COMMIT-A-REVERTIR}
+
+
+# Ejemplos:
+
+# Se revierte el commit 'b1a2c3d', abriendo el editor para confirmar el mensaje del nuevo commit
+git revert b1a2c3d
+
+# O para referir al último commit
+git revert HEAD
+
+# Para evitar abrir el editor y usar el mensaje por defecto ("Revert 'mensaje original'")
+git revert --no-edit b1a2c3d
+```
+
+## Restaurar archivos a una versión anterior
+Restaura archivos en el directorio de trabajo a una versión anterior (de otro _commit_ o del _staging area_). Es ideal para descartar cambios locales o para restaurar una versión específica de un archivo.  
+La ruta al archivo debe ser siempre la relativa a la **raíz (_root_) del repositorio**.
+
+```bash
+# Para descartar cambios locales en un archivo (volver al estado del último commit)
+git restore {RUTA-AL-ARCHIVO}
+
+# Para sacar un archivo del área de "staging" (index) y devolverlo al estado de "cambios sin seguimiento" (untracked changes)
+git restore --staged {RUTA-AL-ARCHIVO}
+
+# Para restaurar un archivo a la versión de un commit específico
+git restore --source={HASH-DEL-COMMIT} {RUTA-AL-ARCHIVO}
+
+
+# Ejemplos:
+
+# Descarta los cambios locales no guardados en el staging area
+git restore app/src/main/java/com/example/MainActivity.kt
+
+# Si se quiere restaurar ese archivo a como estaba en un commit más antiguo (ej: 'a0f9b8e')
+git restore --source=a0f9b8e app/src/main/java/com/example/MainActivity.kt
+
+# O, para referir al commit inmediatamente anterior al último (usando '~1')
+git restore --source=HEAD~1 app/src/main/java/com/example/MainActivity.kt
+```
+
+## Comparar cambios entre distintos estados
+Muestra las diferencias en el código. Es la herramienta principal para revisar qué ha cambiado entre el directorio de trabajo, el _staging area_, _commits_ antiguos o distintas ramas.
+
+```bash
+# Para mostrar todos los cambios que aún no están en el staging area
+git diff
+
+# Para mostrar los cambios de un archivo específico que aún no están en el staging area
+git diff {RUTA-AL-ARCHIVO}
+
+# Para mostrar todos los cambios que ya están en el staging area (añadidos con git add)
+git diff --staged
+
+# Para mostrar las diferencias entre tu rama actual (HEAD) y otra rama
+git diff {RAMA-ORIGEN}..{RAMA-DESTINO}
+
+# Para mostrar los cambios que ocurrieron entre dos commits usando sus hashes
+git diff {HASH-COMMIT-ANTIGUO} {HASH-COMMIT-NUEVO}
+
+# Para comparar un commit contra el commit inmediatamente anterior a él (usando '~1')
+git diff {HASH-DEL-COMMIT}~1 {HASH-DEL-COMMIT}
+
+
+# Ejemplos:
+
+# Comparar la rama actual (HEAD) contra 'develop'
+# La referencia a la rama local con HEAD se puede omitir en este caso
+git diff develop
+
+# Comparar la rama 'main' contra 'develop'
+# Muestra los cambios que tiene 'develop' que NO están en 'main'
+git diff main..develop
+
+# Comparar dos commits
+git diff a1b2c3d e4f5g6h
+```

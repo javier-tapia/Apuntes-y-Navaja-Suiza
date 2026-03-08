@@ -95,6 +95,11 @@
 ```kotlin
 // onCreate() and whatever...
 
+private fun someFunction() {
+    val arg1 = arguments?.getString(ARG_1)
+    // Do something with arg1...
+}
+
 companion object {
     private const val ARG_1 = "arg_1"
     private const val ARG_2 = "arg_2"

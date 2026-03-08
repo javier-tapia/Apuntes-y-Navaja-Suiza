@@ -4,6 +4,7 @@
 <!-- TOC -->
   * [Obtener versión y/o ruta de ``adb``](#obtener-versión-yo-ruta-de-adb)
   * [Obtener ayuda de ``adb``](#obtener-ayuda-de-adb)
+  * [Obtener la densidad en DPI (*dots per inch*) de un dispositivo](#obtener-la-densidad-en-dpi-dots-per-inch-de-un-dispositivo)
   * [Iniciar *activity* con un *deeplink*](#iniciar-activity-con-un-deeplink)
     * [Desglose del comando](#desglose-del-comando)
   * [Ver la lista de dispositivos conectados](#ver-la-lista-de-dispositivos-conectados)
@@ -38,6 +39,17 @@ adb version
 ## Obtener ayuda de ``adb``
 ```bash
 adb shell am help
+```
+
+## Obtener la densidad en DPI (*dots per inch*) de un dispositivo
+`wm` = *Window Manager*. Es un servicio del sistema Android que gestiona las ventanas y la pantalla.  
+El comando `wm density` consulta la densidad de pantalla configurada.
+
+```bash
+adb shell wm density
+
+# Ejemplo del output de un emulador de TV:
+Physical density: 213
 ```
 
 ## Iniciar *activity* con un *deeplink*

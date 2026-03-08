@@ -495,6 +495,8 @@ Para crear una base de datos con *Room*, se requiere la definición de los sigui
 *Room* genera automáticamente el código necesario para gestionar el acceso a los datos y previene la ejecución de operaciones bloqueantes en el hilo principal, facilitando su ejecución asíncrona. Las consultas pueden exponerse como **tipos observables** (``LiveData`` o ``Flow``), permitiendo que la UI se mantenga sincronizada con los datos persistidos.  
 Cuando un método del *DAO* retorna un **objeto concreto** (por ejemplo, una entidad o una lista de entidades), puede declararse con la palabra reservada ``suspend`` para integrarse con **corrutinas de Kotlin** y ejecutarse de forma asíncrona. En cambio, los métodos que retornan un ``Flow`` **no deben declararse como ``suspend``**, ya que el propio flujo gestiona la ejecución asíncrona y la emisión de actualizaciones.
 
+También es posible darle soporte a tipos de datos personalizados a través de **_type converters_** (ver [Referencing complex data using Room](https://developer.android.com/training/data-storage/room/referencing-data)).
+
 #### 1. Agregar dependencias y *plugins*
 _Room_ utiliza procesamiento de anotaciones para generar el código necesario en tiempo de compilación. En proyectos Kotlin modernos, se recomienda utilizar **KSP** (**_Kotlin Symbol Processing_**), que ofrece mejor rendimiento y tiempos de compilación más rápidos en comparación con ``kapt``.  
 En ese caso, debe estar agregado el _plugin_ correspondiente en el archivo ``build.gradle.kts`` **del proyecto raíz**:
@@ -1378,7 +1380,7 @@ Características:
 - Comunicación **_intra-app_** 
 - El receptor está completamente definido 
 - Uso típico para navegación entre pantallas 
-- Los datos se reciben en la ``Activity`` destino mediante ``intent.getIntExtra(...)``
+- Los datos se reciben en la ``Activity`` destino mediante el método que corresponda según el tipo de dato (``intent.getIntExtra(key)``, ``intent.getStringExtra(key)``, ``intent.getBooleanExtra(key, defaultValue)``, ``intent.getParcelableExtra<TYPE>(key)``, etc)
 
 Casos de uso típicos:
 - Navegar a una pantalla de detalle pasando un identificador 

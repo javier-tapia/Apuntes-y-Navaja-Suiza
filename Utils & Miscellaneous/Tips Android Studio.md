@@ -9,6 +9,7 @@
     * [APK Universal desde un *Android App Bundle*](#apk-universal-desde-un-android-app-bundle)
     * [*Android App Bundle* (`.aab`)](#android-app-bundle-aab)
   * [Agregar recursos exportados de Figma a un proyecto](#agregar-recursos-exportados-de-figma-a-un-proyecto)
+    * [Densidad de pantalla y conversión](#densidad-de-pantalla-y-conversión)
   * [JaCoCo en AndroidStudio](#jacoco-en-androidstudio)
     * [Agregar paquetes y/o clases al filtro de JaCoCo](#agregar-paquetes-yo-clases-al-filtro-de-jacoco)
     * [Correr reporte de *coverage* de JaCoCo con Gradle](#correr-reporte-de-coverage-de-jacoco-con-gradle)
@@ -88,6 +89,28 @@ Desde un `.aab` se pueden obtener:
 - `2x` -> `/android/xhdpi/{RESOURCE-NAME}`
 - `3x` -> `/android/xxhdpi/{RESOURCE-NAME}`
 - `4x` -> `/android/xxxhdpi/{RESOURCE-NAME}`
+
+### Densidad de pantalla y conversión
+En Android, las dimensiones se expresan en **dp (_density-independent pixels_)** para que la UI se vea igual en diferentes densidades de pantalla. Cuando un diseño de Figma está en píxeles reales, hay que convertirlos a dp según la densidad del dispositivo destino.  
+Para eso, se utiliza la siguiente fórmula:
+
+```text
+dp = px / (dpi / 160)
+```
+
+Donde:
+- **px** :arrow_right: Valor en píxeles (del diseño de Figma)
+- **dpi** :arrow_right: Densidad del dispositivo en _dots per inch_ (se puede obtener con este [comando](Comandos%20útiles%20-%20ADB.md#obtener-la-densidad-en-dpi-dots-per-inch-de-un-dispositivo))
+- **160** :arrow_right: Densidad base de Android (mdpi = 160 dpi, donde 1dp = 1px)
+
+📌 **Ejemplo**:  
+
+Si Figma muestra **32px** y el dispositivo tiene **320 dpi** (xhdpi):
+```text
+dp = 32 / (320 / 160)
+dp = 32 / 2
+dp = 16dp
+```
 
 ## JaCoCo en AndroidStudio
 

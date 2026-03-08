@@ -125,7 +125,14 @@ Proceso de compra online con interacción entre Cliente, Sistema y un Servicio d
 <br>
 
 ### Diagrama de Estados (o Máquinas de Estados)
-Describe el comportamiento de un sistema en cuanto a sus **_estados_** (situaciones o condiciones en las que puede estar un objeto) y **_transiciones_** (cambios de un estado a otro desencadenados por eventos o condiciones específicas).
+Describe el comportamiento de un sistema en cuanto a sus **estados** (situaciones o condiciones en las que puede estar un objeto) y **transiciones** (cambios de un estado a otro, desencadenados por eventos o condiciones específicas).
+
+En la práctica, Diagrama de Estados y Diagrama de Máquinas de Estados se usan como sinónimos. Pero técnicamente hay una distinción sutil:
+
+| **Término**                          | **Definición formal**                                                                | **Uso común**                                  |
+|--------------------------------------|--------------------------------------------------------------------------------------|------------------------------------------------|
+| **Máquina de Estados Finitos (FSM)** | Modelo matemático/computacional que define estados, transiciones, entradas y salidas | Teoría de autómatas, compiladores, protocolos  |
+| **Diagrama de Estados (UML)**        | Notación visual de UML para representar una máquina de estados                       | Documentación de software, modelado de objetos |
 
 Elementos básicos:
 - Estado inicial
